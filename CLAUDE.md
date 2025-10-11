@@ -391,10 +391,91 @@ function MyComponent() {
     const {
         selectedDevice,
         connectBluetooth,
-        startSession
+
+        // Session control
+        startSession,
+        stopSession,
+        pauseSession,
+        resumeSession,
+
+        // FES control
+        fesParams,
+        setFesParams,
+        sendFesParams,
+        singleStimulation,
+
+        // Streaming
+        isStreaming,
+        streamConfig,
+        streamData,
+        configureStream,
+        startStream,
+        stopStream,
+
+        // Session status
+        sessionStatus,
+        isSessionActive
     } = useBluetoothContext();
 
-    // Use context values and functions
+    // Example: Configure and start streaming
+    const handleStartStreaming = async () => {
+        await configureStream(100, 'filtered'); // 100Hz, filtered data
+        await startStream();
+    };
+
+    // Example: Start FES session
+    const handleStartFES = async () => {
+        await sendFesParams(); // Send current parameters
+        await startSession();  // Start session
+    };
+}
+```
+
+### Complete Streaming Workflow Example
+
+```typescript
+import { useBluetoothContext, StreamType } from '@/context/BluetoothContext';
+
+function StreamingScreen() {
+    const {
+        selectedDevice,
+        isStreaming,
+        streamData,
+        streamConfig,
+        configureStream,
+        startStream,
+        stopStream,
+        clearStreamData
+    } = useBluetoothContext();
+
+    const handleConfigureAndStart = async () => {
+        // Step 1: Configure streaming (optional - device has defaults)
+        await configureStream(100, 'filtered');
+
+        // Step 2: Start streaming
+        await startStream();
+    };
+
+    const handleStop = async () => {
+        await stopStream();
+        // Optionally clear data
+        clearStreamData();
+    };
+
+    // Render real-time data
+    return (
+        <View>
+            <Text>Streaming: {isStreaming ? 'Active' : 'Inactive'}</Text>
+            <Text>Config: {streamConfig.rate}Hz, {streamConfig.type}</Text>
+            <Text>Packets received: {streamData.length}</Text>
+
+            {streamData.map((packet, idx) => (
+                <Text key={idx}>
+                    t={packet.timestamp}ms: {packet.values.join(', ')}
+                </Text>
+            ))}
+        </View>
+    );
 }
 ```
 
@@ -469,9 +550,9 @@ Currently, there are no automated tests configured. Manual testing workflow:
 - **Web Bluetooth**: SPP not widely supported; Android is primary platform
 - **Device Name Hardcoded**: Only connects to devices named "NeuroEstimulator" (`BluetoothContext.tsx:90`)
 - **Error Handling**: Connection errors show modal but don't retry automatically
-- **Serial Buffer**: Commented-out code suggests previous attempts at reading buffered data (`checkSerialOutput`)
-- **sEMG Streaming Not Implemented**: App currently only implements codes 0-10; streaming commands 11-14 need to be added to `BluetoothContext.tsx`
-- **Missing State Management**: No state variables for streaming status, configuration, or received data packets
+- **UI Not Implemented**: While all protocol commands are implemented in BluetoothContext, UI components for streaming and advanced features need to be built
+- **Data Visualization**: No real-time chart components for visualizing sEMG stream data yet
+- **Data Persistence**: Stream data is stored in memory only (max 1000 packets); no local storage or backend submission
 
 ## Integration with PRISM Ecosystem
 
