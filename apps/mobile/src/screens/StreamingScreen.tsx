@@ -29,6 +29,7 @@ export function StreamingScreen({ navigation }: StreamingScreenProps) {
         startStream,
         stopStream,
         clearStreamData,
+        exportStreamData,
         configureStream
     } = useBluetoothContext();
 
@@ -109,6 +110,21 @@ export function StreamingScreen({ navigation }: StreamingScreenProps) {
         );
     };
 
+    // Handle export data
+    const handleExportData = async () => {
+        if (streamData.length === 0) {
+            Alert.alert('No Data', 'There is no data to export. Start streaming first.');
+            return;
+        }
+
+        try {
+            await exportStreamData();
+            Alert.alert('Export Successful', `Exported ${streamData.length} packets with ${processed.totalSamples} samples.`);
+        } catch (error) {
+            console.error('Export error:', error);
+            Alert.alert('Export Failed', 'Could not export data. Please try again.');
+        }
+    };
 
     return (
         <ScrollView style={styles.container}>
@@ -257,6 +273,19 @@ export function StreamingScreen({ navigation }: StreamingScreenProps) {
                                 processed.totalSamples === 0 && styles.controlButtonTextDisabled
                             ]}>
                                 🗑️ Clear Data
+                            </Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                            style={[styles.controlButton, styles.exportButton]}
+                            onPress={handleExportData}
+                            disabled={processed.totalSamples === 0}
+                        >
+                            <Text style={[
+                                styles.controlButtonText,
+                                processed.totalSamples === 0 && styles.controlButtonTextDisabled
+                            ]}>
+                                💾 Export CSV
                             </Text>
                         </TouchableOpacity>
                     </View>
@@ -507,6 +536,9 @@ const styles = StyleSheet.create({
     },
     clearButton: {
         backgroundColor: '#f44336',
+    },
+    exportButton: {
+        backgroundColor: '#9C27B0',
     },
     controlButtonText: {
         fontSize: 16,

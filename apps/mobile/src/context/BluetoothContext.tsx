@@ -562,6 +562,17 @@ export function BluetoothContextProvider(props: BluetoothContextProviderProps) {
         setLastStreamTimestamp(0);
     }
 
+    async function exportStreamData(): Promise<void> {
+        try {
+            const { exportStreamDataSimpleCSV } = await import('@/utils/csvExport');
+            await exportStreamDataSimpleCSV(streamData);
+            console.log('Stream data exported successfully');
+        } catch (error) {
+            console.error('Error exporting stream data:', error);
+            throw error;
+        }
+    }
+
     return (
         <BluetoothContext.Provider value={{
             bluetoothOn,
@@ -588,6 +599,7 @@ export function BluetoothContextProvider(props: BluetoothContextProviderProps) {
             startStream,
             stopStream,
             clearStreamData,
+            exportStreamData,
             startSession,
             stopSession,
             pauseSession,
@@ -630,6 +642,7 @@ interface BluetoothContextData {
     startStream: () => Promise<void>;
     stopStream: () => Promise<void>;
     clearStreamData: () => void;
+    exportStreamData: () => Promise<void>;
     startSession: () => Promise<void>;
     stopSession: () => Promise<void>;
     pauseSession: () => Promise<void>;
