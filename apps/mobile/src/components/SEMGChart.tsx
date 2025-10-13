@@ -14,23 +14,31 @@ interface SEMGChartProps {
  * Optimized sEMG Chart Component using react-native-gifted-charts
  *
  * Features:
- * - Fixed Y-axis: 0 to 1000 (constant scale)
+ * - Fixed Y-axis: -500 to +500 (zero-centered, constant scale)
  * - Auto-scroll for continuous real-time data
  * - Grid divisions based on sample rate
  * - High performance for real-time streaming
+ * - Memoized to prevent unnecessary re-renders
+ * - Red zero-line (X-axis) for clear reference
  */
-export function SEMGChart({ data, sampleRate, dataType, autoScroll = true }: SEMGChartProps) {
+export const SEMGChart = React.memo(function SEMGChart({ data, sampleRate, dataType, autoScroll = true }: SEMGChartProps) {
     const scrollViewRef = useRef<ScrollView>(null);
     const previousDataLength = useRef(0);
+    const lastScrollTime = useRef(0);
     const screenWidth = Dimensions.get('window').width;
 
-    // Auto-scroll effect when new data arrives
+    // Auto-scroll effect with throttling (max 5 times per second)
     useEffect(() => {
-        if (autoScroll && data.length > previousDataLength.current && scrollViewRef.current) {
-            // Small delay to ensure layout is complete
-            setTimeout(() => {
-                scrollViewRef.current?.scrollToEnd({ animated: true });
-            }, 50);
+        const now = Date.now();
+        const shouldScroll = autoScroll &&
+                           data.length > previousDataLength.current &&
+                           scrollViewRef.current &&
+                           (now - lastScrollTime.current) > 200; // Throttle to 200ms (5 Hz)
+
+        if (shouldScroll) {
+            lastScrollTime.current = now;
+            // Non-animated scroll for better performance
+            scrollViewRef.current?.scrollToEnd({ animated: false });
         }
         previousDataLength.current = data.length;
     }, [data.length, autoScroll]);
@@ -104,40 +112,38 @@ export function SEMGChart({ data, sampleRate, dataType, autoScroll = true }: SEM
                 <LineChart
                     data={chartData}
                     width={chartWidth}
-                    height={250}
-                    maxValue={1000}
-                    noOfSections={5}
+                    height={125}
+                    maxValue={100}
+                    mostNegativeValue={-100}
+                    noOfSections={10}
                     spacing={spacing}
-                    thickness={2}
+                    thickness={1}
                     color="#2196F3"
-                    curved
+                    curved={false}
                     rulesType="solid"
                     rulesColor="#e0e0e0"
-                    showVerticalLines
+                    showVerticalLines={false}
                     verticalLinesColor="#f0f0f0"
                     yAxisColor="#999"
                     yAxisThickness={1}
                     yAxisTextStyle={{ color: '#666', fontSize: 11 }}
                     yAxisLabelWidth={40}
-                    xAxisColor="#999"
-                    xAxisThickness={1}
-                    animateOnDataChange
-                    animationDuration={200}
-                    hideDataPoints={data.length > 500}
-                    dataPointsColor="#2196F3"
-                    dataPointsRadius={2}
-                    areaChart
-                    startFillColor="#2196F3"
-                    startOpacity={0.1}
-                    endFillColor="#2196F3"
-                    endOpacity={0.01}
+                    xAxisColor="#FF0000"
+                    xAxisThickness={2}
+                    animateOnDataChange={false}
+                    hideDataPoints={true}
+                    areaChart={false}
+                    isAnimated={false}
+                    startOpacity={1}
+                    endOpacity={1}
+                    allowNegativeValues={true}
                 />
             </ScrollView>
 
             {/* Axis Labels */}
             <View style={styles.axisLabels}>
                 <Text style={styles.xAxisLabel}>Time (seconds)</Text>
-                <Text style={styles.yAxisLabel}>Amplitude (0 - 1000 fixed)</Text>
+                <Text style={styles.yAxisLabel}>Amplitude (-500 to +500, zero-centered)</Text>
             </View>
 
             {/* Grid Info */}
@@ -153,7 +159,7 @@ export function SEMGChart({ data, sampleRate, dataType, autoScroll = true }: SEM
             </View>
         </View>
     );
-}
+});
 
 const styles = StyleSheet.create({
     container: {

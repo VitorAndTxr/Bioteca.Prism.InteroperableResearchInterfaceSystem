@@ -57,6 +57,11 @@ export function BluetoothContextProvider(props: BluetoothContextProviderProps) {
     const [streamData, setStreamData] = useState<StreamDataPacket[]>([]);
     const [lastStreamTimestamp, setLastStreamTimestamp] = useState<number>(0);
 
+    // Batch buffer for reducing UI updates (5 updates per second)
+    const streamBufferRef = React.useRef<StreamDataPacket[]>([]);
+    const lastUpdateTimeRef = React.useRef<number>(0);
+    const batchIntervalRef = React.useRef<NodeJS.Timeout | null>(null);
+
     // Session state
     const [sessionStatus, setSessionStatus] = useState<SessionStatus | null>(null);
     const [isSessionActive, setIsSessionActive] = useState(false);
@@ -66,6 +71,55 @@ export function BluetoothContextProvider(props: BluetoothContextProviderProps) {
     useEffect(() => {
         initBluetooth();
     }, []);
+
+    // Flush buffer function - updates UI with batched packets
+    const flushStreamBuffer = React.useCallback(() => {
+        if (streamBufferRef.current.length > 0) {
+            const packetsToAdd = [...streamBufferRef.current];
+            streamBufferRef.current = [];
+
+            setStreamData(prev => {
+                const updated = [...prev, ...packetsToAdd];
+                // Keep only last 500 packets (~5 seconds at 100Hz) for better performance
+                if (updated.length > 500) {
+                    return updated.slice(-500);
+                }
+                return updated;
+            });
+
+            // Update last timestamp
+            const lastPacket = packetsToAdd[packetsToAdd.length - 1];
+            if (lastPacket) {
+                setLastStreamTimestamp(lastPacket.timestamp);
+            }
+        }
+    }, []);
+
+    // Start batch interval when streaming starts
+    React.useEffect(() => {
+        if (isStreaming) {
+            // Flush buffer every 500ms (2 times per second for better performance)
+            batchIntervalRef.current = setInterval(() => {
+                // Use requestAnimationFrame to avoid blocking UI thread
+                requestAnimationFrame(() => {
+                    flushStreamBuffer();
+                });
+            }, 500);
+        } else {
+            // Clear interval and flush remaining data when stopping
+            if (batchIntervalRef.current) {
+                clearInterval(batchIntervalRef.current);
+                batchIntervalRef.current = null;
+            }
+            flushStreamBuffer(); // Flush any remaining data
+        }
+
+        return () => {
+            if (batchIntervalRef.current) {
+                clearInterval(batchIntervalRef.current);
+            }
+        };
+    }, [isStreaming, flushStreamBuffer]);
 
     async function initBluetooth() {
         try {
@@ -195,7 +249,7 @@ export function BluetoothContextProvider(props: BluetoothContextProviderProps) {
                 } as ActivableBluetoothDevice);
 
                 const onRecieveListener = connectedDevice.onDataReceived((btEntry) => {
-                    console.log('Dados recebidos:', btEntry.data);
+                    // Silent processing - decode without logging for performance
                     decodeMessage(btEntry.data);
                 });
 
@@ -280,20 +334,15 @@ export function BluetoothContextProvider(props: BluetoothContextProviderProps) {
                     break;
 
                 case BluetoothProtocolFunction.StreamData:
-                    console.log("Stream Data Received");
+                    // Add to buffer - will be flushed at 5 Hz (200ms interval)
                     if (messageBody.bd && messageBody.bd.t !== undefined && messageBody.bd.v) {
                         const packet: StreamDataPacket = {
                             timestamp: messageBody.bd.t,
                             values: messageBody.bd.v as number[]
                         };
 
-                        setStreamData(prev => {
-                            const updated = [...prev, packet];
-                            return updated.slice(-1000);
-                        });
-
-                        setLastStreamTimestamp(packet.timestamp);
-                        console.log(`Timestamp: ${packet.timestamp}ms, Samples: ${packet.values.length}`);
+                        // Add to buffer instead of updating state immediately
+                        streamBufferRef.current.push(packet);
                     }
                     break;
 
@@ -377,6 +426,7 @@ export function BluetoothContextProvider(props: BluetoothContextProviderProps) {
 
             setStreamData([]);
             setLastStreamTimestamp(0);
+            streamBufferRef.current = []; // Clear buffer
 
             await writeToBluetooth(JSON.stringify(payload));
             console.log("Stream start requested");

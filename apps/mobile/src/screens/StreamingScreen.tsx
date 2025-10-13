@@ -35,12 +35,13 @@ export function StreamingScreen({ navigation }: StreamingScreenProps) {
     // Process stream data for chart (pass actual sample rate for 10-second window)
     const processed = useStreamData(streamData, streamConfig.rate);
 
-    // Auto-send configuration when device connects
+    // Auto-send configuration when device connects (only once per device connection)
     useEffect(() => {
         if (selectedDevice) {
             // Send configuration to device
             configureStream(streamConfig.rate, streamConfig.type);
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedDevice]);
 
     // Handle device connection

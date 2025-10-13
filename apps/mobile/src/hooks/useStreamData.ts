@@ -19,7 +19,7 @@ import { StreamDataPacket, ChartDataPoint, ProcessedStreamData, StreamType } fro
 export function useStreamData(
     streamData: StreamDataPacket[],
     sampleRate: number = 100,
-    maxBufferSeconds: number = 60
+    maxBufferSeconds: number = 30 // Increased to 30 seconds for more data points
 ): ProcessedStreamData {
 
     const processed = useMemo(() => {
@@ -34,7 +34,7 @@ export function useStreamData(
             };
         }
 
-        // Buffer window for continuous scrolling (default: 60 seconds)
+        // Buffer window for continuous scrolling (increased to 30 seconds for more data)
         const maxSamples = sampleRate * maxBufferSeconds;
 
         // Step 1: Flatten packets into individual samples with timestamps
@@ -77,15 +77,19 @@ export function useStreamData(
         // Step 3: Get baseline timestamp (first sample in entire dataset)
         const baseTimestamp = flatSamples[0].timestamp;
 
-        // Step 4: Convert to chart format (continuous relative time in seconds)
-        const chartData: ChartDataPoint[] = windowed.map((sample, index) => {
-            // Calculate absolute time from start for continuous scrolling
+        // Step 4: Convert to chart format with downsampling for performance
+        // Downsample to max 1000 points for detailed rendering
+        const downsampleRatio = Math.max(1, Math.floor(windowed.length / 1000));
+        const chartData: ChartDataPoint[] = [];
+
+        for (let i = 0; i < windowed.length; i += downsampleRatio) {
+            const sample = windowed[i];
             const absoluteTime = (sample.timestamp - baseTimestamp) / 1000;
-            return {
+            chartData.push({
                 x: absoluteTime,
                 y: sample.value
-            };
-        });
+            });
+        }
 
         // Step 5: Calculate statistics
         const values = windowed.map(s => s.value);
@@ -110,18 +114,18 @@ export function useStreamData(
 
 /**
  * Helper function to get Y-axis range
- * Fixed range: [0, 1000] for all data types
+ * Fixed range: [-500, 500] for all data types (zero-centered)
  *
  * @param dataType - 'raw', 'filtered', or 'rms' (kept for API compatibility)
  * @param minValue - Minimum value in current data (kept for API compatibility)
  * @param maxValue - Maximum value in current data (kept for API compatibility)
- * @returns [min, max] for Y-axis - always [0, 1000]
+ * @returns [min, max] for Y-axis - always [-500, 500]
  */
 export function getYAxisRange(
     dataType: StreamType,
     minValue: number,
     maxValue: number
 ): [number, number] {
-    // Fixed Y-axis range: 0 to 1000
-    return [0, 1000];
+    // Fixed Y-axis range: -500 to +500 (zero-centered)
+    return [-500, 500];
 }
