@@ -1,12 +1,12 @@
 import React, { useMemo, useRef, useEffect } from 'react';
 import { View, Text, StyleSheet, Dimensions, ScrollView } from 'react-native';
 import { LineChart } from 'react-native-gifted-charts';
-import { ChartDataPoint } from '@/hooks/useStreamData';
+import { ChartDataPoint, StreamType } from '@iris/domain';
 
 interface SEMGChartProps {
     data: ChartDataPoint[];
     sampleRate: number;
-    dataType: 'raw' | 'filtered' | 'rms';
+    dataType: StreamType;
     autoScroll?: boolean; // Enable auto-scroll for new data
 }
 

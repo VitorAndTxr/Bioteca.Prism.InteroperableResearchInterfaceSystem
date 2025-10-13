@@ -1,0 +1,23 @@
+{
+  "name": "@iris/domain",
+  "version": "1.0.0",
+  "description": "Shared domain models and types for IRIS applications",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "iris",
+    "domain",
+    "types",
+    "models"
+  ],
+  "author": "PRISM Project",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "~5.9.2"
+  }
+}

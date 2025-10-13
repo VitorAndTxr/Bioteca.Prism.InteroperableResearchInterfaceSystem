@@ -1,19 +1,5 @@
 import { useMemo } from 'react';
-import { StreamDataPacket } from '@/context/BluetoothContext';
-
-export interface ChartDataPoint {
-    x: number; // Time in seconds (relative)
-    y: number; // Signal amplitude
-}
-
-export interface ProcessedStreamData {
-    chartData: ChartDataPoint[];
-    totalSamples: number;
-    minValue: number;
-    maxValue: number;
-    avgValue: number;
-    duration: number; // Duration in seconds
-}
+import { StreamDataPacket, ChartDataPoint, ProcessedStreamData, StreamType } from '@iris/domain';
 
 /**
  * Custom hook for processing sEMG stream data for chart visualization
@@ -132,7 +118,7 @@ export function useStreamData(
  * @returns [min, max] for Y-axis - always [0, 1000]
  */
 export function getYAxisRange(
-    dataType: 'raw' | 'filtered' | 'rms',
+    dataType: StreamType,
     minValue: number,
     maxValue: number
 ): [number, number] {

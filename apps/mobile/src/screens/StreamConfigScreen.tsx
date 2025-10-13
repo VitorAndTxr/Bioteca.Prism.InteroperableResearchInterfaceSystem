@@ -8,7 +8,8 @@ import {
     Alert
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
-import { useBluetoothContext, StreamType } from '@/context/BluetoothContext';
+import { useBluetoothContext } from '@/context/BluetoothContext';
+import { StreamType } from '@iris/domain';
 
 // Navigation props (will be provided by React Navigation)
 interface StreamConfigScreenProps {

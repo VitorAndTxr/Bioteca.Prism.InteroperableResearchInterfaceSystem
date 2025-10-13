@@ -1,0 +1,92 @@
+/**
+ * Electron Main Process
+ *
+ * Manages the application lifecycle, creates windows, and handles system-level operations.
+ */
+
+import { app, BrowserWindow, ipcMain } from 'electron';
+import * as path from 'path';
+
+let mainWindow: BrowserWindow | null = null;
+
+/**
+ * Create the main application window
+ */
+function createWindow(): void {
+    mainWindow = new BrowserWindow({
+        width: 1200,
+        height: 800,
+        minWidth: 900,
+        minHeight: 600,
+        title: 'IRIS Desktop',
+        webPreferences: {
+            preload: path.join(__dirname, '../preload/preload.js'),
+            contextIsolation: true,
+            nodeIntegration: false,
+            sandbox: false
+        },
+        show: false // Don't show until ready
+    });
+
+    // Load the app
+    if (process.env.NODE_ENV === 'development') {
+        mainWindow.loadURL('http://localhost:5173');
+        mainWindow.webContents.openDevTools();
+    } else {
+        mainWindow.loadFile(path.join(__dirname, '../renderer/index.html'));
+    }
+
+    // Show window when ready
+    mainWindow.once('ready-to-show', () => {
+        mainWindow?.show();
+    });
+
+    // Handle window closed
+    mainWindow.on('closed', () => {
+        mainWindow = null;
+    });
+}
+
+/**
+ * App lifecycle: Ready
+ */
+app.whenReady().then(() => {
+    createWindow();
+
+    app.on('activate', () => {
+        // On macOS, re-create window when dock icon is clicked
+        if (BrowserWindow.getAllWindows().length === 0) {
+            createWindow();
+        }
+    });
+});
+
+/**
+ * App lifecycle: All windows closed
+ */
+app.on('window-all-closed', () => {
+    // On macOS, keep app running until Cmd+Q
+    if (process.platform !== 'darwin') {
+        app.quit();
+    }
+});
+
+/**
+ * IPC Handlers
+ */
+
+// Example: Get app version
+ipcMain.handle('app:getVersion', () => {
+    return app.getVersion();
+});
+
+// Example: Get app path
+ipcMain.handle('app:getPath', (_event, name: string) => {
+    return app.getPath(name as any);
+});
+
+// Add more IPC handlers as needed for:
+// - File system operations
+// - Database operations
+// - System notifications
+// - Export functionality
