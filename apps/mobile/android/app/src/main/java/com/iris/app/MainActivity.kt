@@ -1,4 +1,4 @@
-package com.interoperableresearchinterfacesystem
+package com.iris.app
 
 import android.os.Build
 import android.os.Bundle
