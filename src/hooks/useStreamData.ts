@@ -20,18 +20,20 @@ export interface ProcessedStreamData {
  *
  * Features:
  * - Flattens packet arrays into individual samples
- * - Applies sliding window (keeps last maxSamples)
+ * - Supports continuous scrolling with auto-scroll
  * - Converts timestamps to relative seconds
  * - Calculates statistics (min, max, avg)
  * - Optimized with useMemo for performance
  *
  * @param streamData - Array of StreamDataPackets from BluetoothContext
- * @param maxSamples - Maximum number of samples to display (default: 500)
+ * @param sampleRate - Current sampling rate in Hz (from streamConfig)
+ * @param maxBufferSeconds - Maximum buffer duration in seconds (default: 60s)
  * @returns Processed data ready for chart rendering
  */
 export function useStreamData(
     streamData: StreamDataPacket[],
-    maxSamples: number = 500
+    sampleRate: number = 100,
+    maxBufferSeconds: number = 60
 ): ProcessedStreamData {
 
     const processed = useMemo(() => {
@@ -46,6 +48,9 @@ export function useStreamData(
             };
         }
 
+        // Buffer window for continuous scrolling (default: 60 seconds)
+        const maxSamples = sampleRate * maxBufferSeconds;
+
         // Step 1: Flatten packets into individual samples with timestamps
         const flatSamples: { timestamp: number; value: number }[] = [];
 
@@ -59,7 +64,7 @@ export function useStreamData(
             const nextPacket = streamData[streamData.indexOf(packet) + 1];
             const timePerSample = nextPacket
                 ? (nextPacket.timestamp - packet.timestamp) / samplesInPacket
-                : 10; // Default to 10ms if no next packet
+                : 1000 / sampleRate; // Use actual sample rate
 
             packet.values.forEach((value, index) => {
                 flatSamples.push({
@@ -83,21 +88,25 @@ export function useStreamData(
             };
         }
 
-        // Step 3: Get baseline timestamp (first sample in window)
-        const baseTimestamp = windowed[0].timestamp;
+        // Step 3: Get baseline timestamp (first sample in entire dataset)
+        const baseTimestamp = flatSamples[0].timestamp;
 
-        // Step 4: Convert to chart format (relative time in seconds)
-        const chartData: ChartDataPoint[] = windowed.map(sample => ({
-            x: (sample.timestamp - baseTimestamp) / 1000, // Convert ms to seconds
-            y: sample.value
-        }));
+        // Step 4: Convert to chart format (continuous relative time in seconds)
+        const chartData: ChartDataPoint[] = windowed.map((sample, index) => {
+            // Calculate absolute time from start for continuous scrolling
+            const absoluteTime = (sample.timestamp - baseTimestamp) / 1000;
+            return {
+                x: absoluteTime,
+                y: sample.value
+            };
+        });
 
         // Step 5: Calculate statistics
         const values = windowed.map(s => s.value);
         const minValue = Math.min(...values);
         const maxValue = Math.max(...values);
         const avgValue = values.reduce((sum, val) => sum + val, 0) / values.length;
-        const duration = (windowed[windowed.length - 1].timestamp - baseTimestamp) / 1000;
+        const duration = (windowed.length - 1) / sampleRate; // Actual duration based on sample count
 
         return {
             chartData,
@@ -108,39 +117,25 @@ export function useStreamData(
             duration
         };
 
-    }, [streamData, maxSamples]);
+    }, [streamData, sampleRate, maxBufferSeconds]);
 
     return processed;
 }
 
 /**
- * Helper function to get Y-axis range based on data type
+ * Helper function to get Y-axis range
+ * Fixed range: [0, 1000] for all data types
  *
- * @param dataType - 'raw', 'filtered', or 'rms'
- * @param minValue - Minimum value in current data
- * @param maxValue - Maximum value in current data
- * @returns [min, max] for Y-axis
+ * @param dataType - 'raw', 'filtered', or 'rms' (kept for API compatibility)
+ * @param minValue - Minimum value in current data (kept for API compatibility)
+ * @param maxValue - Maximum value in current data (kept for API compatibility)
+ * @returns [min, max] for Y-axis - always [0, 1000]
  */
 export function getYAxisRange(
     dataType: 'raw' | 'filtered' | 'rms',
     minValue: number,
     maxValue: number
 ): [number, number] {
-    switch (dataType) {
-        case 'raw':
-            // 12-bit ADC range
-            return [0, 4095];
-
-        case 'filtered':
-            // Dynamic range with padding
-            const padding = (maxValue - minValue) * 0.1;
-            return [minValue - padding, maxValue + padding];
-
-        case 'rms':
-            // RMS typically 0-200
-            return [0, Math.max(200, maxValue * 1.2)];
-
-        default:
-            return [0, 100];
-    }
+    // Fixed Y-axis range: 0 to 1000
+    return [0, 1000];
 }

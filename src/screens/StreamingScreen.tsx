@@ -6,12 +6,11 @@ import {
     TouchableOpacity,
     ScrollView,
     FlatList,
-    Dimensions,
     Alert
 } from 'react-native';
-import { LineChart } from 'react-native-chart-kit';
 import { useBluetoothContext } from '@/context/BluetoothContext';
-import { useStreamData, getYAxisRange } from '@/hooks/useStreamData';
+import { useStreamData } from '@/hooks/useStreamData';
+import { SEMGChart } from '@/components/SEMGChart';
 
 interface StreamingScreenProps {
     navigation: any;
@@ -33,8 +32,8 @@ export function StreamingScreen({ navigation }: StreamingScreenProps) {
         configureStream
     } = useBluetoothContext();
 
-    // Process stream data for chart
-    const processed = useStreamData(streamData, 500);
+    // Process stream data for chart (pass actual sample rate for 10-second window)
+    const processed = useStreamData(streamData, streamConfig.rate);
 
     // Auto-send configuration when device connects
     useEffect(() => {
@@ -109,51 +108,6 @@ export function StreamingScreen({ navigation }: StreamingScreenProps) {
         );
     };
 
-    // Get Y-axis range for chart
-    const [yMin, yMax] = getYAxisRange(
-        streamConfig.type,
-        processed.minValue,
-        processed.maxValue
-    );
-
-    // Chart configuration
-    const screenWidth = Dimensions.get('window').width;
-    const chartConfig = {
-        backgroundColor: '#fff',
-        backgroundGradientFrom: '#fff',
-        backgroundGradientTo: '#fff',
-        decimalPlaces: 0,
-        color: (opacity = 1) => `rgba(33, 150, 243, ${opacity})`,
-        labelColor: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-        style: {
-            borderRadius: 16,
-        },
-        propsForDots: {
-            r: '0', // No dots for smooth line
-        },
-        propsForBackgroundLines: {
-            strokeDasharray: '',
-            stroke: '#e0e0e0',
-        },
-    };
-
-    // Prepare chart data
-    const chartData = {
-        labels: processed.chartData.length > 0
-            ? [
-                processed.chartData[0].x.toFixed(1),
-                processed.chartData[Math.floor(processed.chartData.length / 2)]?.x.toFixed(1) || '',
-                processed.chartData[processed.chartData.length - 1].x.toFixed(1)
-            ]
-            : ['0', '5', '10'],
-        datasets: [
-            {
-                data: processed.chartData.length > 0
-                    ? processed.chartData.map(d => d.y)
-                    : [0, 0, 0],
-            },
-        ],
-    };
 
     return (
         <ScrollView style={styles.container}>
@@ -253,22 +207,11 @@ export function StreamingScreen({ navigation }: StreamingScreenProps) {
                     <Text style={styles.sectionTitle}>Signal Visualization</Text>
 
                     {processed.chartData.length > 0 ? (
-                        <View style={styles.chartContainer}>
-                            <LineChart
-                                data={chartData}
-                                width={screenWidth - 60}
-                                height={220}
-                                chartConfig={chartConfig}
-                                bezier
-                                style={styles.chart}
-                                fromZero={streamConfig.type === 'raw' || streamConfig.type === 'rms'}
-                                yAxisSuffix=""
-                                yAxisInterval={1}
-                            />
-                            <View style={styles.chartLabels}>
-                                <Text style={styles.chartLabel}>Time (seconds)</Text>
-                            </View>
-                        </View>
+                        <SEMGChart
+                            data={processed.chartData}
+                            sampleRate={streamConfig.rate}
+                            dataType={streamConfig.type}
+                        />
                     ) : (
                         <View style={styles.noDataBox}>
                             <Text style={styles.noDataText}>
@@ -535,21 +478,6 @@ const styles = StyleSheet.create({
         fontSize: 24,
         color: '#2196F3',
         marginLeft: 12,
-    },
-    chartContainer: {
-        alignItems: 'center',
-    },
-    chart: {
-        marginVertical: 8,
-        borderRadius: 16,
-    },
-    chartLabels: {
-        marginTop: 8,
-    },
-    chartLabel: {
-        fontSize: 12,
-        color: '#666',
-        textAlign: 'center',
     },
     noDataBox: {
         padding: 40,
