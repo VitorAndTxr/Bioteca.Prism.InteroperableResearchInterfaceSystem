@@ -22,7 +22,9 @@
       "Bash(cat:*)",
       "Bash(dir:*)",
       "Bash(npm run dev:*)",
-      "mcp__playwright__browser_hover"
+      "mcp__playwright__browser_hover",
+      "Bash(npx storybook@latest init:*)",
+      "Bash(npm run storybook:*)"
     ],
     "deny": [],
     "ask": []

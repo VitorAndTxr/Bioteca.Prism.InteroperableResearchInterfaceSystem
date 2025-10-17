@@ -8,12 +8,15 @@ import './App.css';
 // Import shared domain types
 import type { SessionMetadata } from '@iris/domain';
 
-// TEMPORARY: Import Button demo page for testing
+// TEMPORARY: Import demo pages for testing
 import ButtonDemo from './screens/ButtonDemo';
+import InputDemo from './screens/InputDemo';
+
+type DemoPage = 'home' | 'button' | 'input';
 
 function App() {
     const [version, setVersion] = useState<string>('');
-    const [showDemo, setShowDemo] = useState<boolean>(false);
+    const [currentPage, setCurrentPage] = useState<DemoPage>('home');
 
     useEffect(() => {
         // Get app version from Electron
@@ -22,9 +25,13 @@ function App() {
         }
     }, []);
 
-    // TEMPORARY: Show button demo page
-    if (showDemo) {
-        return <ButtonDemo />;
+    // TEMPORARY: Show demo pages
+    if (currentPage === 'button') {
+        return <ButtonDemo onBack={() => setCurrentPage('home')} />;
+    }
+
+    if (currentPage === 'input') {
+        return <InputDemo onBack={() => setCurrentPage('home')} />;
     }
 
     return (
@@ -42,10 +49,10 @@ function App() {
                         Application management and data analysis for sEMG/FES research.
                     </p>
 
-                    {/* TEMPORARY: Button to show demo page */}
-                    <div style={{ marginBottom: '2rem', textAlign: 'center' }}>
+                    {/* TEMPORARY: Buttons to show demo pages */}
+                    <div style={{ marginBottom: '2rem', textAlign: 'center', display: 'flex', gap: '1rem', justifyContent: 'center' }}>
                         <button
-                            onClick={() => setShowDemo(true)}
+                            onClick={() => setCurrentPage('button')}
                             style={{
                                 padding: '12px 24px',
                                 fontSize: '16px',
@@ -58,7 +65,23 @@ function App() {
                                 boxShadow: '0 4px 8px rgba(73, 162, 168, 0.3)'
                             }}
                         >
-                            🎨 View Button Component Demo
+                            🎨 Button Demo
+                        </button>
+                        <button
+                            onClick={() => setCurrentPage('input')}
+                            style={{
+                                padding: '12px 24px',
+                                fontSize: '16px',
+                                fontWeight: '600',
+                                backgroundColor: '#7B6FDB',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '8px',
+                                cursor: 'pointer',
+                                boxShadow: '0 4px 8px rgba(123, 111, 219, 0.3)'
+                            }}
+                        >
+                            📝 Input Demo
                         </button>
                     </div>
 

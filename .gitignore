@@ -40,3 +40,6 @@ yarn-error.*
 /ios
 /android
 prompt.md
+
+*storybook.log
+storybook-static

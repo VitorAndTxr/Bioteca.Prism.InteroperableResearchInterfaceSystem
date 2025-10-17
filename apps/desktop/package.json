@@ -15,7 +15,9 @@
     "package": "electron-builder",
     "package:win": "electron-builder --win",
     "package:mac": "electron-builder --mac",
-    "package:linux": "electron-builder --linux"
+    "package:linux": "electron-builder --linux",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
   },
   "keywords": [
     "electron",
@@ -34,6 +36,12 @@
     "recharts": "^2.15.0"
   },
   "devDependencies": {
+    "@chromatic-com/storybook": "^4.1.1",
+    "@storybook/addon-a11y": "^9.1.13",
+    "@storybook/addon-docs": "^9.1.13",
+    "@storybook/addon-onboarding": "^9.1.13",
+    "@storybook/addon-vitest": "^9.1.13",
+    "@storybook/react-vite": "^9.1.13",
     "@types/node": "^22.10.5",
     "@types/react": "^18.3.0",
     "@types/react-dom": "^18.3.0",
@@ -41,8 +49,13 @@
     "concurrently": "^9.1.2",
     "electron": "^28.3.3",
     "electron-builder": "^24.13.3",
+    "storybook": "^9.1.13",
     "typescript": "~5.9.2",
-    "vite": "^6.0.7"
+    "vite": "^6.0.7",
+    "vitest": "^3.2.4",
+    "@vitest/browser": "^3.2.4",
+    "playwright": "^1.56.1",
+    "@vitest/coverage-v8": "^3.2.4"
   },
   "build": {
     "appId": "com.prism.iris.desktop",
@@ -55,13 +68,19 @@
       "package.json"
     ],
     "win": {
-      "target": ["nsis"]
+      "target": [
+        "nsis"
+      ]
     },
     "mac": {
-      "target": ["dmg"]
+      "target": [
+        "dmg"
+      ]
     },
     "linux": {
-      "target": ["AppImage"]
+      "target": [
+        "AppImage"
+      ]
     }
   }
 }

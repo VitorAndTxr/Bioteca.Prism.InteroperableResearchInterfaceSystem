@@ -1,0 +1,458 @@
+/**
+ * Input Component Styles
+ * Based on IRIS Design System - Figma node 2803-2414
+ *
+ * Design tokens from Figma (extracted via MCP):
+ * - Font family: Inter (Regular, Semi Bold)
+ * - Border radius: 8px
+ * - Border color: #B0B0B0 (Neutral/400)
+ * - Text color: #1F1F1F (Neutral/900)
+ * - Placeholder color: #B0B0B0 (Neutral/400)
+ * - Label color: #727272 (Neutral/600)
+ * - Error color: #E11D48 (Status/Rose 600)
+ * - Background: #FFFFFF (Basic/White)
+ *
+ * State Colors (from Figma nodes):
+ * DEFAULT (1406-2252):
+ *   - Border: #B0B0B0 (Neutral/400)
+ * HOVER (2427-10193):
+ *   - Border: #919191 (Neutral/500)
+ * ACTIVE/FOCUS (1406-2291):
+ *   - Outer border: 2px #6BE6EF (Brand/Primary/200)
+ *   - Inner border: 1px #49A2A8 (Brand/Primary/500)
+ * ERROR (1746-4478):
+ *   - Border: #E11D48 (Status/Rose 600)
+ *
+ * Sizes:
+ * - Small: 36px height, 8px padding, 14px font
+ * - Medium: 44px height, 12px padding, 16px font
+ * - Big: 52px height, 16px padding, 18px font
+ */
+
+/* ===== CONTAINER ===== */
+.iris-input-container {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.iris-input-container--full-width {
+    width: 100%;
+}
+
+/* ===== LABEL ===== */
+.iris-input__label {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 20px;
+    color: #727272;
+    margin: 0;
+    user-select: none;
+}
+
+.iris-input__required {
+    color: #E11D48;
+    margin-left: 4px;
+}
+
+/* ===== WRAPPER (contains input + icons + prefix/suffix) ===== */
+.iris-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    background-color: #FFFFFF;
+    border: 1px solid #B0B0B0;
+    border-radius: 8px;
+    transition: all 0.2s ease-in-out;
+}
+
+.iris-input-wrapper--full-width {
+    width: 100%;
+}
+
+/* ===== SIZE VARIANTS ===== */
+
+/* Small */
+.iris-input-wrapper--small {
+    min-height: 36px;
+    gap: 8px;
+    padding: 0 8px;
+}
+
+.iris-input-wrapper--small .iris-input__icon svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* Medium (default) */
+.iris-input-wrapper--medium {
+    min-height: 44px;
+    gap: 8px;
+    padding: 0 12px;
+}
+
+.iris-input-wrapper--medium .iris-input__icon svg {
+    width: 20px;
+    height: 20px;
+}
+
+/* Big */
+.iris-input-wrapper--big {
+    min-height: 52px;
+    gap: 12px;
+    padding: 0 16px;
+}
+
+.iris-input-wrapper--big .iris-input__icon svg {
+    width: 24px;
+    height: 24px;
+}
+
+/* ===== INPUT ELEMENT ===== */
+.iris-input {
+    /* Reset */
+    margin: 0;
+    border: none;
+    background: none;
+    outline: none;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+
+    /* Layout */
+    flex: 1;
+    width: 100%;
+    min-width: 0; /* Allow text to shrink */
+
+    /* Typography */
+    font-weight: 400;
+    color: #1F1F1F;
+    line-height: 1.5;
+
+    /* Remove native appearance */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+
+/* Size-specific typography */
+.iris-input--small {
+    font-size: 14px;
+}
+
+.iris-input--medium {
+    font-size: 16px;
+}
+
+.iris-input--big {
+    font-size: 18px;
+}
+
+/* Placeholder styling */
+.iris-input::placeholder {
+    color: #B0B0B0;
+    opacity: 1;
+}
+
+.iris-input:-ms-input-placeholder {
+    color: #B0B0B0;
+}
+
+.iris-input::-ms-input-placeholder {
+    color: #B0B0B0;
+}
+
+/* ===== TEXTAREA SPECIFIC ===== */
+.iris-input--textarea {
+    padding: 10px 0;
+    min-height: 80px;
+    resize: vertical;
+}
+
+.iris-input--textarea.iris-input--small {
+    padding: 8px 0;
+    min-height: 60px;
+}
+
+.iris-input--textarea.iris-input--big {
+    padding: 12px 0;
+    min-height: 100px;
+}
+
+/* ===== STATE VARIANTS ===== */
+
+/* Hover state - Only applies when NOT focused */
+.iris-input-wrapper:hover:not(.iris-input-wrapper--disabled):not(.iris-input-wrapper--error):not(:focus-within) {
+    border-color: #919191;  /* ✅ Corrected from #49A2A8 to match Figma node 2427-10193 (Neutral/500) */
+}
+
+/* Active/Focus state - Double border effect from Figma node 1406-2291 */
+.iris-input-wrapper:focus-within:not(.iris-input-wrapper--disabled) {
+    border: 2px solid #6BE6EF;  /* ✅ Outer border: Brand/Primary/200 */
+    box-shadow: inset 0 0 0 1px #49A2A8;  /* ✅ Inner border: Brand/Primary/500 */
+}
+
+.iris-input:focus {
+    outline: none;
+}
+
+/* Disabled state */
+.iris-input-wrapper--disabled {
+    background-color: #FCFCFC;
+    border-color: #E5E5E5;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.iris-input:disabled {
+    cursor: not-allowed;
+    color: #919191;
+}
+
+.iris-input:disabled::placeholder {
+    color: #CCCCCC;
+}
+
+/* ===== VALIDATION STATES ===== */
+
+/* Error state */
+.iris-input-wrapper--error {
+    border-color: #E11D48;
+}
+
+.iris-input-wrapper--error:focus-within {
+    border-color: #E11D48;
+    box-shadow: 0 0 0 2px rgba(225, 29, 72, 0.2);
+}
+
+/* Success state */
+.iris-input-wrapper--success {
+    border-color: #10B981;
+}
+
+.iris-input-wrapper--success:focus-within {
+    border-color: #10B981;
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+}
+
+/* Warning state */
+.iris-input-wrapper--warning {
+    border-color: #F59E0B;
+}
+
+.iris-input-wrapper--warning:focus-within {
+    border-color: #F59E0B;
+    box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.2);
+}
+
+/* ===== ICON STYLING ===== */
+.iris-input__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: #727272;
+}
+
+.iris-input__icon svg {
+    display: block;
+}
+
+.iris-input-wrapper--error .iris-input__icon {
+    color: #E11D48;
+}
+
+.iris-input-wrapper--success .iris-input__icon {
+    color: #10B981;
+}
+
+.iris-input-wrapper--warning .iris-input__icon {
+    color: #F59E0B;
+}
+
+/* ===== PREFIX/SUFFIX STYLING ===== */
+.iris-input__prefix,
+.iris-input__suffix {
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-weight: 400;
+    color: #727272;
+    user-select: none;
+}
+
+.iris-input--small + .iris-input__prefix,
+.iris-input--small ~ .iris-input__suffix {
+    font-size: 14px;
+}
+
+.iris-input--medium + .iris-input__prefix,
+.iris-input--medium ~ .iris-input__suffix {
+    font-size: 16px;
+}
+
+.iris-input--big + .iris-input__prefix,
+.iris-input--big ~ .iris-input__suffix {
+    font-size: 18px;
+}
+
+/* ===== FOOTER (helper text, error message, character count) ===== */
+.iris-input__footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+    min-height: 20px;
+}
+
+.iris-input__helper-text {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 16px;
+    color: #727272;
+    flex: 1;
+}
+
+.iris-input__error {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 16px;
+    color: #E11D48;
+    flex: 1;
+}
+
+.iris-input__character-count {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 16px;
+    color: #919191;
+    flex-shrink: 0;
+    margin-left: auto;
+}
+
+/* Character count warning when approaching limit */
+.iris-input-wrapper--error + .iris-input__footer .iris-input__character-count {
+    color: #E11D48;
+}
+
+/* ===== ICON POSITION ADJUSTMENTS ===== */
+
+/* Icon left */
+.iris-input-wrapper--icon-left .iris-input {
+    padding-left: 0;
+}
+
+/* Icon right */
+.iris-input-wrapper--icon-right .iris-input {
+    padding-right: 0;
+}
+
+/* Icon both */
+.iris-input-wrapper--icon-both .iris-input {
+    padding-left: 0;
+    padding-right: 0;
+}
+
+/* ===== RESPONSIVE ADJUSTMENTS ===== */
+
+@media (max-width: 768px) {
+    .iris-input-wrapper--big {
+        min-height: 48px;
+        padding: 0 14px;
+    }
+
+    .iris-input--big {
+        font-size: 16px;
+    }
+
+    .iris-input-wrapper--medium {
+        min-height: 40px;
+        padding: 0 10px;
+    }
+
+    .iris-input--medium {
+        font-size: 14px;
+    }
+}
+
+/* ===== ACCESSIBILITY ENHANCEMENTS ===== */
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .iris-input-wrapper {
+        border-width: 2px;
+    }
+
+    .iris-input-wrapper:focus-within {
+        border-width: 3px;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    .iris-input-wrapper,
+    .iris-input {
+        transition: none;
+    }
+}
+
+/* Print styles */
+@media print {
+    .iris-input-wrapper {
+        border: 1px solid #000;
+        background: white !important;
+        box-shadow: none !important;
+    }
+
+    .iris-input {
+        color: #000 !important;
+    }
+}
+
+/* ===== AUTOFILL STYLING ===== */
+
+/* Override browser autofill styles */
+.iris-input:-webkit-autofill,
+.iris-input:-webkit-autofill:hover,
+.iris-input:-webkit-autofill:focus {
+    -webkit-text-fill-color: #1F1F1F;
+    -webkit-box-shadow: 0 0 0 1000px #FFFFFF inset;
+    transition: background-color 5000s ease-in-out 0s;
+}
+
+.iris-input-wrapper--disabled .iris-input:-webkit-autofill {
+    -webkit-text-fill-color: #919191;
+    -webkit-box-shadow: 0 0 0 1000px #FCFCFC inset;
+}
+
+/* ===== BROWSER-SPECIFIC FIXES ===== */
+
+/* Remove IE clear button */
+.iris-input::-ms-clear {
+    display: none;
+}
+
+/* Remove IE reveal button for password inputs */
+.iris-input::-ms-reveal {
+    display: none;
+}
+
+/* Remove Chrome/Safari search cancel button */
+.iris-input[type="search"]::-webkit-search-cancel-button {
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+/* Remove Firefox number input spinners */
+.iris-input[type="number"] {
+    -moz-appearance: textfield;
+}
+
+.iris-input[type="number"]::-webkit-inner-spin-button,
+.iris-input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
