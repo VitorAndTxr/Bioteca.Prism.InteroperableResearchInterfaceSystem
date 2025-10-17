@@ -4,7 +4,18 @@
       "Bash(npx expo run:android:*)",
       "Bash(./gradlew:*)",
       "Bash(npm install:*)",
-      "Bash(npm run type-check:*)"
+      "Bash(npm run type-check:*)",
+      "mcp__figma-desktop__get_metadata",
+      "mcp__figma-desktop__get_screenshot",
+      "Bash(mkdir:*)",
+      "mcp__playwright__browser_navigate",
+      "mcp__playwright__browser_wait_for",
+      "mcp__playwright__browser_snapshot",
+      "mcp__playwright__browser_take_screenshot",
+      "mcp__playwright__browser_click",
+      "Bash(curl:*)",
+      "mcp__playwright__browser_close",
+      "Bash(echo:*)"
     ],
     "deny": [],
     "ask": []

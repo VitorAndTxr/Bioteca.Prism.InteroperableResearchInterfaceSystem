@@ -554,6 +554,104 @@ Currently, there are no automated tests configured. Manual testing workflow:
 - **Data Visualization**: No real-time chart components for visualizing sEMG stream data yet
 - **Data Persistence**: Stream data is stored in memory only (max 1000 packets); no local storage or backend submission
 
+## Documentation Structure
+
+**All development documentation is organized in `/docs` directory at the project root.**
+
+### Documentation Organization
+
+```
+docs/
+├── README.md                          # Main documentation hub
+├── DOCUMENTATION_GUIDELINES.md        # Standards for writing documentation
+├── architecture/                      # System design and architecture
+│   ├── README.md
+│   ├── ARCHITECTURE_OVERVIEW.md
+│   ├── BLUETOOTH_PROTOCOL.md
+│   ├── STATE_MANAGEMENT.md
+│   └── COMPONENT_STRUCTURE.md
+├── setup/                             # Setup and configuration
+│   ├── README.md
+│   ├── QUICK_START.md
+│   ├── BLUETOOTH_SETUP.md
+│   └── ENVIRONMENT_SETUP.md
+├── development/                       # Development guides
+│   ├── README.md
+│   ├── DEVELOPMENT_GUIDE.md
+│   ├── CODE_PATTERNS.md
+│   ├── TYPESCRIPT_PATTERNS.md
+│   └── TESTING_GUIDE.md
+├── api/                               # API reference
+│   ├── README.md
+│   ├── BLUETOOTH_COMMANDS.md
+│   ├── CONTEXT_API.md
+│   └── HOOKS_REFERENCE.md
+├── features/                          # Feature documentation
+│   ├── README.md
+│   ├── STREAMING.md
+│   ├── FES_SESSION_CONTROL.md
+│   └── DEVICE_CONNECTION.md
+├── implementation/                    # Implementation details
+│   ├── IMPLEMENTATION_SUMMARY.md
+│   └── STREAMING_IMPLEMENTATION.md
+├── troubleshooting/                   # Problem-solving guides
+│   ├── COMMON_ISSUES.md
+│   ├── DEBUGGING_GUIDE.md
+│   ├── ANDROID_ISSUES.md
+│   └── WINDOWS_LONG_PATH_FIX.md
+└── deployment/                        # Build and deployment
+    ├── PRODUCTION_BUILD.md
+    ├── EAS_BUILD.md
+    └── APK_DISTRIBUTION.md
+```
+
+### Quick Navigation for Different Roles
+
+**New Developer?**
+1. Start: `docs/setup/QUICK_START.md`
+2. Learn: `docs/architecture/ARCHITECTURE_OVERVIEW.md`
+3. Code: `docs/development/CODE_PATTERNS.md`
+
+**Implementing a Feature?**
+1. Design: `docs/architecture/`
+2. Implement: `docs/development/DEVELOPMENT_GUIDE.md`
+3. Test: `docs/development/TESTING_GUIDE.md`
+4. Reference: `docs/api/`
+
+**Having Issues?**
+- Troubleshooting: `docs/troubleshooting/COMMON_ISSUES.md`
+- Debugging: `docs/troubleshooting/DEBUGGING_GUIDE.md`
+
+**AI Assistant (Claude Code)?**
+- Guidelines: `docs/DOCUMENTATION_GUIDELINES.md`
+- Architecture: `docs/architecture/`
+- API: `docs/api/`
+- Current file: `docs/README.md`
+
+### Documentation Standards
+
+All documentation must follow standards defined in `docs/DOCUMENTATION_GUIDELINES.md`:
+
+- **Language**: English only
+- **Location**: `/docs` directory (appropriate subdirectory)
+- **File Names**: `UPPERCASE_SNAKE_CASE`
+- **Format**: Markdown with consistent styling
+- **Quality**: Accurate, current, with examples
+- **Links**: Relative paths, prefer internal references
+
+### Key Documentation Files
+
+| File | Purpose |
+|------|---------|
+| `docs/README.md` | Main documentation hub with full navigation |
+| `docs/DOCUMENTATION_GUIDELINES.md` | Standards for writing documentation |
+| `docs/architecture/ARCHITECTURE_OVERVIEW.md` | System design and components |
+| `docs/api/BLUETOOTH_COMMANDS.md` | Complete Bluetooth protocol reference |
+| `docs/development/DEVELOPMENT_GUIDE.md` | Main development workflow |
+| `docs/implementation/IMPLEMENTATION_SUMMARY.md` | Feature status and progress |
+
+---
+
 ## Integration with PRISM Ecosystem
 
 This application is part of the larger PRISM federated research framework:

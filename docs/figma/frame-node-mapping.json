@@ -1,0 +1,171 @@
+{
+  "fileKey": "xFC8eCJcSwB9EyicTmDJ7w",
+  "fileName": "I.R.I.S.-Prototype",
+  "baseUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype",
+  "mappingDate": "2025-10-17",
+  "totalFrames": 18,
+  "frames": [
+    {
+      "id": "001",
+      "name": "Login",
+      "nodeId": "6804-13742",
+      "module": "Auth",
+      "type": "Screen",
+      "priority": "High",
+      "dimensions": "1280x720"
+    },
+    {
+      "id": "002",
+      "name": "Usuários",
+      "nodeId": "6804-13670",
+      "module": "User Management",
+      "type": "Screen",
+      "priority": "High",
+      "dimensions": "1280x720"
+    },
+    {
+      "id": "003",
+      "name": "Pesquisadores",
+      "nodeId": "6804-12845",
+      "module": "User Management",
+      "type": "Screen",
+      "priority": "High",
+      "dimensions": "1280x720"
+    },
+    {
+      "id": "004",
+      "name": "Novo usuário",
+      "nodeId": "6804-12778",
+      "module": "User Management",
+      "type": "Screen",
+      "priority": "Medium",
+      "dimensions": "1280x720"
+    },
+    {
+      "id": "005",
+      "name": "Novo pesquisador",
+      "nodeId": "6804-12812",
+      "module": "User Management",
+      "type": "Screen",
+      "priority": "Medium",
+      "dimensions": "1280x720"
+    },
+    {
+      "id": "006",
+      "name": "Informações do usuário",
+      "nodeId": "6835-991",
+      "module": "User Management",
+      "type": "Modal",
+      "priority": "Medium",
+      "dimensions": "617x350"
+    },
+    {
+      "id": "007",
+      "name": "Informações do pesquisador",
+      "nodeId": "6835-1017",
+      "module": "User Management",
+      "type": "Modal",
+      "priority": "Medium",
+      "dimensions": "617x350"
+    },
+    {
+      "id": "008",
+      "name": "Novo usuário adicionado com sucesso!",
+      "nodeId": "6816-2701",
+      "module": "User Management",
+      "type": "Modal",
+      "priority": "Low",
+      "dimensions": "353x42"
+    },
+    {
+      "id": "009",
+      "name": "Novo pesquisador adicionado com sucesso!",
+      "nodeId": "6816-2702",
+      "module": "User Management",
+      "type": "Modal",
+      "priority": "Low",
+      "dimensions": "391x42"
+    },
+    {
+      "id": "010",
+      "name": "NPIs e aplicações - Solicitações",
+      "nodeId": "6804-13591",
+      "module": "NPI Management",
+      "type": "Screen",
+      "priority": "High",
+      "dimensions": "1280x720"
+    },
+    {
+      "id": "011",
+      "name": "NPIs e aplicações - Conexões ativas",
+      "nodeId": "6804-13512",
+      "module": "NPI Management",
+      "type": "Screen",
+      "priority": "High",
+      "dimensions": "1280x720"
+    },
+    {
+      "id": "012",
+      "name": "SNOMED - Região do corpo",
+      "nodeId": "6804-12924",
+      "module": "SNOMED",
+      "type": "Screen",
+      "priority": "Medium",
+      "dimensions": "1280x720"
+    },
+    {
+      "id": "013",
+      "name": "SNOMED - Estrutura do corpo",
+      "nodeId": "6804-13008",
+      "module": "SNOMED",
+      "type": "Screen",
+      "priority": "Medium",
+      "dimensions": "1280x720"
+    },
+    {
+      "id": "014",
+      "name": "SNOMED - Modificador topográfico",
+      "nodeId": "6804-13092",
+      "module": "SNOMED",
+      "type": "Screen",
+      "priority": "Medium",
+      "dimensions": "1280x720"
+    },
+    {
+      "id": "015",
+      "name": "SNOMED - Condição clínica",
+      "nodeId": "6804-13176",
+      "module": "SNOMED",
+      "type": "Screen",
+      "priority": "Medium",
+      "dimensions": "1280x720"
+    },
+    {
+      "id": "016",
+      "name": "SNOMED - Evento clínico",
+      "nodeId": "6804-13260",
+      "module": "SNOMED",
+      "type": "Screen",
+      "priority": "Medium",
+      "dimensions": "1280x720"
+    },
+    {
+      "id": "017",
+      "name": "SNOMED - Medicação",
+      "nodeId": "6804-13344",
+      "module": "SNOMED",
+      "type": "Screen",
+      "priority": "Medium",
+      "dimensions": "1280x720"
+    },
+    {
+      "id": "018",
+      "name": "SNOMED - Alergia/Intolerância",
+      "nodeId": "6804-13428",
+      "module": "SNOMED",
+      "type": "Screen",
+      "priority": "Medium",
+      "dimensions": "1280x720"
+    }
+  ]
+}

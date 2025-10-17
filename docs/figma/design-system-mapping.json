@@ -1,0 +1,265 @@
+{
+  "fileKey": "xFC8eCJcSwB9EyicTmDJ7w",
+  "fileName": "I.R.I.S.-Prototype",
+  "page": "Design System",
+  "baseUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype",
+  "mappingDate": "2025-10-17",
+  "totalComponents": 33,
+  "components": [
+    {
+      "id": "DS-001",
+      "name": "Temporary notifications",
+      "nodeId": "2803-4053",
+      "category": "Feedback",
+      "type": "Frame",
+      "dimensions": "1004x973"
+    },
+    {
+      "id": "DS-002",
+      "name": "Icons",
+      "nodeId": "2803-4064",
+      "category": "Visual Elements",
+      "type": "Frame",
+      "dimensions": "1196x1469"
+    },
+    {
+      "id": "DS-003",
+      "name": "Tags",
+      "nodeId": "2803-4028",
+      "category": "Content",
+      "type": "Frame",
+      "dimensions": "834x798"
+    },
+    {
+      "id": "DS-004",
+      "name": "Tabs",
+      "nodeId": "2803-3974",
+      "category": "Navigation",
+      "type": "Frame",
+      "dimensions": "1123x1376"
+    },
+    {
+      "id": "DS-005",
+      "name": "Selectors",
+      "nodeId": "2803-3884",
+      "category": "Input",
+      "type": "Frame",
+      "dimensions": "1854x2762"
+    },
+    {
+      "id": "DS-006",
+      "name": "Segmented control",
+      "nodeId": "2803-3776",
+      "category": "Input",
+      "type": "Frame",
+      "dimensions": "1146x1529"
+    },
+    {
+      "id": "DS-007",
+      "name": "Popover button",
+      "nodeId": "2803-3574",
+      "category": "Actions",
+      "type": "Frame",
+      "dimensions": "1123x1309"
+    },
+    {
+      "id": "DS-008",
+      "name": "Tooltips and popovers",
+      "nodeId": "2803-3568",
+      "category": "Feedback",
+      "type": "Frame",
+      "dimensions": "1491x1158"
+    },
+    {
+      "id": "DS-009",
+      "name": "Big scrollable window",
+      "nodeId": "2803-3526",
+      "category": "Layout",
+      "type": "Frame",
+      "dimensions": "1440x900"
+    },
+    {
+      "id": "DS-010",
+      "name": "Dialog window",
+      "nodeId": "2803-3525",
+      "category": "Layout",
+      "type": "Frame",
+      "dimensions": "617x350"
+    },
+    {
+      "id": "DS-011",
+      "name": "Progress",
+      "nodeId": "2803-3514",
+      "category": "Feedback",
+      "type": "Frame",
+      "dimensions": "595x460"
+    },
+    {
+      "id": "DS-012",
+      "name": "Mobile elements",
+      "nodeId": "2803-3498",
+      "category": "Layout",
+      "type": "Auto layout",
+      "dimensions": "375x1350"
+    },
+    {
+      "id": "DS-013",
+      "name": "Context menu",
+      "nodeId": "2803-3415",
+      "category": "Navigation",
+      "type": "Frame",
+      "dimensions": "1607x1515"
+    },
+    {
+      "id": "DS-014",
+      "name": "Breadcrumbs",
+      "nodeId": "2803-3275",
+      "category": "Navigation",
+      "type": "Frame",
+      "dimensions": "821x540"
+    },
+    {
+      "id": "DS-015",
+      "name": "Avatars",
+      "nodeId": "2803-3248",
+      "category": "Visual Elements",
+      "type": "Frame",
+      "dimensions": "853x800"
+    },
+    {
+      "id": "DS-016",
+      "name": "Accordions",
+      "nodeId": "2803-3214",
+      "category": "Content",
+      "type": "Frame",
+      "dimensions": "1689x1899"
+    },
+    {
+      "id": "DS-017",
+      "name": "Date and time input",
+      "nodeId": "2803-2455",
+      "category": "Input",
+      "type": "Frame",
+      "dimensions": "1954x1708"
+    },
+    {
+      "id": "DS-018",
+      "name": "Inputs",
+      "nodeId": "2803-2414",
+      "category": "Input",
+      "type": "Frame",
+      "dimensions": "2078x2573"
+    },
+    {
+      "id": "DS-019",
+      "name": "Dropdown",
+      "nodeId": "2803-2339",
+      "category": "Input",
+      "type": "Frame",
+      "dimensions": "1830x2395"
+    },
+    {
+      "id": "DS-020",
+      "name": "Stepper",
+      "nodeId": "2803-2339",
+      "category": "Input",
+      "type": "Frame",
+      "note": "Shares same node ID as Dropdown - may be grouped"
+    },
+    {
+      "id": "DS-021",
+      "name": "Phone number",
+      "nodeId": "2803-3514",
+      "category": "Input",
+      "type": "Frame",
+      "note": "Shares same node ID as Progress - may be grouped"
+    },
+    {
+      "id": "DS-022",
+      "name": "Password",
+      "nodeId": "2803-2225",
+      "category": "Input",
+      "type": "Frame",
+      "dimensions": "1097x1176"
+    },
+    {
+      "id": "DS-023",
+      "name": "Button (component instance)",
+      "nodeId": "2803-1366",
+      "category": "Actions",
+      "type": "Frame",
+      "dimensions": "2888x1783"
+    },
+    {
+      "id": "DS-024",
+      "name": "Border radius",
+      "nodeId": "2803-1115",
+      "category": "Foundation",
+      "type": "Frame",
+      "dimensions": "1568x541"
+    },
+    {
+      "id": "DS-025",
+      "name": "Shadow",
+      "nodeId": "2803-1087",
+      "category": "Foundation",
+      "type": "Frame",
+      "dimensions": "1301x475"
+    },
+    {
+      "id": "DS-026",
+      "name": "Mobile layout",
+      "nodeId": "2803-720",
+      "category": "Foundation",
+      "type": "Frame",
+      "dimensions": "375x812"
+    },
+    {
+      "id": "DS-027",
+      "name": "Desktop Layout",
+      "nodeId": "2803-696",
+      "category": "Foundation",
+      "type": "Frame",
+      "dimensions": "1280x900"
+    },
+    {
+      "id": "DS-028",
+      "name": "Spacing",
+      "nodeId": "2803-437",
+      "category": "Foundation",
+      "type": "Frame",
+      "dimensions": "979x1634"
+    },
+    {
+      "id": "DS-029",
+      "name": "Typography",
+      "nodeId": "2803-437",
+      "category": "Foundation",
+      "type": "Frame",
+      "note": "Shares same node ID as Spacing - may be grouped"
+    },
+    {
+      "id": "DS-030",
+      "name": "Colors",
+      "nodeId": "2803-696",
+      "category": "Foundation",
+      "type": "Frame",
+      "note": "Shares same node ID as Desktop Layout - may be grouped"
+    }
+  ],
+  "categorySummary": {
+    "Foundation": 6,
+    "Input": 9,
+    "Actions": 2,
+    "Navigation": 3,
+    "Feedback": 3,
+    "Content": 2,
+    "Visual Elements": 2,
+    "Layout": 3
+  },
+  "notes": [
+    "Some components share node IDs, suggesting they may be grouped in the same frame",
+    "Duplicate node IDs: 2803-2339 (Dropdown/Stepper), 2803-3514 (Progress/Phone number), 2803-437 (Spacing/Typography), 2803-696 (Desktop Layout/Colors)",
+    "These grouped components should be reviewed manually in Figma to understand their structure"
+  ]
+}
