@@ -2,15 +2,19 @@
  * Button Component Styles
  * Based on IRIS Design System - Figma node 2803-1366
  *
- * Design tokens from Figma:
- * - Brand/Primary/500: #49A2A8 (Primary variant)
- * - Brand/Secondary/500: #7B6FDB (Secondary variant)
- * - Brand/Primary/600: #387F84 (Primary hover)
- * - Brand/Secondary/700: #5244AB (Secondary active)
- * - Brand/Primary/400: #53B7BE (Primary active)
- * - Brand/Secondary/200: #D4CEFB (Secondary hover)
- * - Neutral/600: #727272 (Outline text)
- * - Neutral/700: #555555 (Outline border)
+ * Design tokens from Figma (extracted via MCP):
+ * PRIMARY:
+ *   - Default: #49A2A8 bg + #DAFAFD text (Brand/Primary/500 + Primary/50)
+ *   - Hover: #DAFAFD bg + #285F63 text (Brand/Primary/50 + Primary/700)
+ *   - Active: #387F84 bg + #DAFAFD text (Brand/Primary/600 + Primary/50)
+ * SECONDARY:
+ *   - Default: #7B6FDB bg + white text (Brand/Secondary/500 + white)
+ *   - Hover: #D4CEFB bg + #5244AB text (Brand/Secondary/200 + Secondary/700)
+ *   - Active: #7B6FDB bg + #F4F3FE text (Brand/Secondary/500 + Secondary/50)
+ * OUTLINE:
+ *   - Default: #DAFAFD bg + #53B7BE border/text (Brand/Primary/50 + Primary/400)
+ *   - Hover: #ADF4FA bg + #285F63 border/text (Brand/Primary/100 + Primary/700)
+ *   - Active: #387F84 bg + #285F63 border + #DAFAFD text (Primary/600 + Primary/700 + Primary/50)
  */
 
 /* ===== BASE BUTTON ===== */
@@ -108,22 +112,24 @@
 /* Primary variant (Teal) */
 .iris-button--primary {
     background-color: #49A2A8;
-    color: white;
+    color: #DAFAFD;
     border: 2px solid #49A2A8;
 }
 
 .iris-button--primary:hover:not(:disabled) {
-    background-color: #387F84;
-    border-color: #387F84;
+    background-color: #DAFAFD;
+    color: #285F63;
+    border-color: #DAFAFD;
     transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(73, 162, 168, 0.3);
+    box-shadow: 0 4px 8px rgba(218, 250, 253, 0.3);
 }
 
 .iris-button--primary:active:not(:disabled) {
-    background-color: #53B7BE;
-    border-color: #53B7BE;
+    background-color: #387F84;
+    color: #DAFAFD;
+    border-color: #387F84;
     transform: translateY(0);
-    box-shadow: 0 2px 4px rgba(73, 162, 168, 0.2);
+    box-shadow: 0 2px 4px rgba(56, 127, 132, 0.2);
 }
 
 /* Secondary variant (Purple) */
@@ -134,37 +140,40 @@
 }
 
 .iris-button--secondary:hover:not(:disabled) {
-    background-color: #9C8DF5;
-    border-color: #9C8DF5;
+    background-color: #D4CEFB;
+    color: #5244AB;
+    border-color: #D4CEFB;
     transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(123, 111, 219, 0.3);
+    box-shadow: 0 4px 8px rgba(212, 206, 251, 0.3);
 }
 
 .iris-button--secondary:active:not(:disabled) {
-    background-color: #5244AB;
-    border-color: #5244AB;
+    background-color: #7B6FDB;
+    color: #F4F3FE;
+    border-color: #7B6FDB;
     transform: translateY(0);
     box-shadow: 0 2px 4px rgba(123, 111, 219, 0.2);
 }
 
 /* Outline variant */
 .iris-button--outline {
-    background-color: transparent;
-    color: #555555;
-    border: 2px solid #555555;
+    background-color: #DAFAFD;
+    color: #53B7BE;
+    border: 2px solid #53B7BE;
 }
 
 .iris-button--outline:hover:not(:disabled) {
-    background-color: rgba(85, 85, 85, 0.05);
-    border-color: #727272;
-    color: #727272;
+    background-color: #ADF4FA;
+    color: #285F63;
+    border-color: #285F63;
     transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(85, 85, 85, 0.1);
+    box-shadow: 0 2px 4px rgba(173, 244, 250, 0.3);
 }
 
 .iris-button--outline:active:not(:disabled) {
-    background-color: rgba(85, 85, 85, 0.1);
-    border-color: #555555;
+    background-color: #387F84;
+    color: #DAFAFD;
+    border-color: #285F63;
     transform: translateY(0);
 }
 
