@@ -8,8 +8,12 @@ import './App.css';
 // Import shared domain types
 import type { SessionMetadata } from '@iris/domain';
 
+// TEMPORARY: Import Button demo page for testing
+import ButtonDemo from './screens/ButtonDemo';
+
 function App() {
     const [version, setVersion] = useState<string>('');
+    const [showDemo, setShowDemo] = useState<boolean>(false);
 
     useEffect(() => {
         // Get app version from Electron
@@ -17,6 +21,11 @@ function App() {
             window.electron.app.getVersion().then(setVersion);
         }
     }, []);
+
+    // TEMPORARY: Show button demo page
+    if (showDemo) {
+        return <ButtonDemo />;
+    }
 
     return (
         <div className="app">
@@ -32,6 +41,26 @@ function App() {
                     <p>
                         Application management and data analysis for sEMG/FES research.
                     </p>
+
+                    {/* TEMPORARY: Button to show demo page */}
+                    <div style={{ marginBottom: '2rem', textAlign: 'center' }}>
+                        <button
+                            onClick={() => setShowDemo(true)}
+                            style={{
+                                padding: '12px 24px',
+                                fontSize: '16px',
+                                fontWeight: '600',
+                                backgroundColor: '#49A2A8',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '8px',
+                                cursor: 'pointer',
+                                boxShadow: '0 4px 8px rgba(73, 162, 168, 0.3)'
+                            }}
+                        >
+                            🎨 View Button Component Demo
+                        </button>
+                    </div>
 
                     <div className="features">
                         <div className="feature-card">
