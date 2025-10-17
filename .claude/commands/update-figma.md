@@ -7,14 +7,37 @@ description: Update all Figma mappings and extract latest designs
 I will sync all Figma designs and update the project mappings.
 
 ## Process:
-1. Connect to Figma via MCP tools
-2. Check for new or updated designs
-3. Update node mappings in `docs/figma/`
-4. Extract any new design tokens
-5. Generate new tasks if components/screens are added
-6. Update documentation
 
-## Figma Resources:
+### 1. Check MCP Installation
+First, I'll verify that required MCPs are available:
+- **Figma Desktop MCP**: For direct Figma access
+- **Playwright MCP**: For web fallback if needed
+
+If any MCP is missing, I'll provide installation instructions.
+
+### 2. Access Method Selection
+```javascript
+// Try Figma MCP first
+if (figmaMcpAvailable) {
+  // Use direct Figma MCP access
+  await useFigmaMCP()
+} else if (playwrightMcpAvailable) {
+  // Fallback to web access
+  await usePlaywrightWebAccess()
+} else {
+  // Request MCP installation
+  await requestMcpInstallation()
+}
+```
+
+### 3. Retrieve Page Information
+For each Figma resource (via MCP or web):
+- Extract frame links and IDs
+- Get component specifications
+- Capture design tokens
+- Download screenshots if needed
+
+## Figma Resources to Update:
 
 ### Design System
 - **Page Node**: 801-23931
@@ -26,23 +49,127 @@ I will sync all Figma designs and update the project mappings.
 - **Screens**: 18 total
 - **Location**: `docs/figma/frame-node-mapping.json`
 
-## Actions:
-1. Extract latest component specs
-2. Update design tokens (colors, typography, spacing)
-3. Download any new assets
-4. Check for component variants
-5. Update implementation queue with new items
+## MCP Installation Check:
 
-## MCP Commands:
+### Check Figma Desktop MCP
 ```bash
-# Get design system updates
-mcp__figma-desktop__get_metadata --nodeId=801-23931
-
-# Get specific component
-mcp__figma-desktop__get_design_context --nodeId={nodeId}
-
-# Extract variables
-mcp__figma-desktop__get_variable_defs --nodeId={nodeId}
+# Test if Figma MCP is available
+try {
+  await mcp__figma-desktop__get_metadata({ nodeId: "test" })
+  echo "✅ Figma Desktop MCP is available"
+} catch {
+  echo "❌ Figma Desktop MCP not found"
+  echo "Please install: @claude/mcp-server-figma-desktop"
+}
 ```
 
-Let me check for Figma updates...
+### Check Playwright MCP
+```bash
+# Test if Playwright MCP is available
+try {
+  await mcp__playwright__browser_close()
+  echo "✅ Playwright MCP is available"
+} catch {
+  echo "❌ Playwright MCP not found"
+  echo "Please install: @claude/mcp-server-playwright"
+}
+```
+
+## Update Process by Access Method:
+
+### Method A: Direct Figma MCP Access
+```javascript
+// Get metadata for all pages
+const designSystem = await mcp__figma-desktop__get_metadata({
+  nodeId: "801-23931"
+})
+
+const screens = await mcp__figma-desktop__get_metadata({
+  nodeId: "6804-13742"
+})
+
+// Extract frame links
+for (const frame of [...designSystem.frames, ...screens.frames]) {
+  frameLinks.push({
+    id: frame.id,
+    name: frame.name,
+    url: `https://figma.com/design/file/${frame.id}`
+  })
+}
+```
+
+### Method B: Web Access via Playwright
+```javascript
+// Navigate to Figma page
+await mcp__playwright__browser_navigate({
+  url: "https://figma.com/design/..."
+})
+
+// Wait for page load
+await mcp__playwright__browser_wait_for({
+  text: "Pages"
+})
+
+// Take snapshot to analyze structure
+const snapshot = await mcp__playwright__browser_snapshot()
+
+// Extract frame information from DOM
+const frames = await extractFramesFromSnapshot(snapshot)
+```
+
+## Actions to Perform:
+1. **Extract latest component specs** with frame links
+2. **Update design tokens** (colors, typography, spacing)
+3. **Map all frame URLs** to documentation
+4. **Download any new assets** if needed
+5. **Check for component variants** and states
+6. **Update implementation queue** with new items
+7. **Generate frame link documentation**
+
+## Output Documentation:
+
+### Update existing files:
+- `docs/figma/design-system-mapping.json` - With frame URLs
+- `docs/figma/frame-node-mapping.json` - With frame URLs
+- `docs/figma/design-tokens.json` - Latest tokens
+
+### Create new files if needed:
+- `docs/figma/frame-links.md` - All frame URLs
+- `docs/figma/update-log.json` - Update history
+
+## Expected Output:
+```
+═══════════════════════════════════════
+    FIGMA UPDATE COMPLETE
+═══════════════════════════════════════
+
+📊 MCP Status:
+✅ Figma Desktop MCP: Available
+✅ Playwright MCP: Available
+
+🎨 Design System:
+- Components checked: 30
+- New components: 0
+- Updated components: 5
+- Frame URLs mapped: 30
+
+📱 Application Screens:
+- Screens checked: 18
+- New screens: 0
+- Updated screens: 3
+- Frame URLs mapped: 18
+
+📁 Documentation Updated:
+- design-system-mapping.json ✅
+- frame-node-mapping.json ✅
+- design-tokens.json ✅
+- frame-links.md ✅
+
+🔗 Frame Links Extracted:
+Total: 48 frame URLs successfully mapped
+
+✨ All Figma resources synchronized!
+═══════════════════════════════════════
+```
+
+Starting MCP verification and Figma sync...
