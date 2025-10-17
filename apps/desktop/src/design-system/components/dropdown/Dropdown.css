@@ -3,6 +3,29 @@
  *
  * Based on Figma design: node 2803-2339
  * Uses IRIS design tokens and variables
+ *
+ * Design tokens extracted via Figma MCP (2025-10-17):
+ * COLORS:
+ *   - Border default: #B0B0B0 (Neutral/400)
+ *   - Border hover: #919191 (Neutral/500) ← Fixed from #49A2A8
+ *   - Border active: #6BE6EF (Brand/Primary/300) + #49A2A8 shadow
+ *   - Background: #FFFFFF (Basic/White)
+ *   - Text: #1F1F1F (Neutral/900)
+ *   - Placeholder: #B0B0B0 (Neutral/400)
+ *   - Menu hover: #F9F9F9 (Neutral/100)
+ *   - Menu selected: #ADF4FA (Brand/Primary/100)
+ *   - Tag background: #F9F9F9 (Neutral/100)
+ *   - Tag text: #727272 (Neutral/500)
+ *
+ * SIZES (from Figma variants):
+ *   - Small: 36px height (node 2470-2545)
+ *   - Medium: 44px height (node 2470-2551)
+ *   - Big: 56px height (node 2470-2575) ← Fixed from 52px
+ *
+ * TYPOGRAPHY:
+ *   - Trigger: 16px, line-height 24px (Body/text-base/font-normal)
+ *   - Menu items: 14px, line-height 20px (Body/text-sm/font-normal)
+ *   - Tags: 12px, font-weight 600, line-height 16px (Body/text-xs/font-semibold)
  */
 
 /* ============================================================================
@@ -64,15 +87,15 @@
 }
 
 .dropdown-trigger--big {
-  height: 52px;
-  padding: 14px 16px;
+  height: 56px; /* ✅ Corrected from 52px to match Figma node 2470-2575 */
+  padding: 16px 12px; /* ✅ Corrected: 16px vertical (matches Figma top/bottom) */
   font-size: 16px;
   line-height: 24px;
 }
 
 /* States */
-.dropdown-trigger:hover:not(.dropdown-trigger--disabled) {
-  border-color: #49A2A8; /* Brand/Primary/500 */
+.dropdown-trigger:hover:not(.dropdown-trigger--disabled):not(.dropdown-trigger--active):not(.dropdown-trigger--open) {
+  border-color: #919191; /* ✅ Neutral/500 - only when NOT active/open - Figma node 2470-2559 */
 }
 
 .dropdown-trigger--active,
@@ -82,6 +105,12 @@
   padding: calc(10px - 1px) calc(12px - 1px); /* Adjust for thicker border */
 }
 
+/* ✅ When active/open, hover should NOT change the border color */
+.dropdown-trigger--active:hover,
+.dropdown-trigger--open:hover {
+  border-color: #6BE6EF; /* Keep the active color on hover */
+}
+
 .dropdown-trigger--active.dropdown-trigger--small,
 .dropdown-trigger--open.dropdown-trigger--small {
   padding: calc(6px - 1px) calc(12px - 1px);
@@ -89,7 +118,7 @@
 
 .dropdown-trigger--active.dropdown-trigger--big,
 .dropdown-trigger--open.dropdown-trigger--big {
-  padding: calc(14px - 1px) calc(16px - 1px);
+  padding: calc(16px - 1px) calc(12px - 1px); /* ✅ Adjusted for corrected big size padding */
 }
 
 .dropdown-trigger--disabled {
@@ -278,7 +307,7 @@
 
 /* Group Label */
 .dropdown-group-label {
-  padding: 12px 16px 6px;
+  padding: 12px 20px 6px 16px; /* ✅ Corrected: pr-20px to match Figma (was 16px) */
   font-size: 12px;
   font-weight: 600;
   line-height: 16px;

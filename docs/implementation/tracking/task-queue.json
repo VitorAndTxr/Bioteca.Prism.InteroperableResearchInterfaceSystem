@@ -1,16 +1,6 @@
 {
-  "lastUpdated": "2025-10-17T02:00:00Z",
+  "lastUpdated": "2025-10-17T20:38:00Z",
   "queue": [
-    {
-      "priority": 4,
-      "type": "context",
-      "name": "AuthContext",
-      "status": "pending",
-      "category": "authentication",
-      "estimatedHours": 3,
-      "dependencies": [],
-      "description": "Authentication context with mock service"
-    },
     {
       "priority": 5,
       "type": "screen",
@@ -113,14 +103,21 @@
       "platform": "desktop",
       "figmaNode": "2803-2339",
       "actualHours": 5
+    },
+    {
+      "name": "AuthContext",
+      "completedDate": "2025-10-17T20:38:00Z",
+      "type": "context",
+      "platform": "desktop",
+      "actualHours": 1.5
     }
   ],
   "statistics": {
     "totalTasks": 12,
-    "pending": 7,
+    "pending": 6,
     "inProgress": 0,
-    "completed": 5,
-    "estimatedHoursRemaining": 42,
-    "averageCompletionTime": 4.1
+    "completed": 6,
+    "estimatedHoursRemaining": 39,
+    "averageCompletionTime": 3.75
   }
 }

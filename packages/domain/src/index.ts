@@ -15,3 +15,6 @@ export * from './models/Session';
 
 // Device Management
 export * from './models/Device';
+
+// Authentication and Authorization
+export * from './models/Auth';
