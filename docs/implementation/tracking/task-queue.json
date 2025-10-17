@@ -1,28 +1,6 @@
 {
-  "lastUpdated": "2025-01-17T19:30:00Z",
+  "lastUpdated": "2025-10-17T02:00:00Z",
   "queue": [
-    {
-      "priority": 2,
-      "type": "component",
-      "name": "Input",
-      "status": "pending",
-      "figmaNode": "2803-2414",
-      "category": "design-system",
-      "estimatedHours": 4,
-      "dependencies": [],
-      "description": "Text input component with validation and error states"
-    },
-    {
-      "priority": 3,
-      "type": "component",
-      "name": "Dropdown",
-      "status": "pending",
-      "figmaNode": "2803-2339",
-      "category": "design-system",
-      "estimatedHours": 5,
-      "dependencies": [],
-      "description": "Dropdown/Select component with search and multi-select"
-    },
     {
       "priority": 4,
       "type": "context",
@@ -119,14 +97,30 @@
       "platform": "desktop",
       "figmaNode": "2803-1366",
       "actualHours": 2.5
+    },
+    {
+      "name": "Input",
+      "completedDate": "2025-01-17T21:00:00Z",
+      "type": "component",
+      "platform": "desktop",
+      "figmaNode": "2803-2414",
+      "actualHours": 4
+    },
+    {
+      "name": "Dropdown",
+      "completedDate": "2025-10-17T02:00:00Z",
+      "type": "component",
+      "platform": "desktop",
+      "figmaNode": "2803-2339",
+      "actualHours": 5
     }
   ],
   "statistics": {
     "totalTasks": 12,
-    "pending": 9,
+    "pending": 7,
     "inProgress": 0,
-    "completed": 3,
-    "estimatedHoursRemaining": 51,
-    "averageCompletionTime": 4.5
+    "completed": 5,
+    "estimatedHoursRemaining": 42,
+    "averageCompletionTime": 4.1
   }
 }

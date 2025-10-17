@@ -3,7 +3,7 @@
     "name": "IRIS",
     "version": "0.1.0",
     "startDate": "2025-01-15T00:00:00Z",
-    "lastUpdated": "2025-01-17T19:30:00Z"
+    "lastUpdated": "2025-10-17T02:00:00Z"
   },
   "implementations": [
     {
@@ -42,7 +42,8 @@
         "apps/desktop/src/design-system/components/button/Button.css",
         "apps/desktop/src/design-system/components/button/Button.types.ts",
         "apps/desktop/src/design-system/components/button/index.ts",
-        "apps/desktop/src/design-system/components/button/README.md"
+        "apps/desktop/src/design-system/components/button/README.md",
+        "apps/desktop/src/design-system/components/button/Button.stories.tsx"
       ],
       "completedSteps": [
         "figma-extraction",
@@ -55,7 +56,8 @@
         "loading-state",
         "accessibility",
         "responsive-design",
-        "documentation"
+        "documentation",
+        "storybook-stories"
       ],
       "features": [
         "3 variants: primary, secondary, outline",
@@ -67,19 +69,168 @@
         "TypeScript types",
         "Loading spinner",
         "Tooltip support",
-        "Keyboard navigation"
+        "Keyboard navigation",
+        "15+ Storybook stories with interactive examples"
+      ]
+    },
+    {
+      "id": "impl-003",
+      "type": "component",
+      "name": "Input",
+      "startDate": "2025-01-17T20:00:00Z",
+      "completedDate": "2025-01-17T21:00:00Z",
+      "status": "completed",
+      "figmaNode": "2803-2414",
+      "platform": "desktop",
+      "files": [
+        "apps/desktop/src/design-system/components/input/Input.tsx",
+        "apps/desktop/src/design-system/components/input/Input.css",
+        "apps/desktop/src/design-system/components/input/Input.types.ts",
+        "apps/desktop/src/design-system/components/input/index.ts",
+        "apps/desktop/src/design-system/components/input/README.md",
+        "apps/desktop/src/design-system/components/input/Input.stories.tsx",
+        "apps/desktop/src/renderer/screens/InputDemo.tsx",
+        "apps/desktop/src/renderer/screens/InputDemo.css"
+      ],
+      "completedSteps": [
+        "figma-extraction",
+        "type-definitions",
+        "component-structure",
+        "all-sizes",
+        "all-states",
+        "icon-support",
+        "prefix-suffix-support",
+        "character-counter",
+        "validation-states",
+        "textarea-variant",
+        "accessibility",
+        "responsive-design",
+        "documentation",
+        "demo-page",
+        "storybook-stories"
+      ],
+      "features": [
+        "3 sizes: small, medium, big",
+        "Icon support: left, right, both sides",
+        "Prefix/suffix text (currency, units, etc.)",
+        "Character counter with limits",
+        "4 validation states: none, error, success, warning",
+        "Label and helper text",
+        "Error message display",
+        "Textarea variant (multiline)",
+        "Resize control for textarea",
+        "Full ARIA accessibility",
+        "Responsive design",
+        "TypeScript types with type guards",
+        "Browser autofill styling",
+        "Interactive demo page",
+        "20+ Storybook stories with interactive examples"
+      ]
+    },
+    {
+      "id": "impl-004",
+      "type": "infrastructure",
+      "name": "Storybook Setup",
+      "startDate": "2025-10-17T00:00:00Z",
+      "completedDate": "2025-10-17T00:30:00Z",
+      "status": "completed",
+      "platform": "desktop",
+      "files": [
+        "apps/desktop/.storybook/main.ts",
+        "apps/desktop/.storybook/preview.ts",
+        "apps/desktop/.storybook/vitest.setup.ts",
+        "apps/desktop/.storybook/README.md",
+        "apps/desktop/src/design-system/components/button/Button.stories.tsx",
+        "apps/desktop/src/design-system/components/input/Input.stories.tsx"
+      ],
+      "completedSteps": [
+        "storybook-installation",
+        "vite-builder-configuration",
+        "addons-installation",
+        "button-stories-creation",
+        "input-stories-creation",
+        "documentation",
+        "testing"
+      ],
+      "features": [
+        "Storybook 9.1.13 with React + Vite",
+        "A11y addon for accessibility testing",
+        "Docs addon with autodocs generation",
+        "Vitest addon for component testing",
+        "Chromatic addon for visual testing",
+        "15+ Button stories covering all variants and states",
+        "20+ Input stories with interactive examples",
+        "Comprehensive documentation in .storybook/README.md",
+        "Hot reload support",
+        "TypeScript CSF3 format"
+      ]
+    },
+    {
+      "id": "impl-005",
+      "type": "component",
+      "name": "Dropdown",
+      "startDate": "2025-10-17T01:00:00Z",
+      "completedDate": "2025-10-17T02:00:00Z",
+      "status": "completed",
+      "figmaNode": "2803-2339",
+      "platform": "desktop",
+      "files": [
+        "apps/desktop/src/design-system/components/dropdown/Dropdown.tsx",
+        "apps/desktop/src/design-system/components/dropdown/Dropdown.css",
+        "apps/desktop/src/design-system/components/dropdown/Dropdown.types.ts",
+        "apps/desktop/src/design-system/components/dropdown/index.ts",
+        "apps/desktop/src/design-system/components/dropdown/README.md",
+        "apps/desktop/src/design-system/components/dropdown/Dropdown.stories.tsx"
+      ],
+      "completedSteps": [
+        "figma-extraction",
+        "type-definitions",
+        "component-structure",
+        "all-sizes",
+        "all-states",
+        "single-selection",
+        "multiple-selection",
+        "search-functionality",
+        "grouped-options",
+        "tags-display",
+        "keyboard-navigation",
+        "accessibility",
+        "responsive-design",
+        "documentation",
+        "storybook-stories"
+      ],
+      "features": [
+        "3 sizes: small, medium, big",
+        "Single and multiple selection modes",
+        "Searchable options with custom filter function",
+        "Grouped options with section headers",
+        "Tags display for multiple selection with max limit",
+        "Custom \"Add new item\" button",
+        "Full keyboard navigation (Arrow keys, Enter, Escape, Home, End)",
+        "Click-outside-to-close behavior",
+        "4 validation states: none, error, success, warning",
+        "Label, helper text, and error messages",
+        "Custom rendering for options and values",
+        "Controlled and uncontrolled modes",
+        "Full ARIA accessibility",
+        "Responsive design",
+        "TypeScript types with type guards",
+        "30+ Storybook stories with interactive examples",
+        "Complete keyboard navigation guide"
       ]
     }
   ],
   "statistics": {
-    "totalImplementations": 2,
-    "completed": 2,
+    "totalImplementations": 5,
+    "completed": 5,
     "inProgress": 0,
     "pending": 0,
-    "componentsCompleted": 2,
-    "screensCompleted": 3,
+    "componentsCompleted": 3,
+    "screensCompleted": 1,
+    "infrastructureCompleted": 1,
     "testsWritten": 0,
-    "storybookStories": 0
+    "storybookStories": 3,
+    "storybookConfigured": true
   },
-  "nextId": "impl-003"
+  "nextId": "impl-006"
 }
