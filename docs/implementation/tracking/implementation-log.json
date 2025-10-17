@@ -3,7 +3,7 @@
     "name": "IRIS",
     "version": "0.1.0",
     "startDate": "2025-01-15T00:00:00Z",
-    "lastUpdated": "2025-01-17T10:40:00Z"
+    "lastUpdated": "2025-01-17T19:30:00Z"
   },
   "implementations": [
     {
@@ -33,30 +33,50 @@
       "type": "component",
       "name": "Button",
       "startDate": "2025-01-17T10:00:00Z",
-      "status": "in_progress",
+      "completedDate": "2025-01-17T19:30:00Z",
+      "status": "completed",
       "figmaNode": "2803-1366",
+      "platform": "desktop",
       "files": [
-        "packages/ui-components/atoms/Button.tsx"
+        "apps/desktop/src/design-system/components/button/Button.tsx",
+        "apps/desktop/src/design-system/components/button/Button.css",
+        "apps/desktop/src/design-system/components/button/Button.types.ts",
+        "apps/desktop/src/design-system/components/button/index.ts",
+        "apps/desktop/src/design-system/components/button/README.md"
       ],
       "completedSteps": [
-        "structure"
-      ],
-      "pendingSteps": [
-        "variants",
-        "states",
+        "figma-extraction",
+        "type-definitions",
+        "component-structure",
+        "all-variants",
+        "all-sizes",
+        "all-states",
+        "icon-support",
+        "loading-state",
         "accessibility",
-        "tests",
-        "storybook",
+        "responsive-design",
         "documentation"
+      ],
+      "features": [
+        "3 variants: primary, secondary, outline",
+        "3 sizes: small, medium, big",
+        "Icon support: left, right, icon-only",
+        "5 states: default, hover, active, disabled, loading",
+        "Full ARIA accessibility",
+        "Responsive design",
+        "TypeScript types",
+        "Loading spinner",
+        "Tooltip support",
+        "Keyboard navigation"
       ]
     }
   ],
   "statistics": {
     "totalImplementations": 2,
-    "completed": 1,
-    "inProgress": 1,
+    "completed": 2,
+    "inProgress": 0,
     "pending": 0,
-    "componentsCompleted": 1,
+    "componentsCompleted": 2,
     "screensCompleted": 3,
     "testsWritten": 0,
     "storybookStories": 0

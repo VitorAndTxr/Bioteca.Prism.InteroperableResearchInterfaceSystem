@@ -1,17 +1,6 @@
 {
-  "lastUpdated": "2025-01-17T10:45:00Z",
+  "lastUpdated": "2025-01-17T19:30:00Z",
   "queue": [
-    {
-      "priority": 1,
-      "type": "component",
-      "name": "Button",
-      "status": "in_progress",
-      "figmaNode": "2803-1366",
-      "category": "design-system",
-      "estimatedHours": 4,
-      "dependencies": [],
-      "description": "Complete Button component with all variants and states"
-    },
     {
       "priority": 2,
       "type": "component",
@@ -114,20 +103,30 @@
     {
       "name": "StreamingScreen",
       "completedDate": "2025-01-16T18:00:00Z",
-      "type": "screen"
+      "type": "screen",
+      "platform": "mobile"
     },
     {
       "name": "SEMGChart",
       "completedDate": "2025-01-16T15:00:00Z",
-      "type": "component"
+      "type": "component",
+      "platform": "mobile"
+    },
+    {
+      "name": "Button",
+      "completedDate": "2025-01-17T19:30:00Z",
+      "type": "component",
+      "platform": "desktop",
+      "figmaNode": "2803-1366",
+      "actualHours": 2.5
     }
   ],
   "statistics": {
     "totalTasks": 12,
     "pending": 9,
-    "inProgress": 1,
-    "completed": 2,
-    "estimatedHoursRemaining": 55,
-    "averageCompletionTime": 6
+    "inProgress": 0,
+    "completed": 3,
+    "estimatedHoursRemaining": 51,
+    "averageCompletionTime": 4.5
   }
 }
