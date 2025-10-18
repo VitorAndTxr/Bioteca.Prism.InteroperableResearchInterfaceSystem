@@ -1,0 +1,291 @@
+/**
+ * Avatar Component Styles
+ * Based on IRIS Design System - Figma Node: 2803-3248
+ */
+
+.avatar {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  user-select: none;
+  flex-shrink: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-weight: 600;
+  color: #ffffff;
+  background-color: #b0b0b0; /* Neutral/400 - default placeholder */
+  transition: all 0.2s ease-in-out;
+}
+
+/* Sizes (from Figma) */
+.avatar--small {
+  width: 32px;
+  height: 32px;
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.avatar--medium {
+  width: 48px;
+  height: 48px;
+  font-size: 18px;
+  line-height: 24px;
+}
+
+.avatar--large {
+  width: 56px;
+  height: 56px;
+  font-size: 20px;
+  line-height: 28px;
+}
+
+.avatar--xl {
+  width: 144px;
+  height: 144px;
+  font-size: 48px;
+  line-height: 56px;
+}
+
+/* Shapes */
+.avatar--circle {
+  border-radius: 50%;
+}
+
+.avatar--rounded {
+  border-radius: 8px;
+}
+
+.avatar--square {
+  border-radius: 0;
+}
+
+/* Interactive state */
+.avatar--interactive {
+  cursor: pointer;
+}
+
+.avatar--interactive:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.avatar--interactive:active {
+  transform: scale(0.98);
+}
+
+.avatar--interactive:focus-visible {
+  outline: 2px solid #49a2a8; /* Ciano-500 */
+  outline-offset: 2px;
+}
+
+/* Image variant */
+.avatar__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Initials variant */
+.avatar__initials {
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  font-weight: 600;
+}
+
+/* Icon variant */
+.avatar__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 60%;
+  height: 60%;
+}
+
+.avatar__icon svg {
+  width: 100%;
+  height: 100%;
+  fill: currentColor;
+}
+
+/* Status indicator */
+.avatar__status {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  width: 25%;
+  height: 25%;
+  min-width: 8px;
+  min-height: 8px;
+}
+
+.avatar--small .avatar__status {
+  width: 8px;
+  height: 8px;
+  border-width: 1.5px;
+}
+
+.avatar--medium .avatar__status {
+  width: 12px;
+  height: 12px;
+  border-width: 2px;
+}
+
+.avatar--large .avatar__status {
+  width: 14px;
+  height: 14px;
+  border-width: 2px;
+}
+
+.avatar--xl .avatar__status {
+  width: 36px;
+  height: 36px;
+  border-width: 3px;
+}
+
+/* Status colors */
+.avatar__status--online {
+  background-color: #22c55e; /* Green-500 */
+}
+
+.avatar__status--offline {
+  background-color: #727272; /* Neutral-600 */
+}
+
+.avatar__status--busy {
+  background-color: #ef4444; /* Red-500 */
+}
+
+.avatar__status--away {
+  background-color: #f59e0b; /* Amber-500 */
+}
+
+/* Badge */
+.avatar__badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background-color: #ef4444; /* Red-500 */
+  color: #ffffff;
+  border-radius: 10px;
+  padding: 2px 6px;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.2;
+  min-width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #ffffff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.avatar--small .avatar__badge {
+  top: -2px;
+  right: -2px;
+  font-size: 9px;
+  padding: 1px 4px;
+  min-width: 14px;
+  height: 14px;
+  border-width: 1.5px;
+}
+
+.avatar--medium .avatar__badge {
+  top: -4px;
+  right: -4px;
+  font-size: 11px;
+  padding: 2px 5px;
+  min-width: 18px;
+  height: 18px;
+}
+
+.avatar--large .avatar__badge {
+  top: -4px;
+  right: -4px;
+  font-size: 12px;
+  padding: 2px 6px;
+  min-width: 20px;
+  height: 20px;
+}
+
+.avatar--xl .avatar__badge {
+  top: -8px;
+  right: -8px;
+  font-size: 16px;
+  padding: 4px 8px;
+  min-width: 28px;
+  height: 28px;
+  border-width: 3px;
+}
+
+/* Loading state */
+.avatar--loading {
+  background: linear-gradient(
+    90deg,
+    #f4f4f4 25%,
+    #e0e0e0 50%,
+    #f4f4f4 75%
+  );
+  background-size: 200% 100%;
+  animation: loading 1.5s ease-in-out infinite;
+}
+
+@keyframes loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Predefined background colors for initials (based on common hash) */
+.avatar--color-0 { background-color: #49a2a8; } /* Ciano-500 */
+.avatar--color-1 { background-color: #7b6fdb; } /* Purple-500 */
+.avatar--color-2 { background-color: #f59e0b; } /* Amber-500 */
+.avatar--color-3 { background-color: #10b981; } /* Emerald-500 */
+.avatar--color-4 { background-color: #3b82f6; } /* Blue-500 */
+.avatar--color-5 { background-color: #8b5cf6; } /* Violet-500 */
+.avatar--color-6 { background-color: #ec4899; } /* Pink-500 */
+.avatar--color-7 { background-color: #14b8a6; } /* Teal-500 */
+.avatar--color-8 { background-color: #f97316; } /* Orange-500 */
+.avatar--color-9 { background-color: #06b6d4; } /* Cyan-500 */
+
+/* Accessibility - high contrast mode */
+@media (prefers-contrast: high) {
+  .avatar {
+    outline: 1px solid currentColor;
+  }
+
+  .avatar__status {
+    border-width: 3px;
+  }
+
+  .avatar__badge {
+    border-width: 3px;
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .avatar,
+  .avatar--interactive:hover,
+  .avatar--interactive:active {
+    transition: none;
+    transform: none;
+    animation: none;
+  }
+
+  .avatar--loading {
+    background: #e0e0e0;
+    animation: none;
+  }
+}

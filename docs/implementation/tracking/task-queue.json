@@ -1,26 +1,6 @@
 {
-  "lastUpdated": "2025-10-18T05:30:00Z",
+  "lastUpdated": "2025-10-18T10:30:00Z",
   "queue": [
-    {
-      "priority": 5,
-      "type": "component",
-      "name": "SearchBar",
-      "status": "pending",
-      "category": "design-system",
-      "estimatedHours": 3,
-      "dependencies": ["Input"],
-      "description": "Search input with autocomplete and filters"
-    },
-    {
-      "priority": 6,
-      "type": "component",
-      "name": "Avatar",
-      "status": "pending",
-      "category": "design-system",
-      "estimatedHours": 2,
-      "dependencies": [],
-      "description": "User avatar component with status indicators"
-    },
     {
       "priority": 7,
       "type": "screen",
@@ -148,14 +128,31 @@
       "platform": "desktop",
       "category": "layout",
       "actualHours": 1
+    },
+    {
+      "name": "SearchBar",
+      "completedDate": "2025-10-18T08:30:00Z",
+      "type": "component",
+      "platform": "desktop",
+      "category": "design-system",
+      "actualHours": 1.5
+    },
+    {
+      "name": "Avatar",
+      "completedDate": "2025-10-18T10:30:00Z",
+      "type": "component",
+      "platform": "desktop",
+      "figmaNode": "2803-3248",
+      "category": "design-system",
+      "actualHours": 2
     }
   ],
   "statistics": {
     "totalTasks": 17,
-    "pending": 6,
+    "pending": 4,
     "inProgress": 0,
-    "completed": 11,
-    "estimatedHoursRemaining": 33,
-    "averageCompletionTime": 2.9
+    "completed": 13,
+    "estimatedHoursRemaining": 28,
+    "averageCompletionTime": 2.5
   }
 }

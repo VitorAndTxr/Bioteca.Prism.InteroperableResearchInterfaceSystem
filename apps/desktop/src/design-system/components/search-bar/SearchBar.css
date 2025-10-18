@@ -1,0 +1,282 @@
+/**
+ * SearchBar Component Styles
+ *
+ * Extends the Input component with search-specific styling.
+ * Design follows IRIS design system patterns.
+ */
+
+/* ========================================
+   Container
+   ======================================== */
+
+.iris-search-bar {
+    position: relative;
+    width: 100%;
+}
+
+.iris-search-bar--full-width {
+    width: 100%;
+}
+
+/* ========================================
+   Autocomplete Dropdown
+   ======================================== */
+
+.iris-search-bar__dropdown {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    background: #FFFFFF;
+    border: 1px solid #E5E5E5;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    max-height: 320px;
+    overflow-y: auto;
+    z-index: 1000;
+    padding: 8px 0;
+}
+
+.iris-search-bar__dropdown::-webkit-scrollbar {
+    width: 6px;
+}
+
+.iris-search-bar__dropdown::-webkit-scrollbar-track {
+    background: #F5F5F5;
+    border-radius: 3px;
+}
+
+.iris-search-bar__dropdown::-webkit-scrollbar-thumb {
+    background: #CCCCCC;
+    border-radius: 3px;
+}
+
+.iris-search-bar__dropdown::-webkit-scrollbar-thumb:hover {
+    background: #999999;
+}
+
+/* ========================================
+   Options
+   ======================================== */
+
+.iris-search-bar__option {
+    padding: 12px 16px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #393939;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 20px;
+}
+
+.iris-search-bar__option:hover {
+    background-color: #F5F5F5;
+}
+
+.iris-search-bar__option--focused {
+    background-color: #F0F9FA;
+    outline: none;
+}
+
+.iris-search-bar__option--selected {
+    background-color: #E6F7F8;
+    font-weight: 500;
+}
+
+/* ========================================
+   Option Category Header
+   ======================================== */
+
+.iris-search-bar__category {
+    padding: 8px 16px 4px;
+    color: #727272;
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* ========================================
+   Empty State
+   ======================================== */
+
+.iris-search-bar__empty {
+    padding: 24px 16px;
+    text-align: center;
+    color: #727272;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+}
+
+/* ========================================
+   Loading State
+   ======================================== */
+
+.iris-search-bar__loading {
+    padding: 24px 16px;
+    text-align: center;
+    color: #727272;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.iris-search-bar__spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid #E5E5E5;
+    border-top-color: #49A2A8;
+    border-radius: 50%;
+    animation: iris-search-bar-spin 0.8s linear infinite;
+}
+
+@keyframes iris-search-bar-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ========================================
+   Clear Button
+   ======================================== */
+
+.iris-search-bar__clear {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    padding: 4px;
+    cursor: pointer;
+    color: #727272;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.iris-search-bar__clear:hover {
+    background-color: #F5F5F5;
+    color: #393939;
+}
+
+.iris-search-bar__clear:focus {
+    outline: 2px solid #49A2A8;
+    outline-offset: 2px;
+}
+
+.iris-search-bar__clear:active {
+    background-color: #E5E5E5;
+}
+
+/* Size variants for clear button positioning */
+.iris-search-bar--small .iris-search-bar__clear {
+    right: 8px;
+}
+
+.iris-search-bar--medium .iris-search-bar__clear {
+    right: 12px;
+}
+
+.iris-search-bar--big .iris-search-bar__clear {
+    right: 16px;
+}
+
+/* ========================================
+   Recent Searches
+   ======================================== */
+
+.iris-search-bar__recent-header {
+    padding: 12px 16px 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #F0F0F0;
+}
+
+.iris-search-bar__recent-title {
+    color: #727272;
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.iris-search-bar__recent-clear {
+    background: none;
+    border: none;
+    color: #49A2A8;
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.iris-search-bar__recent-clear:hover {
+    background-color: #F0F9FA;
+}
+
+.iris-search-bar__recent-clear:focus {
+    outline: 2px solid #49A2A8;
+    outline-offset: 2px;
+}
+
+/* ========================================
+   Search Icon (default)
+   ======================================== */
+
+.iris-search-bar__search-icon {
+    width: 20px;
+    height: 20px;
+    color: #727272;
+}
+
+.iris-search-bar__clear-icon {
+    width: 16px;
+    height: 16px;
+}
+
+/* ========================================
+   Keyboard Navigation Highlight
+   ======================================== */
+
+.iris-search-bar__option:focus-visible {
+    outline: 2px solid #49A2A8;
+    outline-offset: -2px;
+}
+
+/* ========================================
+   Responsive Design
+   ======================================== */
+
+@media (max-width: 768px) {
+    .iris-search-bar__dropdown {
+        max-height: 240px;
+    }
+
+    .iris-search-bar__option {
+        padding: 10px 12px;
+        font-size: 13px;
+    }
+
+    .iris-search-bar__category {
+        padding: 6px 12px 4px;
+        font-size: 11px;
+    }
+}
