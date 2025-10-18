@@ -9,7 +9,10 @@ import './App.css';
 import type { SessionMetadata } from '@iris/domain';
 
 // Import context providers
-import { AuthProvider } from '../context/AuthContext';
+import { AuthProvider, useAuth } from '../context/AuthContext';
+
+// Import screens
+import Login from './screens/Login';
 
 // TEMPORARY: Import demo pages for testing
 import ButtonDemo from './screens/ButtonDemo';
@@ -17,7 +20,11 @@ import InputDemo from './screens/InputDemo';
 
 type DemoPage = 'home' | 'button' | 'input';
 
-function App() {
+/**
+ * Main App Content (requires AuthContext)
+ */
+function AppContent() {
+    const { isAuthenticated, authState, user, logout } = useAuth();
     const [version, setVersion] = useState<string>('');
     const [currentPage, setCurrentPage] = useState<DemoPage>('home');
 
@@ -27,6 +34,21 @@ function App() {
             window.electron.app.getVersion().then(setVersion);
         }
     }, []);
+
+    // Show login screen if not authenticated
+    if (!isAuthenticated && authState !== 'loading') {
+        return <Login />;
+    }
+
+    // Show loading state while checking authentication
+    if (authState === 'loading') {
+        return (
+            <div className="app-loading">
+                <div className="loading-spinner" />
+                <p>Carregando...</p>
+            </div>
+        );
+    }
 
     // Render content based on current page
     const renderContent = () => {
@@ -42,9 +64,31 @@ function App() {
                 return (
                     <div className="app">
                         <header className="app-header">
-                            <h1>IRIS Desktop</h1>
-                            <p>Interoperable Research Interface System</p>
-                            <span className="version">v{version}</span>
+                            <div>
+                                <h1>IRIS Desktop</h1>
+                                <p>Interoperable Research Interface System</p>
+                                <span className="version">v{version}</span>
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                                <span style={{ fontSize: '14px', color: '#666' }}>
+                                    {user?.name} ({user?.role})
+                                </span>
+                                <button
+                                    onClick={logout}
+                                    style={{
+                                        padding: '8px 16px',
+                                        fontSize: '14px',
+                                        fontWeight: '600',
+                                        backgroundColor: '#E11D48',
+                                        color: 'white',
+                                        border: 'none',
+                                        borderRadius: '6px',
+                                        cursor: 'pointer'
+                                    }}
+                                >
+                                    Sair
+                                </button>
+                            </div>
                         </header>
 
                         <main className="app-main">
@@ -131,9 +175,16 @@ function App() {
         }
     };
 
+    return renderContent();
+}
+
+/**
+ * App wrapper with AuthProvider
+ */
+function App() {
     return (
         <AuthProvider>
-            {renderContent()}
+            <AppContent />
         </AuthProvider>
     );
 }

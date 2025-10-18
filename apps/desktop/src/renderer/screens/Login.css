@@ -1,0 +1,358 @@
+/**
+ * Login Screen Styles
+ * Based on IRIS Design System - Figma node 6804-13742
+ *
+ * Design tokens from Figma:
+ * - Background gradient: #C8F3F6 to #6BE6EF (cyan gradient)
+ * - Text color (title): #2C3131 (Neutros-800)
+ * - Text color (label): #444B59
+ * - Border color: #387F84 (Ciano-700)
+ * - Button background: #49A2A8 (500)
+ * - Font family (title): Overpass ExtraBold
+ * - Font family (inputs): Nunito
+ */
+
+/* ===== MAIN CONTAINER ===== */
+.login-screen {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    min-height: 720px;
+    overflow: hidden;
+    background-color: #FFFFFF;
+}
+
+/* ===== BACKGROUND ===== */
+.login-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #C8F3F6 0%, #6BE6EF 100%);
+    z-index: 0;
+    pointer-events: none;
+}
+
+/* ===== CONTENT CONTAINER ===== */
+.login-container {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 116px;
+    padding: 64px 166px;
+    min-height: 100vh;
+}
+
+/* ===== FORM SECTION (LEFT) ===== */
+.login-form-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 439px;
+    min-height: 592px;
+}
+
+.login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+    width: 100%;
+}
+
+/* ===== TITLE ===== */
+.login-title {
+    font-family: 'Overpass', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 24.695px;
+    font-weight: 800; /* ExtraBold */
+    line-height: normal;
+    color: #2C3131;
+    letter-spacing: 2.4695px;
+    margin: 0;
+    text-align: left;
+    width: 100%;
+}
+
+/* ===== ERROR BANNER ===== */
+.login-error-banner {
+    padding: 12px 16px;
+    background-color: #FEF2F2;
+    border: 1px solid #FCA5A5;
+    border-radius: 8px;
+    color: #991B1B;
+    font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.5;
+}
+
+/* ===== FORM FIELDS ===== */
+.login-form-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    width: 100%;
+}
+
+/* Override Input component styles to match Figma design */
+.login-form-fields .iris-input__label {
+    font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 19.207px;
+    font-weight: 600; /* SemiBold */
+    letter-spacing: 1.9207px;
+    color: #444B59;
+}
+
+.login-form-fields .iris-input-wrapper--big {
+    border: 1.372px solid #387F84;
+    border-radius: 54.878px; /* Rounded pill shape */
+    min-height: 54.878px;
+    padding: 0 21.951px;
+    background-color: #FFFFFF;
+}
+
+.login-form-fields .iris-input--big {
+    font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 16.464px;
+    font-weight: 400; /* Regular */
+    letter-spacing: 1.6464px;
+}
+
+.login-form-fields .iris-input::placeholder {
+    color: #C8D3F9;
+    letter-spacing: 1.6464px;
+}
+
+/* Focus state matching Figma */
+.login-form-fields .iris-input-wrapper:focus-within {
+    border: 2px solid #49A2A8;
+    box-shadow: 0 0 0 2px rgba(73, 162, 168, 0.2);
+}
+
+/* Password toggle button */
+.password-toggle {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    color: #387F84;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s ease-in-out;
+}
+
+.password-toggle:hover {
+    color: #49A2A8;
+}
+
+.password-toggle:focus {
+    outline: 2px solid #49A2A8;
+    outline-offset: 2px;
+    border-radius: 4px;
+}
+
+/* ===== SUBMIT BUTTON ===== */
+.login-form .iris-button--primary.iris-button--big {
+    background-color: #49A2A8;
+    border-radius: 54.878px; /* Match input border radius */
+    min-height: 54.878px;
+    box-shadow: 2.744px 5.488px 8.232px 0px rgba(78, 99, 141, 0.06),
+                inset 0px 2.744px 8.232px 0px rgba(200, 211, 249, 0.6);
+    font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 19.207px;
+    font-weight: 800; /* ExtraBold */
+    letter-spacing: 1.9207px;
+    color: #FFFFFF;
+}
+
+.login-form .iris-button--primary.iris-button--big:hover:not(:disabled) {
+    background-color: #3D8A8F;
+    box-shadow: 2.744px 5.488px 12px 0px rgba(78, 99, 141, 0.12),
+                inset 0px 2.744px 8.232px 0px rgba(200, 211, 249, 0.8);
+}
+
+.login-form .iris-button--primary.iris-button--big:active:not(:disabled) {
+    background-color: #326F73;
+    box-shadow: inset 2.744px 5.488px 8.232px 0px rgba(0, 0, 0, 0.15);
+}
+
+/* ===== LOGO SECTION (RIGHT) ===== */
+.login-logo-section {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 486px;
+    height: 486px;
+    flex-shrink: 0;
+}
+
+.login-logo {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    user-select: none;
+    pointer-events: none;
+}
+
+/* ===== OPTIONAL: REMEMBER ME CHECKBOX ===== */
+.login-options {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.login-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    color: #2C3131;
+    user-select: none;
+}
+
+.login-checkbox input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: #49A2A8;
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+
+@media (max-width: 1280px) {
+    .login-container {
+        gap: 60px;
+        padding: 64px 80px;
+    }
+
+    .login-logo-section {
+        width: 380px;
+        height: 380px;
+    }
+}
+
+@media (max-width: 1024px) {
+    .login-container {
+        flex-direction: column;
+        gap: 48px;
+        padding: 40px;
+    }
+
+    .login-form-section {
+        width: 100%;
+        max-width: 480px;
+    }
+
+    .login-logo-section {
+        width: 320px;
+        height: 320px;
+    }
+}
+
+@media (max-width: 768px) {
+    .login-container {
+        padding: 24px;
+        gap: 32px;
+    }
+
+    .login-form-section {
+        max-width: 100%;
+        min-height: auto;
+    }
+
+    .login-title {
+        font-size: 20px;
+        letter-spacing: 2px;
+    }
+
+    .login-form-fields .iris-input__label {
+        font-size: 16px;
+        letter-spacing: 1.5px;
+    }
+
+    .login-form-fields .iris-input-wrapper--big {
+        min-height: 48px;
+        padding: 0 18px;
+    }
+
+    .login-form-fields .iris-input--big {
+        font-size: 14px;
+        letter-spacing: 1px;
+    }
+
+    .login-form .iris-button--primary.iris-button--big {
+        min-height: 48px;
+        font-size: 16px;
+        letter-spacing: 1.5px;
+    }
+
+    .login-logo-section {
+        width: 240px;
+        height: 240px;
+    }
+}
+
+@media (max-width: 480px) {
+    .login-screen {
+        min-height: 100vh;
+    }
+
+    .login-container {
+        padding: 20px;
+        min-height: 100vh;
+    }
+
+    .login-logo-section {
+        width: 180px;
+        height: 180px;
+    }
+}
+
+/* ===== ACCESSIBILITY ===== */
+
+@media (prefers-reduced-motion: reduce) {
+    .login-form-fields .iris-input-wrapper,
+    .password-toggle,
+    .login-form .iris-button--primary {
+        transition: none;
+    }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+    .login-form-fields .iris-input-wrapper {
+        border-width: 2px;
+    }
+
+    .login-form-fields .iris-input-wrapper:focus-within {
+        border-width: 3px;
+    }
+
+    .login-error-banner {
+        border-width: 2px;
+    }
+}
+
+/* Print styles */
+@media print {
+    .login-background {
+        display: none;
+    }
+
+    .login-logo-section {
+        display: none;
+    }
+
+    .login-container {
+        padding: 0;
+        justify-content: flex-start;
+    }
+}

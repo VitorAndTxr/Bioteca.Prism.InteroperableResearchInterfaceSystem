@@ -1,17 +1,6 @@
 {
-  "lastUpdated": "2025-10-17T20:38:00Z",
+  "lastUpdated": "2025-10-18T03:05:00Z",
   "queue": [
-    {
-      "priority": 5,
-      "type": "screen",
-      "name": "Login",
-      "status": "pending",
-      "figmaNode": "6804-13742",
-      "category": "authentication",
-      "estimatedHours": 6,
-      "dependencies": ["Button", "Input", "AuthContext"],
-      "description": "Login screen for mobile and desktop"
-    },
     {
       "priority": 6,
       "type": "component",
@@ -110,14 +99,22 @@
       "type": "context",
       "platform": "desktop",
       "actualHours": 1.5
+    },
+    {
+      "name": "Login",
+      "completedDate": "2025-10-18T03:05:00Z",
+      "type": "screen",
+      "platform": "desktop",
+      "figmaNode": "6804-13742",
+      "actualHours": 2.5
     }
   ],
   "statistics": {
     "totalTasks": 12,
-    "pending": 6,
+    "pending": 5,
     "inProgress": 0,
-    "completed": 6,
-    "estimatedHoursRemaining": 39,
-    "averageCompletionTime": 3.75
+    "completed": 7,
+    "estimatedHoursRemaining": 33,
+    "averageCompletionTime": 3.5
   }
 }
