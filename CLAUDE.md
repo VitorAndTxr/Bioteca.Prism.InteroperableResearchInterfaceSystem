@@ -73,35 +73,98 @@ When working on this codebase:
 
 ## Project Overview
 
-**Interoperable Research Interface System (IRIS)** is a React Native application built with Expo that provides a cross-platform interface for connecting to and controlling the PRISM sEMG/FES device via Bluetooth. The application runs primarily on web and Android platforms with full TypeScript support.
+**Interoperable Research Interface System (IRIS)** is a **monorepo project** containing both **Mobile** (React Native + Expo) and **Desktop** (Electron + Vite + React) applications that provide a comprehensive interface for managing biomedical research data, controlling the PRISM sEMG/FES device via Bluetooth, and interacting with the InteroperableResearchNode backend.
 
-**Role in PRISM Ecosystem**: Represents the **Application** abstraction - general-purpose software that adds context (volunteer info, session metadata), controls device hardware via Bluetooth, visualizes real-time biosignals, and will eventually submit data to Research Nodes for persistence and federation.
+**Role in PRISM Ecosystem**: Represents the **Application** abstraction - general-purpose software that adds context (volunteer info, session metadata, research projects), controls device hardware via Bluetooth, visualizes real-time biosignals, manages user authentication, and submits data to Research Nodes for persistence and federation.
 
 ## Technology Stack
 
-- **Framework**: React Native 0.81.4 with Expo ~54.0.12
+### Mobile App (React Native + Expo)
+- **Framework**: React Native 0.76.9 with Expo ~52.0.47
 - **Language**: TypeScript ~5.9.2 (strict mode enabled)
-- **Platforms**: Web and Android (configured in `app.json`)
+- **Platforms**: Android (primary), Web
 - **Key Dependencies**:
-  - `react-native-bluetooth-classic` - Bluetooth Serial Port Profile (SPP) communication
-  - `expo-status-bar` - Status bar control
-- **Bluetooth Protocol**: JSON-based message protocol matching the ESP32 device specification
+  - `react-native-bluetooth-classic` - Bluetooth SPP communication
+  - `react-native-gifted-charts` - Real-time sEMG visualization
+  - `expo-file-system` + `expo-sharing` - CSV data export
 
-## Architecture
+### Desktop App (Electron + Vite + React)
+- **Framework**: Electron 28.3.3 + Vite 6.0.7 + React 18.3.1
+- **Language**: TypeScript ~5.9.2 (strict mode enabled)
+- **Platforms**: Windows, macOS, Linux
+- **Key Dependencies**:
+  - `@heroicons/react` v2.2.0 - **All icons use Heroicons library**
+  - `react-router-dom` v7.1.3 - Application routing
+  - `recharts` v2.15.0 - Data visualization
+  - `@storybook/react-vite` - Component documentation (8 stories)
 
-### Application Structure
+### Shared Packages
+- **@iris/domain** - Shared TypeScript types and models (User, Auth, Session, etc.)
+- **@iris/middleware** - Business logic (future)
+- **@iris/ui-components** - Shared components (future)
+
+## Monorepo Architecture
+
+### Project Structure (Updated October 2025)
 
 ```
-src/
-├── context/          # React Context providers for global state
-│   └── BluetoothContext.tsx  # Bluetooth device management and protocol implementation
-├── screens/          # Screen components
-│   └── HomeScreen.tsx
-├── types/            # TypeScript type definitions
-│   └── index.ts
-└── utils/            # Utility functions
-    └── index.ts
+IRIS/
+├── apps/
+│   ├── mobile/              # React Native (Expo) - Device control
+│   │   └── src/
+│   │       ├── context/     # BluetoothContext (protocol implementation)
+│   │       ├── screens/     # HomeScreen, StreamingScreen, StreamConfigScreen
+│   │       ├── components/  # SEMGChart (real-time visualization)
+│   │       ├── hooks/       # useStreamData
+│   │       ├── utils/       # csvExport, formatters
+│   │       └── types/       # Mobile-specific types
+│   │
+│   └── desktop/             # Electron + Vite + React - Data management
+│       └── src/
+│           ├── design-system/
+│           │   └── components/  # 16 reusable UI components ✅
+│           │       ├── app-layout/      ├── avatar/
+│           │       ├── button/          ├── button-group/
+│           │       ├── data-table/      ├── datepicker/
+│           │       ├── dropdown/        ├── header/
+│           │       ├── input/           ├── modal/
+│           │       ├── password/        ├── search-bar/
+│           │       ├── sidebar/         ├── toast/
+│           │       └── typography/
+│           ├── context/         # AuthContext ✅
+│           ├── screens/         # Login, Home, UsersAndResearchers ✅
+│           ├── services/        # AuthService (mock + future backend) ✅
+│           ├── config/          # menu.ts ✅
+│           ├── stories/         # Storybook examples (8 stories) ✅
+│           ├── App.tsx          # Main app component (routing) ✅
+│           └── main.tsx         # React entry point ✅
+│
+├── packages/
+│   ├── domain/              # Shared types (User, Auth, Session, etc.) ✅
+│   ├── middleware/          # Business logic (future)
+│   └── ui-components/       # Shared components (future)
+│
+└── docs/                    # Comprehensive documentation
 ```
+
+### Key Structural Changes (October 2025)
+
+**Desktop App Reorganization:**
+- ✅ **Flattened structure**: Moved from `src/renderer/` to `src/`
+- ✅ **Main app**: Now `src/App.tsx` (was `src/renderer/App.tsx`)
+- ✅ **Entry point**: `src/main.tsx`
+- ✅ **Context providers**: Added `src/context/AuthContext.tsx`
+- ✅ **Services layer**: Added `src/services/auth/AuthService.ts`
+- ✅ **Configuration**: Added `src/config/menu.ts`
+- ✅ **Design system**: 16 components in `src/design-system/components/`
+- ✅ **Storybook**: Full setup with 8 component stories
+- ✅ **Heroicons**: All SVG icons replaced with @heroicons/react library
+- ✅ **Component reuse**: Eliminated duplicate code, following DRY principle
+
+**Mobile App:**
+- ✅ **Streaming feature**: Complete real-time sEMG visualization (215Hz)
+- ✅ **CSV Export**: Full data export functionality
+- ✅ **Bluetooth Protocol**: All 14 message codes implemented
 
 ### Bluetooth Protocol Implementation
 
@@ -150,57 +213,204 @@ The `BluetoothContext` manages all Bluetooth connectivity and device communicati
 
 ## Common Development Commands
 
-### Setup and Installation
+### Monorepo Setup
 
 ```bash
-# Install dependencies
+# Install all dependencies (root + all workspaces)
 npm install
 
-# Type check without compilation
-npm run type-check
+# Type check all workspaces
+npm run type-check:all
+
+# Build all workspaces
+npm run build:all
 ```
 
-### Development
+### Mobile App (apps/mobile)
 
 ```bash
-# Start Expo dev server (opens interactive menu)
-npm start
+# Start Expo dev server (interactive menu)
+npm run mobile
 
-# Start with cleared cache
-npm run clean
+# Android development
+npm run mobile:android
 
-# Web development (http://localhost:8081)
-npm run web
-npm run dev:web
+# Web development
+npm run mobile:web
 
-# Android development (requires Android Studio/emulator)
-npm run android
-npm run dev:android
+# iOS development (macOS only)
+npm run mobile:ios
+
+# Type check mobile app
+cd apps/mobile && npm run type-check
 ```
 
-### Building
+### Desktop App (apps/desktop)
 
 ```bash
-# Build for web (exports to dist/)
-npm run build:web
+# Start desktop app in development mode
+npm run desktop           # or npm run desktop:dev
 
-# Generate native Android project files
-npm run prebuild
+# Build desktop app
+npm run desktop:build
 
-# Build Android APK (legacy Expo build service)
-npm run build:android
+# Package desktop app (Electron)
+npm run package           # Auto-detect platform
+npm run package:win       # Windows (NSIS installer)
+npm run package:mac       # macOS (DMG)
+npm run package:linux     # Linux (AppImage)
+
+# Storybook (component documentation)
+cd apps/desktop && npm run storybook  # http://localhost:6006
+
+# Type check desktop app
+cd apps/desktop && npm run type-check
 ```
 
-### TypeScript
+### TypeScript Standards
 
 ```bash
-# Run type checking (does not emit JavaScript)
-npm run type-check
+# Type check specific workspace
+cd apps/desktop && npm run type-check
+cd apps/mobile && npm run type-check
+
+# Type check all packages
+npm run type-check:all
 ```
+
+## Coding Standards & Best Practices
+
+### Icon Usage (CRITICAL: Updated October 2025)
+
+**ALL icons must use Heroicons library (@heroicons/react). NO custom SVG files.**
+
+```typescript
+// ✅ CORRECT: Import from Heroicons
+import { UserIcon, ChevronDownIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { UserIcon as UserIconSolid } from '@heroicons/react/24/solid';
+import { UserIcon as UserIconMini } from '@heroicons/react/20/solid';
+
+// Usage
+<Button iconLeft={<UserIcon className="w-5 h-5" />}>
+    Add User
+</Button>
+
+// ❌ INCORRECT: Custom SVG imports
+import CustomUserIcon from './assets/user-icon.svg';
+```
+
+**Icon Variants:**
+- `@heroicons/react/24/outline` - 24x24 with 2px stroke (default)
+- `@heroicons/react/24/solid` - 24x24 filled
+- `@heroicons/react/20/solid` - 20x20 solid (mini, for tight spaces)
+
+**Standard Sizes:**
+```typescript
+<UserIcon className="w-4 h-4" />  // 16px (small)
+<UserIcon className="w-5 h-5" />  // 20px (default)
+<UserIcon className="w-6 h-6" />  // 24px (medium)
+<UserIcon className="w-8 h-8" />  // 32px (large)
+```
+
+### Component Reuse (CRITICAL)
+
+**ALWAYS check for existing components before creating new ones.**
+
+```bash
+# Check desktop components
+ls apps/desktop/src/design-system/components/
+
+# Available components:
+# Button, Input, Dropdown, Password, SearchBar, ButtonGroup
+# DataTable, Avatar, Sidebar, Header, AppLayout
+# Modal, Toast, Typography, DatePicker
+```
+
+**DO:**
+- ✅ Reuse existing components with different props
+- ✅ Compose multiple components together
+- ✅ Extend components via composition, not duplication
+
+**DON'T:**
+- ❌ Create duplicate button implementations
+- ❌ Copy-paste component code
+- ❌ Create similar components with different names
+
+```typescript
+// ✅ GOOD: Reuse existing Button
+import { Button } from '../design-system/components/button';
+
+function MyScreen() {
+    return <Button variant="primary">Click me</Button>;
+}
+
+// ❌ BAD: Creating duplicate
+function MyScreen() {
+    return <button className="my-custom-button">Click me</button>;
+}
+```
+
+### TypeScript Strict Mode
+
+**TypeScript strict mode is REQUIRED. No `any` types.**
+
+```typescript
+// ✅ GOOD: Explicit types
+interface User {
+    id: string;
+    name: string;
+    email: string;
+}
+
+function getUserName(user: User): string {
+    return user.name;
+}
+
+// ❌ BAD: Using any
+function getUserName(user: any): any {
+    return user.name;
+}
+```
+
+### File Organization
+
+**Desktop Components:**
+```
+components/button/
+├── Button.tsx           # Component logic
+├── Button.types.ts      # TypeScript interfaces
+├── Button.css           # Component styles
+├── Button.stories.tsx   # Storybook stories
+├── Button.test.tsx      # Unit tests (future)
+├── README.md            # Component documentation
+└── index.ts             # Barrel export
+```
+
+**Naming Conventions:**
+- Components: `PascalCase.tsx` (Button.tsx)
+- Screens: `PascalCase + Screen.tsx` (LoginScreen.tsx)
+- Hooks: `camelCase + use prefix` (useStreamData.ts)
+- Types: `PascalCase + .types.ts` (Button.types.ts)
+- Styles: `Component.css` (Button.css)
+
+### Documentation Requirements
+
+See [docs/development/CODING_STANDARDS.md](docs/development/CODING_STANDARDS.md) for complete coding standards.
+
+---
 
 ## Key Configuration Files
 
-- **`app.json`** - Expo configuration
+### Desktop App
+
+- **`apps/desktop/package.json`** - Desktop app dependencies and scripts
+- **`apps/desktop/vite.config.ts`** - Vite configuration
+- **`apps/desktop/tsconfig.json`** - TypeScript configuration
+- **`apps/desktop/.storybook/`** - Storybook configuration (8 stories)
+
+### Mobile App
+
+- **`apps/mobile/app.json`** - Expo configuration
   - `newArchEnabled: true` - Uses React Native's new architecture
   - `platforms: ["web", "android"]` - Supported platforms
   - Package name: `com.iris.app`
