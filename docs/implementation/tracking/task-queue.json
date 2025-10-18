@@ -1,16 +1,25 @@
 {
-  "lastUpdated": "2025-10-18T03:05:00Z",
+  "lastUpdated": "2025-10-18T05:30:00Z",
   "queue": [
     {
-      "priority": 6,
+      "priority": 5,
       "type": "component",
-      "name": "Password",
+      "name": "SearchBar",
       "status": "pending",
-      "figmaNode": "2803-2225",
       "category": "design-system",
       "estimatedHours": 3,
       "dependencies": ["Input"],
-      "description": "Password input with show/hide toggle"
+      "description": "Search input with autocomplete and filters"
+    },
+    {
+      "priority": 6,
+      "type": "component",
+      "name": "Avatar",
+      "status": "pending",
+      "category": "design-system",
+      "estimatedHours": 2,
+      "dependencies": [],
+      "description": "User avatar component with status indicators"
     },
     {
       "priority": 7,
@@ -20,7 +29,7 @@
       "figmaNode": "6804-13670",
       "category": "user-management",
       "estimatedHours": 8,
-      "dependencies": ["Button", "SearchBar", "DataTable"],
+      "dependencies": ["Button", "SearchBar", "DataTable", "Sidebar", "Header"],
       "description": "Users list screen with CRUD operations"
     },
     {
@@ -41,7 +50,7 @@
       "figmaNode": "6804-13591",
       "category": "npi",
       "estimatedHours": 6,
-      "dependencies": ["DataTable", "Button"],
+      "dependencies": ["DataTable", "Button", "Sidebar", "Header"],
       "description": "NPI connection requests management"
     },
     {
@@ -52,7 +61,7 @@
       "figmaNode": "6804-13176",
       "category": "snomed",
       "estimatedHours": 6,
-      "dependencies": ["SearchBar", "DataTable"],
+      "dependencies": ["SearchBar", "DataTable", "Sidebar", "Header"],
       "description": "SNOMED CT clinical conditions browser"
     }
   ],
@@ -107,14 +116,46 @@
       "platform": "desktop",
       "figmaNode": "6804-13742",
       "actualHours": 2.5
+    },
+    {
+      "name": "Password",
+      "completedDate": "2025-10-18T04:00:00Z",
+      "type": "component",
+      "platform": "desktop",
+      "figmaNode": "2803-2225",
+      "actualHours": 3
+    },
+    {
+      "name": "Sidebar",
+      "completedDate": "2025-10-18T05:00:00Z",
+      "type": "component",
+      "platform": "desktop",
+      "category": "layout",
+      "actualHours": 2
+    },
+    {
+      "name": "Header",
+      "completedDate": "2025-10-18T05:15:00Z",
+      "type": "component",
+      "platform": "desktop",
+      "category": "layout",
+      "actualHours": 1.5
+    },
+    {
+      "name": "AppLayout",
+      "completedDate": "2025-10-18T05:30:00Z",
+      "type": "component",
+      "platform": "desktop",
+      "category": "layout",
+      "actualHours": 1
     }
   ],
   "statistics": {
-    "totalTasks": 12,
-    "pending": 5,
+    "totalTasks": 17,
+    "pending": 6,
     "inProgress": 0,
-    "completed": 7,
+    "completed": 11,
     "estimatedHoursRemaining": 33,
-    "averageCompletionTime": 3.5
+    "averageCompletionTime": 2.9
   }
 }

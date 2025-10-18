@@ -1,0 +1,257 @@
+/**
+ * Header Component Styles
+ * Extracted from Figma screens (6804-13670, 6804-13591, 6804-13176)
+ *
+ * Design tokens:
+ * COLORS:
+ *   - Background: #FCFCFC (Neutral/50)
+ *   - Title: #1F1F1F (Neutral/900)
+ *   - Subtitle: #727272 (Neutral/600)
+ *   - Tab active: #6BE6EF (Brand/Primary/300) with #49A2A8 border
+ *   - Button: #49A2A8 (Brand/Primary/500)
+ *
+ * DIMENSIONS:
+ *   - Height: Variable based on content
+ *   - Padding: 24px vertical, 32px horizontal
+ *   - Title: 32px font size
+ *   - Tabs: 44px height
+ */
+
+/* ========================================
+   Container
+   ======================================== */
+
+.iris-header {
+    background-color: #fcfcfc;
+    border-bottom: 1px solid #e0e0e0;
+    padding: 24px 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* ========================================
+   Top Row (Title + Actions)
+   ======================================== */
+
+.iris-header__top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.iris-header__title-section {
+    flex: 1;
+    min-width: 0;
+}
+
+.iris-header__title {
+    font-family: 'Inter', sans-serif;
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 40px;
+    color: #1f1f1f;
+    margin: 0;
+}
+
+.iris-header__subtitle {
+    font-family: 'Inter', sans-serif;
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 24px;
+    color: #727272;
+    margin: 4px 0 0 0;
+}
+
+/* ========================================
+   Actions
+   ======================================== */
+
+.iris-header__actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.iris-header__primary-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+    background-color: #49a2a8;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 20px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.iris-header__primary-action:hover {
+    background-color: #3d8a8f;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.iris-header__primary-action:active {
+    background-color: #357277;
+    transform: translateY(1px);
+}
+
+.iris-header__primary-action-icon {
+    width: 16px;
+    height: 16px;
+}
+
+.iris-header__user-menu {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: #e0e0e0;
+    border: 2px solid #6be6ef;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.iris-header__user-menu:hover {
+    background-color: #d0d0d0;
+    border-color: #49a2a8;
+}
+
+.iris-header__user-menu svg {
+    width: 20px;
+    height: 20px;
+    color: #727272;
+}
+
+/* ========================================
+   Breadcrumbs
+   ======================================== */
+
+.iris-header__breadcrumbs {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    line-height: 20px;
+    color: #727272;
+}
+
+.iris-header__breadcrumb-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.iris-header__breadcrumb-link {
+    color: #49a2a8;
+    text-decoration: none;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.iris-header__breadcrumb-link:hover {
+    color: #3d8a8f;
+    text-decoration: underline;
+}
+
+.iris-header__breadcrumb-separator {
+    color: #b0b0b0;
+}
+
+/* ========================================
+   Tabs
+   ======================================== */
+
+.iris-header__tabs {
+    display: flex;
+    gap: 4px;
+    border-bottom: 2px solid #e0e0e0;
+    margin-top: 8px;
+}
+
+.iris-header__tab {
+    padding: 12px 20px;
+    background: transparent;
+    border: none;
+    border-bottom: 3px solid transparent;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 20px;
+    color: #727272;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    position: relative;
+    margin-bottom: -2px;
+}
+
+.iris-header__tab:hover:not(.iris-header__tab--active) {
+    color: #1f1f1f;
+    background-color: rgba(107, 230, 239, 0.1);
+}
+
+.iris-header__tab--active {
+    color: #1f1f1f;
+    font-weight: 600;
+    border-bottom-color: #49a2a8;
+    background-color: rgba(107, 230, 239, 0.15);
+}
+
+.iris-header__tab-badge {
+    display: inline-block;
+    background-color: #e11d48;
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 10px;
+    min-width: 18px;
+    text-align: center;
+    margin-left: 6px;
+}
+
+/* ========================================
+   Responsive Design
+   ======================================== */
+
+@media (max-width: 768px) {
+    .iris-header {
+        padding: 16px 20px;
+    }
+
+    .iris-header__top {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .iris-header__title {
+        font-size: 24px;
+        line-height: 32px;
+    }
+
+    .iris-header__actions {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .iris-header__tabs {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+    }
+
+    .iris-header__tabs::-webkit-scrollbar {
+        display: none;
+    }
+}

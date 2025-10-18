@@ -24,7 +24,9 @@
       "Bash(npm run dev:*)",
       "mcp__playwright__browser_hover",
       "Bash(npx storybook@latest init:*)",
-      "Bash(npm run storybook:*)"
+      "Bash(npm run storybook:*)",
+      "mcp__playwright__browser_evaluate",
+      "mcp__playwright__browser_type"
     ],
     "deny": [],
     "ask": []
