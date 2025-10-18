@@ -110,6 +110,7 @@ export function Login({ onLoginSuccess }: LoginProps) {
         <div className="login-screen">
             {/* Background decorative elements */}
             <div className="login-background" />
+            <div className="login-background-overlay" />
 
             {/* Main content container */}
             <div className="login-container">

@@ -29,8 +29,49 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background: linear-gradient(135deg, #C8F3F6 0%, #6BE6EF 100%);
+    background: #D2FAE6; /* Base green-aqua color from Figma */
     z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+/* Blurred layers matching Figma effect */
+.login-background::before,
+.login-background::after {
+    content: '';
+    position: absolute;
+    background: #93E1FD; /* Light blue from Figma */
+    filter: blur(250px);
+}
+
+/* First blur layer (larger) */
+.login-background::before {
+    top: -30%;
+    left: -20%;
+    width: 120%;
+    height: 70%;
+    opacity: 0.6;
+}
+
+/* Second blur layer (smaller) */
+.login-background::after {
+    top: 10%;
+    left: 20%;
+    width: 60%;
+    height: 40%;
+    filter: blur(200px);
+    opacity: 0.5;
+}
+
+/* White gradient overlay from Figma */
+.login-background-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(0deg, white 0%, transparent 100%);
+    z-index: 1;
     pointer-events: none;
 }
 
@@ -97,39 +138,22 @@
     width: 100%;
 }
 
-/* Override Input component styles to match Figma design */
-.login-form-fields .iris-input__label {
-    font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    font-size: 19.207px;
-    font-weight: 600; /* SemiBold */
-    letter-spacing: 1.9207px;
-    color: #444B59;
-}
-
-.login-form-fields .iris-input-wrapper--big {
+/*
+ * Login-specific pill-shaped styling (border-radius: 54.878px)
+ * Applied only to this screen without breaking design system
+ */
+.login-form-fields .iris-input-wrapper {
+    border-radius: 54.878px;
     border: 1.372px solid #387F84;
-    border-radius: 54.878px; /* Rounded pill shape */
-    min-height: 54.878px;
-    padding: 0 21.951px;
-    background-color: #FFFFFF;
 }
 
-.login-form-fields .iris-input--big {
-    font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    font-size: 16.464px;
-    font-weight: 400; /* Regular */
-    letter-spacing: 1.6464px;
-}
-
-.login-form-fields .iris-input::placeholder {
-    color: #C8D3F9;
-    letter-spacing: 1.6464px;
-}
-
-/* Focus state matching Figma */
 .login-form-fields .iris-input-wrapper:focus-within {
     border: 2px solid #49A2A8;
     box-shadow: 0 0 0 2px rgba(73, 162, 168, 0.2);
+}
+
+.login-form .iris-button {
+    border-radius: 54.878px;
 }
 
 /* Password toggle button */
@@ -156,29 +180,11 @@
 }
 
 /* ===== SUBMIT BUTTON ===== */
-.login-form .iris-button--primary.iris-button--big {
-    background-color: #49A2A8;
-    border-radius: 54.878px; /* Match input border radius */
-    min-height: 54.878px;
-    box-shadow: 2.744px 5.488px 8.232px 0px rgba(78, 99, 141, 0.06),
-                inset 0px 2.744px 8.232px 0px rgba(200, 211, 249, 0.6);
-    font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    font-size: 19.207px;
-    font-weight: 800; /* ExtraBold */
-    letter-spacing: 1.9207px;
-    color: #FFFFFF;
-}
-
-.login-form .iris-button--primary.iris-button--big:hover:not(:disabled) {
-    background-color: #3D8A8F;
-    box-shadow: 2.744px 5.488px 12px 0px rgba(78, 99, 141, 0.12),
-                inset 0px 2.744px 8.232px 0px rgba(200, 211, 249, 0.8);
-}
-
-.login-form .iris-button--primary.iris-button--big:active:not(:disabled) {
-    background-color: #326F73;
-    box-shadow: inset 2.744px 5.488px 8.232px 0px rgba(0, 0, 0, 0.15);
-}
+/*
+ * REMOVED: Button component overrides
+ * The login button now uses the design system's default Button styles
+ * Figma-specific pill shape (54.878px border-radius) is removed to maintain design system consistency
+ */
 
 /* ===== LOGO SECTION (RIGHT) ===== */
 .login-logo-section {
@@ -273,26 +279,8 @@
         letter-spacing: 2px;
     }
 
-    .login-form-fields .iris-input__label {
-        font-size: 16px;
-        letter-spacing: 1.5px;
-    }
-
-    .login-form-fields .iris-input-wrapper--big {
-        min-height: 48px;
-        padding: 0 18px;
-    }
-
-    .login-form-fields .iris-input--big {
-        font-size: 14px;
-        letter-spacing: 1px;
-    }
-
-    .login-form .iris-button--primary.iris-button--big {
-        min-height: 48px;
-        font-size: 16px;
-        letter-spacing: 1.5px;
-    }
+    /* Removed Input and Button component overrides */
+    /* Components will use their own responsive design from the design system */
 
     .login-logo-section {
         width: 240px;
@@ -319,26 +307,18 @@
 /* ===== ACCESSIBILITY ===== */
 
 @media (prefers-reduced-motion: reduce) {
-    .login-form-fields .iris-input-wrapper,
-    .password-toggle,
-    .login-form .iris-button--primary {
+    .password-toggle {
         transition: none;
     }
+    /* Removed Input and Button component overrides - they have their own accessibility rules */
 }
 
 /* High contrast mode */
 @media (prefers-contrast: high) {
-    .login-form-fields .iris-input-wrapper {
-        border-width: 2px;
-    }
-
-    .login-form-fields .iris-input-wrapper:focus-within {
-        border-width: 3px;
-    }
-
     .login-error-banner {
         border-width: 2px;
     }
+    /* Removed Input component overrides - Input has its own high-contrast rules */
 }
 
 /* Print styles */
