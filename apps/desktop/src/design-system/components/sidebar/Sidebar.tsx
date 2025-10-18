@@ -29,6 +29,7 @@
  */
 
 import React, { useState } from 'react';
+import { ChevronLeftIcon } from '@heroicons/react/24/outline';
 import type { SidebarProps, SidebarMenuItem } from './Sidebar.types';
 import './Sidebar.css';
 
@@ -107,7 +108,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             {/* Logo */}
             <div className="iris-sidebar__logo">
                 <img
-                    src="/assets/31be624d9a9241cb67614da7ace8431462328fcf.svg"
+                    src="/assets/logo.svg"
                     alt="IRIS Logo"
                     className="iris-sidebar__logo-icon"
                 />
@@ -130,15 +131,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                 aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
                 aria-expanded={!isCollapsed}
             >
-                <svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path
-                        d="M7.5 3L4.5 6L7.5 9"
-                        stroke="currentColor"
-                        strokeWidth="1.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                    />
-                </svg>
+                <ChevronLeftIcon className="w-3 h-3" />
             </button>
         </aside>
     );

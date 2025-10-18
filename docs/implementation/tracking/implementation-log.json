@@ -494,7 +494,7 @@
       "files": [
         "apps/desktop/src/design-system/components/sidebar/Sidebar.css",
         "apps/desktop/src/design-system/components/sidebar/Sidebar.tsx",
-        "apps/desktop/public/assets/31be624d9a9241cb67614da7ace8431462328fcf.svg"
+        "apps/desktop/public/assets/logo.svg"
       ],
       "completedSteps": [
         "figma-design-extraction",
@@ -724,7 +724,7 @@
         "apps/desktop/src/renderer/screens/UsersList.css",
         "apps/desktop/src/renderer/screens/UsersList.stories.tsx",
         "apps/desktop/src/renderer/App.tsx",
-        "apps/desktop/public/design-system/users-list/31be624d9a9241cb67614da7ace8431462328fcf.svg",
+        "apps/desktop/public/design-system/users-list/logo.svg",
         "apps/desktop/public/design-system/users-list/49ad5b339f4b1b5a4f5a897ab8ef107a92c7ec29.svg",
         "apps/desktop/public/design-system/users-list/a2cecc59bff138b74d8ff4d4de2167957817e7a8.svg",
         "apps/desktop/public/design-system/users-list/9c4fd4d9c05c89ca19fcb0e89f275e86a530cb11.svg"
