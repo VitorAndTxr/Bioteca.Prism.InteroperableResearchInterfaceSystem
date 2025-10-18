@@ -29,6 +29,7 @@
   "author": "PRISM Project",
   "license": "MIT",
   "dependencies": {
+    "@heroicons/react": "^2.2.0",
     "@iris/domain": "file:../../packages/domain",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
@@ -46,16 +47,16 @@
     "@types/react": "^18.3.0",
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.3.4",
+    "@vitest/browser": "^3.2.4",
+    "@vitest/coverage-v8": "^3.2.4",
     "concurrently": "^9.1.2",
     "electron": "^28.3.3",
     "electron-builder": "^24.13.3",
+    "playwright": "^1.56.1",
     "storybook": "^9.1.13",
     "typescript": "~5.9.2",
     "vite": "^6.0.7",
-    "vitest": "^3.2.4",
-    "@vitest/browser": "^3.2.4",
-    "playwright": "^1.56.1",
-    "@vitest/coverage-v8": "^3.2.4"
+    "vitest": "^3.2.4"
   },
   "build": {
     "appId": "com.prism.iris.desktop",

@@ -95,10 +95,4 @@ export interface HeaderProps {
     /**
      * Secondary action button configuration (like logout)
      */
-    secondaryAction?: {
-        icon: ReactNode;
-        onClick: () => void;
-        ariaLabel?: string;
-        title?: string;
-    };
 }

@@ -34,6 +34,10 @@
 import React from 'react';
 import type { HeaderProps } from './Header.types';
 import './Header.css';
+import { useAuth } from '../../../context';
+import { Button } from '../button';
+
+import { ArrowLeftEndOnRectangleIcon, PlusIcon } from '@heroicons/react/24/outline';
 
 const Header: React.FC<HeaderProps> = ({
     title,
@@ -45,9 +49,10 @@ const Header: React.FC<HeaderProps> = ({
     showUserMenu = true,
     onUserMenuClick,
     breadcrumbs,
-    className = '',
-    secondaryAction,
+    className = ''
 }) => {
+    const { logout } = useAuth();
+    
     const handleTabClick = (tabValue: string) => {
         if (onTabChange) {
             onTabChange(tabValue);
@@ -128,26 +133,6 @@ const Header: React.FC<HeaderProps> = ({
         );
     };
 
-    const renderPlusIcon = () => {
-        return (
-            <svg
-                width="16"
-                height="16"
-                viewBox="0 0 16 16"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                className="iris-header__primary-action-icon"
-            >
-                <path
-                    d="M8 3.5V12.5M3.5 8H12.5"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                />
-            </svg>
-        );
-    };
 
     const containerClasses = ['iris-header', className].filter(Boolean).join(' ');
 
@@ -166,23 +151,22 @@ const Header: React.FC<HeaderProps> = ({
                 <div className="iris-header__actions">
                     {/* Primary Action Button */}
                     {primaryAction && (
-                        <button className="iris-header__primary-action" onClick={primaryAction.onClick}>
-                            {primaryAction.icon || renderPlusIcon()}
+                        <Button 
+                            variant='primary'
+                            onClick={primaryAction.onClick}
+                            icon={primaryAction.icon}
+                        >
                             {primaryAction.label}
-                        </button>
+                        </Button>
                     )}
 
-                    {/* Secondary Action Button (e.g., Logout) */}
-                    {secondaryAction && (
-                        <button
-                            className="iris-header__secondary-action"
-                            onClick={secondaryAction.onClick}
-                            aria-label={secondaryAction.ariaLabel || 'Secondary action'}
-                            title={secondaryAction.title}
-                        >
-                            {secondaryAction.icon}
-                        </button>
-                    )}
+                    <Button
+                        variant='outline'
+                        onClick={logout}
+                        aria-label={'logout'}
+                        icon={<ArrowLeftEndOnRectangleIcon />}
+                    />
+
 
                     {/* User Menu */}
                     {showUserMenu && (

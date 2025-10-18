@@ -11,7 +11,7 @@ import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import './Login.css';
 
 // Import logo and background assets
-const logoSrc = '/design-system/login/dbd3d42817cc4ca74e0246b441a51dbe46407c98.svg';
+const logoSrc = '/assets/logo.svg';
 
 export interface LoginProps {
     onLoginSuccess?: () => void;
