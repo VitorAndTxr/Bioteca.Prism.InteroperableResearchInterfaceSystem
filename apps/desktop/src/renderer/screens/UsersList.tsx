@@ -11,7 +11,9 @@ import { User, UserRole } from '@iris/domain';
 import { DataTable } from '../../design-system/components/data-table';
 import { Button } from '../../design-system/components/button';
 import { SearchBar } from '../../design-system/components/search-bar';
+import { ButtonGroup } from '../../design-system/components/button-group';
 import type { DataTableColumn } from '../../design-system/components/data-table/DataTable.types';
+import type { ButtonGroupOption } from '../../design-system/components/button-group';
 import './UsersList.css';
 
 // Icons
@@ -203,30 +205,30 @@ export function UsersList({
         },
     ];
 
+    // ButtonGroup options
+    const tabOptions: ButtonGroupOption[] = [
+        { value: 'users', label: 'Usuários' },
+        { value: 'researchers', label: 'Pesquisadores' },
+    ];
+
+    const handleTabChange = (value: string) => {
+        setSelectedTab(value as UserType);
+        setCurrentPage(1);
+    };
+
     return (
         <div className="users-list-screen">
             {/* Tabs and Content */}
             <div className="users-list-content">
-                {/* Tabs */}
+                {/* Tabs using ButtonGroup */}
                 <div className="users-list-tabs">
-                    <button
-                        className={`tab-button ${selectedTab === 'users' ? 'active' : ''}`}
-                        onClick={() => {
-                            setSelectedTab('users');
-                            setCurrentPage(1);
-                        }}
-                    >
-                        Usuários
-                    </button>
-                    <button
-                        className={`tab-button ${selectedTab === 'researchers' ? 'active' : ''}`}
-                        onClick={() => {
-                            setSelectedTab('researchers');
-                            setCurrentPage(1);
-                        }}
-                    >
-                        Pesquisadores
-                    </button>
+                    <ButtonGroup
+                        options={tabOptions}
+                        value={selectedTab}
+                        onChange={handleTabChange}
+                        ariaLabel="Select user type"
+                        size="medium"
+                    />
                 </div>
 
                 {/* Content Card */}
@@ -240,7 +242,8 @@ export function UsersList({
                             variant="primary"
                             size="medium"
                             onClick={onUserAdd}
-                            iconLeft={<PlusIcon />}
+                            icon={<PlusIcon />}
+                            iconPosition="left"
                         >
                             Adicionar
                         </Button>
@@ -252,7 +255,6 @@ export function UsersList({
                             placeholder="Buscar usuários..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            onClear={() => setSearchQuery('')}
                             size="medium"
                             fullWidth
                         />

@@ -1,0 +1,255 @@
+/**
+ * ButtonGroup Component Styles
+ * Based on IRIS Design System - Figma nodes 6804:13695 and 6804:18716
+ *
+ * Design tokens from Figma:
+ * SELECTED STATE:
+ *   - Background: #DAFAFD (Brand/Primary/50)
+ *   - Text: #387F84 (Brand/Primary/600)
+ *   - Border: #49A2A8 (Brand/Primary/500)
+ * UNSELECTED STATE:
+ *   - Background: #FFFFFF (Basic/White)
+ *   - Text: #727272 (Neutral/600)
+ *   - Border: #D1D1D1 (Neutral/300)
+ * TYPOGRAPHY:
+ *   - Font: Inter Semi Bold
+ *   - Size: 14px
+ *   - Weight: 600
+ *   - Line height: 20px
+ */
+
+/* ===== BASE BUTTON GROUP ===== */
+.iris-button-group {
+    /* Layout */
+    display: inline-flex;
+    align-items: stretch;
+    position: relative;
+
+    /* Visual */
+    isolation: isolate;
+
+    /* Accessibility */
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+/* Full width variant */
+.iris-button-group--full-width {
+    width: 100%;
+    display: flex;
+}
+
+.iris-button-group--full-width .iris-button-group__button {
+    flex: 1;
+}
+
+/* ===== INDIVIDUAL BUTTONS ===== */
+.iris-button-group__button {
+    /* Reset */
+    margin: 0;
+    background: none;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    cursor: pointer;
+
+    /* Layout */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    position: relative;
+
+    /* Typography */
+    font-weight: 600;
+    font-size: 14px;
+    line-height: 20px;
+    text-align: center;
+    white-space: nowrap;
+
+    /* Visual - Unselected State */
+    background-color: #FFFFFF;
+    color: #727272;
+    border: 1px solid #D1D1D1;
+    border-radius: 0;
+
+    /* Transition */
+    transition: all 0.2s ease-in-out;
+
+    /* Prevent double borders */
+    margin-left: -1px;
+}
+
+/* First button gets left margin back */
+.iris-button-group__button:first-child {
+    margin-left: 0;
+}
+
+/* ===== CORNER ROUNDING ===== */
+
+/* First button - rounded top-left corner only */
+.iris-button-group__button--first {
+    border-top-left-radius: 8px;
+}
+
+/* Last button - rounded top-right corner only */
+.iris-button-group__button--last {
+    border-top-right-radius: 8px;
+}
+
+/* ===== SELECTED STATE ===== */
+.iris-button-group__button--selected {
+    background-color: #DAFAFD;
+    color: #387F84;
+    border-color: #49A2A8;
+    z-index: 1; /* Bring selected button to front for border visibility */
+}
+
+/* ===== HOVER STATE ===== */
+.iris-button-group__button:hover:not(.iris-button-group__button--selected):not(:disabled) {
+    background-color: #F5F5F5;
+    border-color: #49A2A8;
+    z-index: 2;
+}
+
+.iris-button-group__button--selected:hover:not(:disabled) {
+    background-color: #ADF4FA; /* Brand/Primary/100 - slightly darker on hover */
+}
+
+/* ===== ACTIVE/PRESSED STATE ===== */
+.iris-button-group__button:active:not(:disabled) {
+    transform: scale(0.98);
+}
+
+/* ===== FOCUS STATE ===== */
+.iris-button-group__button:focus-visible {
+    outline: 2px solid #49A2A8;
+    outline-offset: 2px;
+    z-index: 3;
+}
+
+/* ===== DISABLED STATE ===== */
+.iris-button-group__button--disabled,
+.iris-button-group__button:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.iris-button-group--disabled .iris-button-group__button {
+    cursor: not-allowed;
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+/* ===== SIZES ===== */
+
+/* Small */
+.iris-button-group--small .iris-button-group__button {
+    padding: 6px 12px;
+    font-size: 12px;
+    line-height: 16px;
+    min-height: 32px;
+}
+
+.iris-button-group--small .iris-button-group__icon svg {
+    width: 14px;
+    height: 14px;
+}
+
+/* Medium (default) */
+.iris-button-group--medium .iris-button-group__button {
+    padding: 10px 12px;
+    font-size: 14px;
+    line-height: 20px;
+    min-height: 44px;
+}
+
+.iris-button-group--medium .iris-button-group__icon svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* Large */
+.iris-button-group--large .iris-button-group__button {
+    padding: 14px 16px;
+    font-size: 16px;
+    line-height: 24px;
+    min-height: 52px;
+}
+
+.iris-button-group--large .iris-button-group__icon svg {
+    width: 20px;
+    height: 20px;
+}
+
+/* ===== ICON ===== */
+.iris-button-group__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.iris-button-group__icon svg {
+    display: block;
+}
+
+/* ===== LABEL ===== */
+.iris-button-group__label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ===== RESPONSIVE ADJUSTMENTS ===== */
+@media (max-width: 768px) {
+    .iris-button-group--large .iris-button-group__button {
+        padding: 12px 14px;
+        font-size: 14px;
+        line-height: 20px;
+        min-height: 44px;
+    }
+
+    .iris-button-group--medium .iris-button-group__button {
+        padding: 8px 10px;
+        font-size: 13px;
+        line-height: 18px;
+        min-height: 38px;
+    }
+}
+
+/* ===== ACCESSIBILITY ENHANCEMENTS ===== */
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .iris-button-group__button {
+        border-width: 2px;
+    }
+
+    .iris-button-group__button--selected {
+        border-width: 2px;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    .iris-button-group__button {
+        transition: none;
+    }
+
+    .iris-button-group__button:active:not(:disabled) {
+        transform: none;
+    }
+}
+
+/* Print styles */
+@media print {
+    .iris-button-group__button {
+        border: 1px solid #000;
+        background: white !important;
+        color: #000 !important;
+    }
+
+    .iris-button-group__button--selected {
+        background: #F0F0F0 !important;
+        font-weight: 700;
+    }
+}
