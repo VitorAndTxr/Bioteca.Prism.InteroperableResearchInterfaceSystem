@@ -50,6 +50,7 @@ import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import Input from '../input/Input';
 import type { SearchBarProps, SearchBarOption } from './SearchBar.types';
 import './SearchBar.css';
+import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline';
 
 const SearchBar: React.FC<SearchBarProps> = ({
     onSearch,
@@ -346,22 +347,6 @@ const SearchBar: React.FC<SearchBarProps> = ({
     }, [recentSearchesKey]);
 
     // Default search icon (magnifying glass)
-    const defaultSearchIcon = (
-        <svg
-            className="iris-search-bar__search-icon"
-            viewBox="0 0 20 20"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-        >
-            <path
-                d="M9 17A8 8 0 1 0 9 1a8 8 0 0 0 0 16zM19 19l-4.35-4.35"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-            />
-        </svg>
-    );
 
     // Default clear icon (X)
     const defaultClearIcon = (
@@ -479,7 +464,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
                 onChange={handleChange}
                 onKeyDown={handleKeyDown}
                 onFocus={handleFocus}
-                icon={searchIcon || defaultSearchIcon}
+                icon={<MagnifyingGlassIcon/>}
                 iconPosition="left"
                 autoComplete="off"
                 role="combobox"
@@ -496,7 +481,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
                     aria-label="Clear search"
                     tabIndex={-1}
                 >
-                    {clearIcon || defaultClearIcon}
+                    <XMarkIcon className='iris-search-bar__clear-icon'/>
                 </button>
             )}
 

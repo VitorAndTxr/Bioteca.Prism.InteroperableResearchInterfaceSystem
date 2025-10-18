@@ -16,27 +16,7 @@ import type { DataTableColumn } from '../../design-system/components/data-table/
 import type { ButtonGroupOption } from '../../design-system/components/button-group';
 import './UsersList.css';
 
-// Icons
-const PlusIcon = () => (
-    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M10 4.16667V15.8333M4.16667 10H15.8333" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-        <circle cx="10" cy="10" r="7.5" stroke="currentColor" strokeWidth="1.5"/>
-    </svg>
-);
-
-const EyeIcon = () => (
-    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M10 12.5C11.3807 12.5 12.5 11.3807 12.5 10C12.5 8.61929 11.3807 7.5 10 7.5C8.61929 7.5 7.5 8.61929 7.5 10C7.5 11.3807 8.61929 12.5 10 12.5Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-        <path d="M17.5 10C15.4167 13.3333 12.9167 15 10 15C7.08333 15 4.58333 13.3333 2.5 10C4.58333 6.66667 7.08333 5 10 5C12.9167 5 15.4167 6.66667 17.5 10Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-    </svg>
-);
-
-const EditIcon = () => (
-    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M14.1667 2.5C14.3856 2.28113 14.6454 2.10752 14.9313 1.98906C15.2173 1.87061 15.5238 1.80965 15.8333 1.80965C16.1429 1.80965 16.4494 1.87061 16.7353 1.98906C17.0213 2.10752 17.281 2.28113 17.5 2.5C17.7189 2.71887 17.8925 2.97864 18.0109 3.26457C18.1294 3.55051 18.1904 3.85701 18.1904 4.16667C18.1904 4.47633 18.1294 4.78283 18.0109 5.06876C17.8925 5.3547 17.7189 5.61447 17.5 5.83333L6.25 17.0833L1.66667 18.3333L2.91667 13.75L14.1667 2.5Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-    </svg>
-);
-
+import { EyeIcon, PencilIcon as EditIcon, PlusIcon } from '@heroicons/react/24/outline';
 export interface UsersListProps {
     onUserAdd?: () => void;
     onUserEdit?: (user: User) => void;
