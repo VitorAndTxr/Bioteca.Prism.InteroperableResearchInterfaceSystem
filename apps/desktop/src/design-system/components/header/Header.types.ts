@@ -91,4 +91,14 @@ export interface HeaderProps {
      * Custom CSS class
      */
     className?: string;
+
+    /**
+     * Secondary action button configuration (like logout)
+     */
+    secondaryAction?: {
+        icon: ReactNode;
+        onClick: () => void;
+        ariaLabel?: string;
+        title?: string;
+    };
 }

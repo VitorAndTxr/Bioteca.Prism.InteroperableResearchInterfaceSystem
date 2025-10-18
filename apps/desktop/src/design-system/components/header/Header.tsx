@@ -46,6 +46,7 @@ const Header: React.FC<HeaderProps> = ({
     onUserMenuClick,
     breadcrumbs,
     className = '',
+    secondaryAction,
 }) => {
     const handleTabClick = (tabValue: string) => {
         if (onTabChange) {
@@ -168,6 +169,18 @@ const Header: React.FC<HeaderProps> = ({
                         <button className="iris-header__primary-action" onClick={primaryAction.onClick}>
                             {primaryAction.icon || renderPlusIcon()}
                             {primaryAction.label}
+                        </button>
+                    )}
+
+                    {/* Secondary Action Button (e.g., Logout) */}
+                    {secondaryAction && (
+                        <button
+                            className="iris-header__secondary-action"
+                            onClick={secondaryAction.onClick}
+                            aria-label={secondaryAction.ariaLabel || 'Secondary action'}
+                            title={secondaryAction.title}
+                        >
+                            {secondaryAction.icon}
                         </button>
                     )}
 

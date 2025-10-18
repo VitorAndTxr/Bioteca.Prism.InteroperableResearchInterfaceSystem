@@ -22,9 +22,8 @@
    ======================================== */
 
 .iris-header {
-    background-color: #fcfcfc;
-    border-bottom: 1px solid #e0e0e0;
-    padding: 24px 32px;
+    background-color: transparent; /* Transparent to blend with gray background */
+    padding: 16px; /* Matching the Figma spacing */
     display: flex;
     flex-direction: column;
     gap: 16px;
@@ -48,10 +47,11 @@
 
 .iris-header__title {
     font-family: 'Inter', sans-serif;
-    font-size: 32px;
-    font-weight: 700;
-    line-height: 40px;
-    color: #1f1f1f;
+    font-size: 24px; /* Matching Figma: Título 7/SemiBold */
+    font-weight: 600; /* Semi Bold to match Figma */
+    line-height: 1.35;
+    letter-spacing: 0.48px;
+    color: #2C3131; /* Neutros-800 to match Figma */
     margin: 0;
 }
 
@@ -105,6 +105,36 @@
 .iris-header__primary-action-icon {
     width: 16px;
     height: 16px;
+}
+
+/* Secondary Action Button (Logout) - matching Figma design */
+.iris-header__secondary-action {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    background-color: #DAFAFD; /* Brand/Primary/50 */
+    border: 1.8px solid #53B7BE;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    padding: 0;
+}
+
+.iris-header__secondary-action:hover {
+    background-color: #ADF4FA; /* Ciano-100 */
+    transform: translateY(-1px);
+}
+
+.iris-header__secondary-action:active {
+    transform: translateY(0);
+}
+
+.iris-header__secondary-action svg {
+    width: 20px;
+    height: 20px;
+    color: #53B7BE;
 }
 
 .iris-header__user-menu {

@@ -26,7 +26,8 @@
       "Bash(npx storybook@latest init:*)",
       "Bash(npm run storybook:*)",
       "mcp__playwright__browser_evaluate",
-      "mcp__playwright__browser_type"
+      "mcp__playwright__browser_type",
+      "mcp__playwright__browser_fill_form"
     ],
     "deny": [],
     "ask": []

@@ -3,7 +3,7 @@
     "name": "IRIS",
     "version": "0.1.0",
     "startDate": "2025-01-15T00:00:00Z",
-    "lastUpdated": "2025-10-18T10:30:00Z"
+    "lastUpdated": "2025-10-18T12:00:00Z"
   },
   "implementations": [
     {
@@ -644,22 +644,141 @@
         "User list integration examples",
         "Comprehensive README documentation"
       ]
+    },
+    {
+      "id": "impl-015",
+      "type": "component",
+      "name": "DataTable",
+      "startDate": "2025-10-18T11:00:00Z",
+      "completedDate": "2025-10-18T12:00:00Z",
+      "status": "completed",
+      "figmaNode": "6804-13670",
+      "platform": "desktop",
+      "category": "design-system",
+      "files": [
+        "apps/desktop/src/design-system/components/data-table/DataTable.tsx",
+        "apps/desktop/src/design-system/components/data-table/DataTable.css",
+        "apps/desktop/src/design-system/components/data-table/DataTable.types.ts",
+        "apps/desktop/src/design-system/components/data-table/index.ts",
+        "apps/desktop/src/design-system/components/data-table/README.md",
+        "apps/desktop/src/design-system/components/data-table/DataTable.stories.tsx"
+      ],
+      "completedSteps": [
+        "figma-extraction",
+        "type-definitions",
+        "component-structure",
+        "table-header",
+        "table-body",
+        "sorting-functionality",
+        "filtering-functionality",
+        "pagination-controls",
+        "row-selection-single",
+        "row-selection-multiple",
+        "loading-state",
+        "empty-state",
+        "accessibility",
+        "responsive-design",
+        "documentation",
+        "storybook-stories"
+      ],
+      "features": [
+        "Comprehensive column configuration with accessor, width, alignment",
+        "Single and multi-column sorting with custom comparators",
+        "Column-level and global search filtering",
+        "Pagination with customizable page sizes (5, 10, 20, 50, 100)",
+        "Single and multiple row selection modes",
+        "Select all checkbox for multiple selection",
+        "Custom cell renderers for complex content",
+        "Custom header renderers",
+        "Loading state with spinner",
+        "Empty state with custom message",
+        "Row click and double-click handlers",
+        "Conditional row styling",
+        "Striped rows option",
+        "Bordered table option",
+        "Sticky header for scrolling",
+        "Hoverable rows",
+        "Full ARIA accessibility",
+        "Keyboard navigation support",
+        "Responsive design for mobile/tablet",
+        "TypeScript types with comprehensive interfaces",
+        "Nested data access with dot notation",
+        "20+ Storybook stories with interactive examples",
+        "Complete example with all features combined",
+        "Comprehensive README with code examples"
+      ]
+    }
+    },
+    {
+      "id": "impl-016",
+      "type": "screen",
+      "name": "UsersList",
+      "startDate": "2025-10-18T12:15:00Z",
+      "completedDate": "2025-10-18T13:00:00Z",
+      "status": "completed",
+      "figmaNode": "6804-13670",
+      "platform": "desktop",
+      "category": "user-management",
+      "files": [
+        "apps/desktop/src/renderer/screens/UsersList.tsx",
+        "apps/desktop/src/renderer/screens/UsersList.css",
+        "apps/desktop/src/renderer/screens/UsersList.stories.tsx",
+        "apps/desktop/src/renderer/App.tsx",
+        "apps/desktop/public/design-system/users-list/31be624d9a9241cb67614da7ace8431462328fcf.svg",
+        "apps/desktop/public/design-system/users-list/49ad5b339f4b1b5a4f5a897ab8ef107a92c7ec29.svg",
+        "apps/desktop/public/design-system/users-list/a2cecc59bff138b74d8ff4d4de2167957817e7a8.svg",
+        "apps/desktop/public/design-system/users-list/9c4fd4d9c05c89ca19fcb0e89f275e86a530cb11.svg"
+      ],
+      "completedSteps": [
+        "figma-extraction",
+        "screen-structure",
+        "user-data-table",
+        "tab-navigation",
+        "search-functionality",
+        "action-buttons",
+        "pagination",
+        "routing-integration",
+        "storybook-stories",
+        "responsive-design",
+        "accessibility"
+      ],
+      "features": [
+        "Dual tab interface (Usuários and Pesquisadores)",
+        "DataTable integration with 5 columns (Login, Tipo, Pesquisador, Último acesso, Ações)",
+        "Real-time search across all user fields",
+        "View and Edit action buttons per row",
+        "Add user primary action button",
+        "Logout button in header",
+        "Tab-based filtering (users vs researchers)",
+        "Pagination with configurable page sizes",
+        "Sortable columns",
+        "Role-based display (Admin, Researcher, Clinician, Viewer)",
+        "Date formatting for last access",
+        "Responsive design with mobile optimizations",
+        "Full ARIA accessibility",
+        "Integration with AuthContext",
+        "Navigation routing in App.tsx",
+        "Empty state messaging",
+        "8+ Storybook stories with interactive examples",
+        "Design tokens from Figma (Ciano, Neutros, Brand/Primary)",
+        "SVG icon assets extracted from Figma"
+      ]
     }
   ],
   "statistics": {
-    "totalImplementations": 14,
-    "completed": 14,
+    "totalImplementations": 16,
+    "completed": 16,
     "inProgress": 0,
     "pending": 0,
-    "componentsCompleted": 9,
-    "screensCompleted": 2,
+    "componentsCompleted": 10,
+    "screensCompleted": 3,
     "infrastructureCompleted": 1,
     "contextsCompleted": 1,
     "layoutCompleted": 3,
     "fixesCompleted": 1,
     "testsWritten": 0,
-    "storybookStories": 6,
+    "storybookStories": 8,
     "storybookConfigured": true
   },
-  "nextId": "impl-015"
+  "nextId": "impl-017"
 }

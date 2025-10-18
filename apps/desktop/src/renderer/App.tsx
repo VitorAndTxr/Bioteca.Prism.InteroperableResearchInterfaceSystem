@@ -19,12 +19,13 @@ import { mainMenuItems } from '../config/menu';
 
 // Import screens
 import Login from './screens/Login';
+import UsersList from './screens/UsersList';
 
 // TEMPORARY: Import demo pages for testing
 import ButtonDemo from './screens/ButtonDemo';
 import InputDemo from './screens/InputDemo';
 
-type DemoPage = 'home' | 'button' | 'input';
+type DemoPage = 'home' | 'button' | 'input' | 'users';
 
 /**
  * Main App Content (requires AuthContext)
@@ -59,8 +60,17 @@ function AppContent() {
 
     const handleNavigation = (path: string) => {
         setActivePath(path);
-        // TODO: Add React Router navigation when screens are implemented
-        console.log('Navigate to:', path);
+
+        // Navigate to appropriate page based on path
+        switch (path) {
+            case '/users':
+                setCurrentPage('users');
+                break;
+            case '/dashboard':
+            default:
+                setCurrentPage('home');
+                break;
+        }
     };
 
     const handleUserMenuClick = () => {
@@ -71,6 +81,40 @@ function AppContent() {
     // Render content based on current page
     const renderContent = () => {
         switch (currentPage) {
+            case 'users':
+                return (
+                    <AppLayout
+                        sidebar={{
+                            items: mainMenuItems,
+                            activePath: '/users',
+                            onNavigate: handleNavigation,
+                            logo: 'I.R.I.S.',
+                        }}
+                        header={{
+                            title: 'Usuários e Pesquisadores',
+                            showUserMenu: false,
+                            secondaryAction: {
+                                icon: (
+                                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M7.5 17.5H4.16667C3.72464 17.5 3.30072 17.3244 2.98816 17.0118C2.67559 16.6993 2.5 16.2754 2.5 15.8333V4.16667C2.5 3.72464 2.67559 3.30072 2.98816 2.98816C3.30072 2.67559 3.72464 2.5 4.16667 2.5H7.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                        <path d="M13.3333 14.1667L17.5 10L13.3333 5.83334" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                        <path d="M17.5 10H7.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                    </svg>
+                                ),
+                                onClick: logout,
+                                ariaLabel: 'Logout',
+                                title: 'Sair',
+                            },
+                        }}
+                    >
+                        <UsersList
+                            onUserAdd={() => console.log('Add user clicked')}
+                            onUserEdit={(user) => console.log('Edit user:', user)}
+                            onUserView={(user) => console.log('View user:', user)}
+                        />
+                    </AppLayout>
+                );
+
             case 'button':
                 return <ButtonDemo onBack={() => setCurrentPage('home')} />;
 

@@ -26,8 +26,8 @@
 
 .iris-app-layout__content {
     flex: 1;
-    padding: 32px;
-    background-color: #ffffff;
+    padding: 0;
+    background-color: #F4F4F4; /* Neutros-200 to match Figma */
     overflow-y: auto;
 }
 
@@ -37,6 +37,6 @@
 
 @media (max-width: 768px) {
     .iris-app-layout__content {
-        padding: 20px;
+        padding: 0;
     }
 }

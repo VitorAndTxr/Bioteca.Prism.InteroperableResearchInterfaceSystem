@@ -1,27 +1,6 @@
 {
-  "lastUpdated": "2025-10-18T10:30:00Z",
+  "lastUpdated": "2025-10-18T12:00:00Z",
   "queue": [
-    {
-      "priority": 7,
-      "type": "screen",
-      "name": "UsersList",
-      "status": "pending",
-      "figmaNode": "6804-13670",
-      "category": "user-management",
-      "estimatedHours": 8,
-      "dependencies": ["Button", "SearchBar", "DataTable", "Sidebar", "Header"],
-      "description": "Users list screen with CRUD operations"
-    },
-    {
-      "priority": 8,
-      "type": "component",
-      "name": "DataTable",
-      "status": "pending",
-      "category": "design-system",
-      "estimatedHours": 8,
-      "dependencies": [],
-      "description": "Data table with sorting, filtering, and pagination"
-    },
     {
       "priority": 9,
       "type": "screen",
@@ -46,6 +25,15 @@
     }
   ],
   "completedTasks": [
+    {
+      "name": "UsersList",
+      "completedDate": "2025-10-18T13:00:00Z",
+      "type": "screen",
+      "platform": "desktop",
+      "figmaNode": "6804-13670",
+      "category": "user-management",
+      "actualHours": 0.75
+    },
     {
       "name": "StreamingScreen",
       "completedDate": "2025-01-16T18:00:00Z",
@@ -145,14 +133,22 @@
       "figmaNode": "2803-3248",
       "category": "design-system",
       "actualHours": 2
+    },
+    {
+      "name": "DataTable",
+      "completedDate": "2025-10-18T12:00:00Z",
+      "type": "component",
+      "platform": "desktop",
+      "category": "design-system",
+      "actualHours": 4
     }
   ],
   "statistics": {
     "totalTasks": 17,
-    "pending": 4,
+    "pending": 2,
     "inProgress": 0,
-    "completed": 13,
-    "estimatedHoursRemaining": 28,
-    "averageCompletionTime": 2.5
+    "completed": 15,
+    "estimatedHoursRemaining": 12,
+    "averageCompletionTime": 2.3
   }
 }
