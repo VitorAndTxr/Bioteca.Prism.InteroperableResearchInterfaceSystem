@@ -1,0 +1,108 @@
+/**
+ * TabbedTable Component Styles
+ *
+ * Generic styles for tabbed table pattern.
+ * Based on IRIS Design System - Figma node 6804-13670
+ */
+
+/* Container */
+.tabbed-table {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+}
+
+/* Tabs Navigation */
+.tabbed-table__tabs {
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    margin-bottom: 0;
+}
+
+/* Card Container */
+.tabbed-table__card {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    flex: 1;
+    min-height: 0;
+    padding: 16px;
+    background-color: #FCFCFC; /* Neutros-50 */
+    border-radius: 0 8px 8px 8px;
+    box-shadow: 2px 4px 4px 0px rgba(0, 0, 0, 0.08);
+    margin: 0 16px 16px 16px;
+    overflow: hidden;
+}
+
+/* Card Header */
+.tabbed-table__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0;
+}
+
+.tabbed-table__title {
+    font-family: 'Inter', sans-serif;
+    font-weight: 400; /* Regular */
+    font-size: 22px;
+    line-height: 1.35;
+    color: #2C3131; /* Neutros-800 */
+    margin: 0;
+}
+
+/* Search Section */
+.tabbed-table__search {
+    padding: 8px 0;
+}
+
+/* Table Section */
+.tabbed-table__table {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+}
+
+.tabbed-table__table .data-table-container {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.tabbed-table__table .data-table-wrapper {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .tabbed-table__card {
+        margin: 0 8px 8px 8px;
+        padding: 12px;
+        gap: 16px;
+    }
+
+    .tabbed-table__title {
+        font-size: 18px;
+    }
+
+    .tabbed-table__header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .tabbed-table__tabs {
+        padding: 0 8px;
+    }
+
+    .tabbed-table__title {
+        font-size: 16px;
+    }
+}
