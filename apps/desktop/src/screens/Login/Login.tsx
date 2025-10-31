@@ -18,6 +18,7 @@ export interface LoginProps {
 }
 
 export function Login({ onLoginSuccess }: LoginProps) {
+
     const { login, authState, error, clearError } = useAuth();
 
     // Form state
@@ -64,17 +65,28 @@ export function Login({ onLoginSuccess }: LoginProps) {
     // Handle form submission
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
+        console.log('[LoginScreen] 🎯 Form submitted');
+        console.log('[LoginScreen]    Email:', email);
+        console.log('[LoginScreen]    Password length:', password.length);
 
         // Clear previous errors
         clearError();
 
         // Validate fields
+        console.log('[LoginScreen]    Validating email...');
         const isEmailValid = validateEmail(email);
+        console.log('[LoginScreen]    Email valid:', isEmailValid);
+
+        console.log('[LoginScreen]    Validating password...');
         const isPasswordValid = validatePassword(password);
+        console.log('[LoginScreen]    Password valid:', isPasswordValid);
 
         if (!isEmailValid || !isPasswordValid) {
+            console.log('[LoginScreen]    ❌ Validation failed, aborting login');
             return;
         }
+
+        console.log('[LoginScreen]    ✅ Validation passed, calling login()...');
 
         try {
             await login({
@@ -83,13 +95,15 @@ export function Login({ onLoginSuccess }: LoginProps) {
                 rememberMe
             });
 
+            console.log('[LoginScreen]    ✅ Login successful!');
+
             // Success callback
             if (onLoginSuccess) {
                 onLoginSuccess();
             }
         } catch (err) {
             // Error is handled by AuthContext
-            console.error('Login failed:', err);
+            console.error('[LoginScreen]    ❌ Login failed:', err);
         }
     };
 

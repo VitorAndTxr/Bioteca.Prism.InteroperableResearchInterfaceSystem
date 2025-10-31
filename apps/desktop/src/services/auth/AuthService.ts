@@ -5,9 +5,11 @@
  * Currently uses mock data for development.
  */
 
+import {
+    UserRole
+} from '@iris/domain';
 import type {
     User,
-    UserRole,
     LoginCredentials,
     LoginResponse,
     RegistrationData,

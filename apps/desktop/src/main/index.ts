@@ -5,9 +5,12 @@
  */
 
 import { app, BrowserWindow, ipcMain } from 'electron';
+import keytar from 'keytar';
 import * as path from 'path';
 
 let mainWindow: BrowserWindow | null = null;
+
+const SECURE_STORAGE_SERVICE = 'IRIS Desktop Secure Storage';
 
 /**
  * Create the main application window
@@ -83,6 +86,21 @@ ipcMain.handle('app:getVersion', () => {
 // Example: Get app path
 ipcMain.handle('app:getPath', (_event, name: string) => {
     return app.getPath(name as any);
+});
+
+// Secure storage handlers
+ipcMain.handle('secureStorage:get', async (_event, key: string) => {
+    return keytar.getPassword(SECURE_STORAGE_SERVICE, key);
+});
+
+ipcMain.handle('secureStorage:set', async (_event, key: string, value: string) => {
+    await keytar.setPassword(SECURE_STORAGE_SERVICE, key, value);
+    return true;
+});
+
+ipcMain.handle('secureStorage:remove', async (_event, key: string) => {
+    await keytar.deletePassword(SECURE_STORAGE_SERVICE, key);
+    return true;
 });
 
 // Add more IPC handlers as needed for:

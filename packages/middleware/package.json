@@ -1,0 +1,22 @@
+{
+  "name": "@iris/middleware",
+  "version": "0.1.0",
+  "description": "Shared middleware utilities for IRIS applications",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "type-check": "tsc --noEmit"
+  },
+  "keywords": [
+    "iris",
+    "middleware",
+    "secure-storage"
+  ],
+  "author": "PRISM Project",
+  "license": "MIT",
+  "peerDependencies": {
+    "react": "^18.0.0"
+  },
+  "dependencies": {}
+}

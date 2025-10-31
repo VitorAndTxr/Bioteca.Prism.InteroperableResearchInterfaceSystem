@@ -10,6 +10,7 @@ import type { SessionMetadata } from '@iris/domain';
 
 // Import context providers
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { initializeAndHydrate, cleanupMiddleware } from './services/middleware';
 import Login from './screens/Login/Login';
 import UsersAndResearchesersScreen from './screens/UsersAndResearchesers/UsersAndResearchesersScreen';
 import HomeScreen from './screens/Home/HomeScreen';
@@ -97,6 +98,18 @@ function AppContent() {
  * App wrapper with AuthProvider
  */
 function App() {
+    // Initialize middleware on mount
+    useEffect(() => {
+        console.log('[App] Initializing middleware...');
+        initializeAndHydrate();
+
+        // Cleanup on unmount
+        return () => {
+            console.log('[App] Cleaning up middleware...');
+            cleanupMiddleware();
+        };
+    }, []);
+
     return (
         <AuthProvider>
             <AppContent />

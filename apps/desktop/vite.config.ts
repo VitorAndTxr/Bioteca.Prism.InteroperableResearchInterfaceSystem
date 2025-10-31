@@ -21,7 +21,8 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src/renderer'),
-      '@iris/domain': path.resolve(__dirname, '../../packages/domain/src')
+      '@iris/domain': path.resolve(__dirname, '../../packages/domain/src'),
+      '@iris/middleware': path.resolve(__dirname, '../../packages/middleware/src')
     }
   },
   test: {

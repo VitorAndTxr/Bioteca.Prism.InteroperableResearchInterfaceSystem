@@ -13,6 +13,9 @@
       ],
       "@iris/domain": [
         "../../packages/domain/src"
+      ],
+      "@iris/middleware": [
+        "../../packages/middleware/src"
       ]
     },
     "skipLibCheck": true,

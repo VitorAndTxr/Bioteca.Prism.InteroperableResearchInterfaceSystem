@@ -27,7 +27,11 @@
       "Bash(npm run storybook:*)",
       "mcp__playwright__browser_evaluate",
       "mcp__playwright__browser_type",
-      "mcp__playwright__browser_fill_form"
+      "mcp__playwright__browser_fill_form",
+      "Bash(npm run:*)",
+      "Read(//d/Repos/Faculdade/PRISM/InteroperableResearchNode/docs/workflows/**)",
+      "Read(//d/Repos/Faculdade/PRISM/InteroperableResearchNode/Bioteca.Prism.InteroperableResearchNode/Controllers/**)",
+      "Read(//d/Repos/Faculdade/PRISM/InteroperableResearchNode/**)"
     ],
     "deny": [],
     "ask": []

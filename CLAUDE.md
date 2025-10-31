@@ -100,7 +100,11 @@ When working on this codebase:
 
 ### Shared Packages
 - **@iris/domain** - Shared TypeScript types and models (User, Auth, Session, etc.)
-- **@iris/middleware** - Business logic (future)
+- **@iris/middleware** - Authentication and secure communication middleware ✅
+  - UserAuthService for login/logout/token refresh
+  - Encrypted HTTP client with automatic channel management
+  - 4-phase handshake with cryptographic authentication
+  - Secure token storage (Electron + React Native)
 - **@iris/ui-components** - Shared components (future)
 
 ## Monorepo Architecture
@@ -133,7 +137,8 @@ IRIS/
 │           │       └── typography/
 │           ├── context/         # AuthContext ✅
 │           ├── screens/         # Login, Home, UsersAndResearchers ✅
-│           ├── services/        # AuthService (mock + future backend) ✅
+│           ├── services/        # AuthService (real + middleware) ✅
+│           ├── storage/         # ElectronSecureStorage ✅
 │           ├── config/          # menu.ts ✅
 │           ├── stories/         # Storybook examples (8 stories) ✅
 │           ├── App.tsx          # Main app component (routing) ✅
@@ -141,7 +146,15 @@ IRIS/
 │
 ├── packages/
 │   ├── domain/              # Shared types (User, Auth, Session, etc.) ✅
-│   ├── middleware/          # Business logic (future)
+│   ├── middleware/          # Authentication & secure communication ✅
+│   │   ├── src/auth/        # UserAuthService, login/logout/refresh
+│   │   ├── src/http/        # EncryptedHttpClient, automatic encryption
+│   │   ├── src/crypto/      # CryptoDriver, WebCrypto integration
+│   │   ├── src/channel/     # ChannelManager, ECDH key exchange
+│   │   ├── src/session/     # SessionManager, token management
+│   │   ├── src/storage/     # SecureStorage interface
+│   │   ├── src/service/     # ResearchNodeMiddleware, 4-phase handshake
+│   │   └── src/context/     # ResearchNodeMiddlewareContext (React)
 │   └── ui-components/       # Shared components (future)
 │
 └── docs/                    # Comprehensive documentation
@@ -421,6 +434,113 @@ See [docs/development/CODING_STANDARDS.md](docs/development/CODING_STANDARDS.md)
   - Path alias: `@/*` maps to `./src/*`
 
 - **`.env.example`** - Environment variables template (API_URL, API_KEY, APP_ENV)
+
+---
+
+## IRIS Middleware Authentication System
+
+### Overview
+
+The IRIS Middleware provides secure authentication and encrypted communication with the InteroperableResearchNode backend. It implements a 4-phase cryptographic handshake protocol with automatic token refresh and platform-specific secure storage.
+
+**Implementation Status**: ✅ **Complete** (October 28, 2025)
+**Files**: `IMPLEMENTATION_VERIFICATION_REPORT.md`, `IMPLEMENTATION_SUMMARY.md`
+
+### Architecture
+
+```
+┌─────────────────────────────────────────────┐
+│         Application Layer                    │
+│  (React Components, Screens, Contexts)       │
+└──────────────┬──────────────────────────────┘
+               │
+┌──────────────▼──────────────────────────────┐
+│       UserAuthService                       │
+│  - login()/logout()/refreshToken()          │
+│  - Token storage and auto-refresh           │
+│  - Session management                       │
+└──────────────┬──────────────────────────────┘
+               │
+┌──────────────▼──────────────────────────────┐
+│    ResearchNodeMiddleware                   │
+│  - ensureSession() → 4-phase handshake      │
+│  - invoke() → Encrypted communication       │
+│  - State: idle → channel-ready → session    │
+└──────┬───────────┬──────────┬───────────────┘
+       │           │          │
+    ┌──▼───┐  ┌────▼──┐  ┌───▼──────┐
+    │Channel│  │Session│  │CryptoDriver
+    │Manager│  │Manager│  │WebCrypto
+    └───────┘  └───────┘  └──────────┘
+       │           │          │
+       └───────────┼──────────┘
+                   │
+┌──────────────────▼──────────────────────────┐
+│    InteroperableResearchNode                │
+│    (Backend API - http://localhost:5000)    │
+└─────────────────────────────────────────────┘
+```
+
+### Key Features
+
+- **Automatic Token Refresh**: Refreshes 5 minutes before expiration
+- **Secure Storage**: Platform-specific encryption (Electron DPAPI/Keychain, React Native Keychain/EncryptedPreferences)
+- **4-Phase Handshake**: ECDH P-384 key exchange, X.509 certificates, RSA-SHA256 signatures
+- **Encrypted Communication**: AES-256-GCM symmetric encryption
+- **Perfect Forward Secrecy**: Ephemeral keys discarded after session
+
+### Integration Points
+
+**Desktop App** (`apps/desktop/src/services/middleware.ts`):
+- `getMiddlewareServices()` - Get singleton instances
+- `initializeAndHydrate()` - Load persisted state on startup
+- `cleanupMiddleware()` - Cleanup on shutdown
+- `RealAuthService` adapter - Maps domain types to middleware
+
+**Mobile App** (`apps/mobile/src/services/middleware.ts`):
+- Same pattern as desktop with Expo SecureStore integration
+
+### Usage Example
+
+```typescript
+import { authService, initializeAndHydrate } from '@/services/middleware';
+
+// Initialize on app start
+useEffect(() => {
+  initializeAndHydrate();
+}, []);
+
+// Login
+const result = await authService.login({
+  username: 'researcher@example.com',
+  password: 'password'
+});
+
+// Check authentication
+if (authService.isAuthenticated()) {
+  const user = await authService.getCurrentUser();
+}
+
+// Logout
+await authService.logout();
+```
+
+### Current Limitations
+
+⚠️ **Before Production**:
+- Mock certificates (replace with real X.509)
+- Mock RSA signatures (implement real signing)
+- Not yet integrated into app UI
+- TypeScript compilation errors (see IMPLEMENTATION_VERIFICATION_REPORT.md)
+
+### Documentation
+
+- **Implementation Details**: `IMPLEMENTATION_SUMMARY.md`
+- **Verification Report**: `IMPLEMENTATION_VERIFICATION_REPORT.md`
+- **API Reference**: `docs/api/MIDDLEWARE_API.md` (see Task 4)
+- **Migration Guide**: `docs/guides/MIGRATION_GUIDE_AUTH.md` (see Task 3)
+
+---
 
 ## Bluetooth Device Protocol
 

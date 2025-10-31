@@ -5,3 +5,4 @@
  */
 
 export { AuthService, authService } from './AuthService';
+export { RealAuthService } from './RealAuthService';

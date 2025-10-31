@@ -16,6 +16,13 @@ const api = {
         getPath: (name: string) => ipcRenderer.invoke('app:getPath', name)
     },
 
+    // Secure storage bridge
+    secureStorage: {
+        get: (key: string) => ipcRenderer.invoke('secureStorage:get', key),
+        set: (key: string, value: string) => ipcRenderer.invoke('secureStorage:set', key, value),
+        remove: (key: string) => ipcRenderer.invoke('secureStorage:remove', key)
+    },
+
     // Add more API methods as needed:
     // - File system operations
     // - Database queries

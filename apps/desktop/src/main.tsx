@@ -14,6 +14,11 @@ declare global {
                 getVersion: () => Promise<string>;
                 getPath: (name: string) => Promise<string>;
             };
+            secureStorage?: {
+                get: (key: string) => Promise<string | null>;
+                set: (key: string, value: string) => Promise<void>;
+                remove: (key: string) => Promise<void>;
+            };
         };
     }
 }

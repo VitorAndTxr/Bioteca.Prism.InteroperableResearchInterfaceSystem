@@ -15,7 +15,7 @@ import type {
     AuthState,
     AuthError
 } from '@iris/domain';
-import { authService } from '../services/auth/AuthService';
+import { authService } from '../services/middleware';
 
 // ==================== Types ====================
 
@@ -112,11 +112,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
      * Login
      */
     const login = useCallback(async (credentials: LoginCredentials) => {
+        console.log('[AuthContext] 🔑 Login function called');
+        console.log('[AuthContext]    Email:', credentials.email);
+
         try {
             setAuthState('loading' as AuthState);
             setError(null);
 
+            console.log('[AuthContext]    Calling authService.login()...');
             const response = await authService.login(credentials);
+            console.log('[AuthContext]    ✅ authService.login() successful');
 
             // Create session info
             const session: SessionInfo = {

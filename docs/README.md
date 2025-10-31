@@ -23,6 +23,16 @@ System design, component architecture, and protocol specifications:
 - **[architecture/STATE_MANAGEMENT.md](architecture/STATE_MANAGEMENT.md)** - React Context and state management patterns
 - **[architecture/COMPONENT_STRUCTURE.md](architecture/COMPONENT_STRUCTURE.md)** - Component hierarchy and file organization
 
+### Authentication & Middleware
+
+Secure authentication and encrypted communication with the backend:
+
+- **[../IMPLEMENTATION_SUMMARY.md](../IMPLEMENTATION_SUMMARY.md)** - Middleware implementation overview and usage examples
+- **[../IMPLEMENTATION_VERIFICATION_REPORT.md](../IMPLEMENTATION_VERIFICATION_REPORT.md)** - Verification of implementation completeness
+- **[api/MIDDLEWARE_API.md](api/MIDDLEWARE_API.md)** - Complete middleware API reference (UserAuthService, encryption, storage)
+- **[guides/MIGRATION_GUIDE_AUTH.md](guides/MIGRATION_GUIDE_AUTH.md)** - Step-by-step guide to migrate from mock to real authentication
+- **[MIDDLEWARE_QUICK_REFERENCE.md](MIDDLEWARE_QUICK_REFERENCE.md)** - Quick reference card for developers
+
 ### Development Guides
 
 Comprehensive guides for implementing features and following project standards:
@@ -91,9 +101,18 @@ Production build and deployment guides:
 4. Test: **[development/TESTING_GUIDE.md](development/TESTING_GUIDE.md)** - Write and run tests
 5. Deploy: **[deployment/PRODUCTION_BUILD.md](deployment/PRODUCTION_BUILD.md)** - Build for production
 
+### For Authentication & Backend Integration
+
+1. **Understanding**: [../IMPLEMENTATION_SUMMARY.md](../IMPLEMENTATION_SUMMARY.md) - What middleware does
+2. **Status**: [../IMPLEMENTATION_VERIFICATION_REPORT.md](../IMPLEMENTATION_VERIFICATION_REPORT.md) - What's been verified
+3. **API Reference**: [api/MIDDLEWARE_API.md](api/MIDDLEWARE_API.md) - How to use it
+4. **Migration**: [guides/MIGRATION_GUIDE_AUTH.md](guides/MIGRATION_GUIDE_AUTH.md) - How to integrate
+5. **Quick Ref**: [MIDDLEWARE_QUICK_REFERENCE.md](MIDDLEWARE_QUICK_REFERENCE.md) - Developer cheat sheet
+
 ### For AI Assistants (Claude Code)
 
 - **Primary guidance**: [../CLAUDE.md](../CLAUDE.md) - Project context and structure
+- **Middleware section**: [../CLAUDE.md#iris-middleware-authentication-system](../CLAUDE.md#iris-middleware-authentication-system) - Middleware architecture
 - **Documentation standards**: [DOCUMENTATION_GUIDELINES.md](DOCUMENTATION_GUIDELINES.md) - How to write docs
 - **Device protocol**: [../../InteroperableResearchsEMGDevice/CLAUDE.md](../../InteroperableResearchsEMGDevice/CLAUDE.md) - Device communication
 - **Backend reference**: [../../InteroperableResearchNode/CLAUDE.md](../../InteroperableResearchNode/CLAUDE.md) - Research Node API

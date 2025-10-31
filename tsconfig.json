@@ -5,6 +5,9 @@
     "paths": {
       "@/*": [
         "./src/*"
+      ],
+      "@iris/middleware": [
+        "./packages/middleware/src"
       ]
     }
   },
