@@ -1,3 +1,23 @@
+/**
+ * Authorization status enum matching the backend's AuthorizationStatus enum.
+ *
+ * Backend definition (C#):
+ * public enum AuthorizationStatus {
+ *     Unknown = 0,
+ *     Authorized = 1,
+ *     Pending = 2,
+ *     Revoked = 3
+ * }
+ *
+ * Reference: InteroperableResearchNode/Bioteca.Prism.Domain/Responses/Node/NodeStatusResponse.cs
+ */
+export enum AuthorizationStatus {
+    Unknown = 0,
+    Authorized = 1,
+    Pending = 2,
+    Revoked = 3
+}
+
 export interface PersistedChannelState {
     channelId: string;
     /** Base64 encoded representation of the symmetric key used to decrypt payloads */
@@ -90,7 +110,7 @@ export interface NodeIdentifyPayload {
 
 export interface NodeIdentifyResult {
     isKnown: boolean;
-    status: string;
+    status: AuthorizationStatus;
     nodeId: string;
     registrationId?: string;
     message?: string;

@@ -22,6 +22,7 @@ import {
 } from '@iris/middleware';
 import { createElectronSecureStorage } from '../storage/ElectronSecureStorage';
 import { RealAuthService } from './auth/RealAuthService';
+import * as forge from 'node-forge';
 
 /**
  * Backend configuration
@@ -94,15 +95,90 @@ function loadCertificateConfig(): ResearchNodeCertificateConfig {
 const CERTIFICATE_CONFIG = loadCertificateConfig();
 
 /**
- * Mock signature function for development
- * TODO: Replace with real RSA signature using certificate private key
+ * Cache for parsed private key to avoid re-parsing on every signature
  */
-async function mockSignChallenge(context: ChallengeSignatureContext): Promise<string> {
-    const dataToSign = `${context.channelId}:${context.nodeId}:${context.challengeData}:${context.timestamp}`;
+let cachedPrivateKey: forge.pki.PrivateKey | null = null;
 
-    // In production, this should use RSA-SHA256 signature with the certificate's private key
-    // For now, we just return a mock signature
-    return btoa(`MOCK_SIGNATURE:${dataToSign}`);
+/**
+ * Load and parse the PKCS#12 certificate to extract the private key
+ */
+function loadPrivateKey(certificateConfig: ResearchNodeCertificateConfig): forge.pki.rsa.PrivateKey {
+    if (cachedPrivateKey) {
+        return cachedPrivateKey as forge.pki.rsa.PrivateKey;
+    }
+
+    try {
+        // Decode Base64 PKCS#12 certificate
+        const p12Der = forge.util.decode64(certificateConfig.certificateWithPrivateKey);
+
+        // Parse PKCS#12
+        const p12Asn1 = forge.asn1.fromDer(p12Der);
+        const p12 = forge.pkcs12.pkcs12FromAsn1(p12Asn1, certificateConfig.password);
+
+        // Extract private key from PKCS#12
+        const bags = p12.getBags({ bagType: forge.pki.oids.pkcs8ShroudedKeyBag });
+        const keyBag = bags[forge.pki.oids.pkcs8ShroudedKeyBag];
+
+        if (!keyBag || keyBag.length === 0) {
+            throw new Error('No private key found in PKCS#12 certificate');
+        }
+
+        const privateKey = keyBag[0].key as forge.pki.rsa.PrivateKey;
+
+        if (!privateKey) {
+            throw new Error('Failed to extract private key from certificate');
+        }
+
+        cachedPrivateKey = privateKey;
+        console.log('[Middleware] ✅ Private key loaded from certificate');
+
+        return privateKey;
+    } catch (error) {
+        console.error('[Middleware] ❌ Failed to load private key:', error);
+        throw new Error(`Certificate parsing failed: ${error instanceof Error ? error.message : String(error)}`);
+    }
+}
+
+/**
+ * Real RSA-SHA256 signature function using certificate private key
+ *
+ * CRITICAL: Data format MUST match backend exactly:
+ * Format: {challengeData}{channelId}{nodeId}{timestamp}
+ * NO SEPARATORS, NO SPACES - direct concatenation only
+ *
+ * Backend reference: InteroperableResearchNode/docs/workflows/PHASE3_AUTHENTICATION_FLOW.md:426-443
+ */
+async function signChallenge(context: ChallengeSignatureContext): Promise<string> {
+    try {
+        // Load private key from certificate
+        const privateKey = loadPrivateKey(context.certificate);
+
+        // Construct data to sign (EXACT format as backend - lines 280-286)
+        // Format: {challengeData}{channelId}{nodeId}{timestamp}
+        // NO SEPARATORS - direct concatenation
+        const dataToSign = context.challengeData + context.channelId + context.nodeId + context.timestamp;
+
+        // Create SHA-256 hash
+        const md = forge.md.sha256.create();
+        md.update(dataToSign, 'utf8');
+
+        // Sign with RSA private key (PKCS#1 v1.5 padding)
+        const signature = privateKey.sign(md);
+
+        // Return Base64 encoded signature
+        const signatureBase64 = forge.util.encode64(signature);
+
+        console.log('[Middleware] 🔐 RSA-SHA256 signature generated');
+        console.log('[Middleware]    Data format: {challengeData}{channelId}{nodeId}{timestamp}');
+        console.log('[Middleware]    Data length:', dataToSign.length);
+        console.log('[Middleware]    Data (first 80 chars):', dataToSign.substring(0, 80) + '...');
+        console.log('[Middleware]    Signature:', signatureBase64.substring(0, 40) + '...');
+
+        return signatureBase64;
+    } catch (error) {
+        console.error('[Middleware] ❌ Signature generation failed:', error);
+        throw new Error(`Failed to sign challenge: ${error instanceof Error ? error.message : String(error)}`);
+    }
 }
 
 /**
@@ -136,7 +212,7 @@ function initializeMiddleware() {
         nodeId: CERTIFICATE_CONFIG.subjectName,
         initialChannel: null,
         initialSession: null,
-        signChallenge: mockSignChallenge,
+        signChallenge: signChallenge,
 
         // Persistence callbacks
         onChannelPersist: async (channel) => {

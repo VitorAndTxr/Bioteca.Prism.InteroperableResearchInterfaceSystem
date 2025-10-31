@@ -9,6 +9,7 @@ import type {
     SessionRuntimeState,
     NodeIdentifyPayload
 } from '../types';
+import { AuthorizationStatus } from '../types';
 
 function isExpired(date: Date, skewMs = 5_000): boolean {
     return Date.now() >= date.getTime() - skewMs;
@@ -174,11 +175,12 @@ export class ResearchNodeMiddleware {
         console.log('[Middleware]    Status:', identifyResult.status);
         console.log('[Middleware]    Registration ID:', identifyResult.registrationId);
 
-        if (!identifyResult.isKnown || identifyResult.status !== 'Authorized' || !identifyResult.registrationId) {
+        if (!identifyResult.isKnown || identifyResult.status !== AuthorizationStatus.Authorized || !identifyResult.registrationId) {
             this.status = 'error';
             console.error('[Middleware] ❌ PHASE 2 FAILED: Node identification rejected');
+            console.error('[Middleware]    Status:', AuthorizationStatus[identifyResult.status] || identifyResult.status);
             console.error('[Middleware]    Message:', identifyResult.message);
-            throw new Error(`Node identification failed: ${identifyResult.message ?? identifyResult.status}`);
+            throw new Error(`Node identification failed: ${identifyResult.message ?? AuthorizationStatus[identifyResult.status]}`);
         }
 
         console.log('[Middleware] 🔄 PHASE 3: Authenticating with challenge-response...');

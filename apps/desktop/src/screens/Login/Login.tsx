@@ -87,11 +87,13 @@ export function Login({ onLoginSuccess }: LoginProps) {
         }
 
         console.log('[LoginScreen]    ✅ Validation passed, calling login()...');
+        console.log('[LoginScreen]    Password valid:', password);
+
 
         try {
             await login({
                 email,
-                password,
+                password,  // Fixed: Send password directly (UserAuthService will encode it)
                 rememberMe
             });
 

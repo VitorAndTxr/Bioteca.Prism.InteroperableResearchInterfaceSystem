@@ -83,20 +83,38 @@ export class UserAuthService {
         console.log('[UserAuthService]    Sending login request to /api/userauth/login...');
 
         // Use middleware.invoke for encrypted communication
-        const response = await this.middleware.invoke<LoginRequest, LoginResponse>({
+        const response = await this.middleware.invoke<LoginRequest, any>({
             path: '/api/userauth/login',
             method: 'POST',
             payload: loginRequest
         });
 
-        console.log('[UserAuthService] ✅ PHASE 4 COMPLETE: User authenticated');
-        console.log('[UserAuthService]    User ID:', response.user.id);
-        console.log('[UserAuthService]    Username:', response.user.username);
-        console.log('[UserAuthService]    Email:', response.user.email);
-        console.log('[UserAuthService]    Token expires at:', response.expiresAt);
+        console.log('[UserAuthService] ✅ PHASE 4 COMPLETE: Response received');
+        console.log('[UserAuthService]    Raw response:', JSON.stringify(response, null, 2));
+
+        // Backend returns { token, expiration } (lowercase)
+        // Map backend response to expected format
+        const token = response.token || response.Token;
+        const expiresAt = response.expiration || response.Expiration || response.expiresAt;
+
+        if (!token || !expiresAt) {
+            console.error('[UserAuthService] ❌ Missing fields in response:');
+            console.error('[UserAuthService]    token:', token);
+            console.error('[UserAuthService]    expiresAt:', expiresAt);
+            console.error('[UserAuthService]    response keys:', Object.keys(response));
+            throw new Error('Invalid login response: missing token or expiration');
+        }
+
+        // Decode JWT to extract user information (since backend doesn't return user object)
+        const user = this.decodeUserFromToken(token, credentials.username);
+
+        console.log('[UserAuthService]    User ID:', user.id);
+        console.log('[UserAuthService]    Username:', user.username);
+        console.log('[UserAuthService]    Email:', user.email);
+        console.log('[UserAuthService]    Token expires at:', expiresAt);
 
         // Store token and user information
-        await this.setAuthState(response.token, response.expiresAt, response.user);
+        await this.setAuthState(token, expiresAt, user);
 
         // Schedule automatic token refresh
         this.scheduleTokenRefresh();
@@ -104,9 +122,42 @@ export class UserAuthService {
         console.log('[UserAuthService] 🎉 COMPLETE AUTHENTICATION FLOW SUCCESSFUL');
 
         return {
-            token: response.token,
-            expiresAt: response.expiresAt
+            token,
+            expiresAt
         };
+    }
+
+    /**
+     * Decode user information from JWT token
+     * Backend includes user info in JWT claims: sub, login, name, email, orcid
+     */
+    private decodeUserFromToken(token: string, username: string): User {
+        try {
+            // JWT format: header.payload.signature
+            const parts = token.split('.');
+            if (parts.length !== 3) {
+                throw new Error('Invalid JWT format');
+            }
+
+            // Decode payload (base64url)
+            const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+
+            return {
+                id: payload.sub || '',
+                username: payload.login || username,
+                email: payload.email || '',
+                name: payload.name,
+                roles: [] // Backend doesn't return roles in current implementation
+            };
+        } catch (error) {
+            console.error('[UserAuthService] Failed to decode JWT:', error);
+            // Return minimal user object if decoding fails
+            return {
+                id: '',
+                username,
+                email: ''
+            };
+        }
     }
 
     /**
@@ -124,21 +175,32 @@ export class UserAuthService {
             token: this.currentToken
         };
 
-        const response = await this.middleware.invoke<RefreshTokenRequest, RefreshTokenResponse>({
+        const response = await this.middleware.invoke<RefreshTokenRequest, any>({
             path: '/api/userauth/refreshtoken',
             method: 'POST',
             payload: refreshRequest
         });
 
+        // Backend returns { token, expiration } (lowercase)
+        const token = response.token || response.Token;
+        const expiresAt = response.expiration || response.Expiration || response.expiresAt;
+
+        if (!token || !expiresAt) {
+            console.error('[UserAuthService] ❌ Invalid refresh response:');
+            console.error('[UserAuthService]    token:', token);
+            console.error('[UserAuthService]    expiresAt:', expiresAt);
+            throw new Error('Invalid refresh response: missing token or expiration');
+        }
+
         // Update stored token
-        await this.setAuthState(response.token, response.expiresAt, this.currentUser!);
+        await this.setAuthState(token, expiresAt, this.currentUser!);
 
         // Reschedule token refresh
         this.scheduleTokenRefresh();
 
         return {
-            token: response.token,
-            expiresAt: response.expiresAt
+            token,
+            expiresAt
         };
     }
 

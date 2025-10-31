@@ -26,11 +26,18 @@ export class SessionManager {
         return this.cryptoDriver.decrypt<T>(payload, channel.cryptoKey);
     }
 
-    private buildHeaders(channel: ChannelRuntimeState): Record<string, string> {
-        return {
+    private buildHeaders(channel: ChannelRuntimeState, session?: SessionRuntimeState): Record<string, string> {
+        const headers: Record<string, string> = {
             'Content-Type': 'application/json',
             'X-Channel-Id': channel.channelId
         };
+
+        // Add session token header if session is provided
+        if (session) {
+            headers['X-Session-Id'] = session.sessionToken;
+        }
+
+        return headers;
     }
 
     async identifyNode(channel: ChannelRuntimeState, payload: NodeIdentifyPayload): Promise<NodeIdentifyResult> {
@@ -136,7 +143,7 @@ export class SessionManager {
         const response = await this.httpClient.request<EncryptedPayload>({
             url: path,
             method,
-            headers: this.buildHeaders(channel),
+            headers: this.buildHeaders(channel, session),
             body: envelope
         });
 
