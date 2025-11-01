@@ -1,17 +1,30 @@
 # Interoperable Research Interface System (IRIS)
 
-A React Native application built with Expo for controlling and visualizing data from the PRISM sEMG/FES (surface electromyography and Functional Electrical Stimulation) device. Part of the **PRISM** (Project Research Interoperability and Standardization Model) federated biomedical research framework.
+**Monorepo project** containing both **Desktop** (Electron + Vite + React) and **Mobile** (React Native + Expo) applications for the PRISM (Project Research Interoperability and Standardization Model) federated biomedical research framework.
 
 ## Overview
 
-IRIS is a cross-platform mobile application that:
-- Connects to ESP32-based sEMG/FES devices via Bluetooth Serial Port Profile (SPP)
-- Controls therapeutic electrical stimulation sessions
-- Streams and visualizes real-time biosignal data
-- Implements a standardized JSON-based communication protocol
-- Provides an intuitive interface for researchers and clinicians
+IRIS provides comprehensive interfaces for:
+- **Desktop App**: User authentication, research data management, secure communication with InteroperableResearchNode backend
+- **Mobile App**: Device control, real-time biosignal visualization, Bluetooth communication with ESP32 sEMG/FES devices
 
-**Supported Platforms**: Web (development) and Android (production)
+### Desktop App Features ✅
+- ✅ **Secure Authentication**: Login/logout with 4-phase cryptographic handshake
+- ✅ **User Management**: View and manage researchers and volunteers
+- ✅ **JWT Integration**: Automatic token refresh and secure storage
+- ✅ **Design System**: 16 reusable UI components (buttons, inputs, tables, etc.)
+- ✅ **Storybook**: Component documentation and testing
+
+### Mobile App Features
+- Bluetooth SPP connection to ESP32 sEMG/FES devices
+- Real-time biosignal streaming and visualization
+- FES session control (start/stop/pause/resume)
+- Configurable stimulation parameters
+- CSV data export
+
+**Supported Platforms**:
+- **Desktop**: Windows, macOS, Linux
+- **Mobile**: Android (primary), Web (development)
 
 ## Prerequisites
 
@@ -21,49 +34,94 @@ IRIS is a cross-platform mobile application that:
 - Physical Android device or emulator with Bluetooth support
 - ESP32 sEMG/FES device ("NeuroEstimulator" firmware)
 
-## Project Structure
+## Monorepo Structure
 
 ```
-├── src/
-│   ├── context/          # React Context providers (BluetoothContext)
-│   ├── screens/          # Screen components
-│   │   ├── HomeScreen.tsx           # Device connection and session control
-│   │   ├── StreamConfigScreen.tsx   # Streaming configuration
-│   │   └── StreamingScreen.tsx      # Real-time data visualization
-│   ├── hooks/            # Custom React hooks
-│   │   └── useStreamData.ts         # Stream data management and chart formatting
-│   ├── types/            # TypeScript type definitions
-│   └── utils/            # Utility functions
-├── docs/                 # Documentation
-│   ├── setup/            # Setup guides
-│   ├── implementation/   # Implementation documentation
-│   └── troubleshooting/  # Common issues and fixes
-├── App.tsx               # Root component with navigation
-├── app.json              # Expo configuration
-├── CLAUDE.md             # AI assistant development guide
-└── tsconfig.json         # TypeScript configuration
+IRIS/
+├── apps/
+│   ├── desktop/             # Electron + Vite + React
+│   │   ├── src/
+│   │   │   ├── design-system/   # 16 reusable UI components
+│   │   │   ├── context/         # AuthContext (authentication state)
+│   │   │   ├── screens/         # Login, Home, UsersAndResearchers
+│   │   │   ├── services/        # AuthService, middleware integration
+│   │   │   ├── storage/         # ElectronSecureStorage
+│   │   │   └── stories/         # Storybook component documentation
+│   │   ├── package.json
+│   │   └── vite.config.ts
+│   │
+│   └── mobile/              # React Native + Expo
+│       ├── src/
+│       │   ├── context/         # BluetoothContext (device communication)
+│       │   ├── screens/         # HomeScreen, StreamingScreen, etc.
+│       │   ├── hooks/           # useStreamData (chart data management)
+│       │   └── types/           # TypeScript definitions
+│       ├── app.json
+│       └── package.json
+│
+├── packages/
+│   ├── domain/              # Shared TypeScript types
+│   ├── middleware/          # Authentication & secure communication
+│   │   ├── src/auth/        # UserAuthService (login/logout/refresh)
+│   │   ├── src/http/        # EncryptedHttpClient
+│   │   ├── src/crypto/      # CryptoDriver (AES-256-GCM)
+│   │   ├── src/channel/     # ChannelManager (ECDH key exchange)
+│   │   ├── src/session/     # SessionManager (4-phase handshake)
+│   │   └── src/service/     # ResearchNodeMiddleware
+│   └── ui-components/       # Shared UI components (future)
+│
+├── docs/                    # Comprehensive documentation
+├── CLAUDE.md                # AI assistant development guide
+├── AUTHENTICATION_FIXES.md  # Authentication bug fixes (Oct 31, 2025)
+├── MIDDLEWARE_INTEGRATION_ANALYSIS.md  # Middleware analysis
+└── package.json             # Root workspace configuration
 ```
 
 ## Quick Start
 
-### 1. Install Dependencies
+### Monorepo Setup
 
 ```bash
+# Install all dependencies (root + all workspaces)
 npm install
 ```
 
 **Note for Windows users**: If you encounter long path errors during installation, see [docs/troubleshooting/WINDOWS_LONG_PATH_FIX.md](docs/troubleshooting/WINDOWS_LONG_PATH_FIX.md).
 
-### 2. Start Development Server
+### Desktop App (Electron)
 
 ```bash
-npm start
+# Start desktop app in development mode
+npm run desktop
+
+# Build desktop app
+npm run desktop:build
+
+# Package for distribution
+npm run package         # Auto-detect platform
+npm run package:win     # Windows (NSIS installer)
+npm run package:mac     # macOS (DMG)
+npm run package:linux   # Linux (AppImage)
+
+# Storybook (component documentation)
+cd apps/desktop && npm run storybook  # http://localhost:6006
 ```
 
-### 3. Run on Android
+**Login Credentials** (default InteroperableResearchNode):
+- Email: `admin@admin.com`
+- Password: `prismadmin`
+
+### Mobile App (Expo)
 
 ```bash
-npm run android
+# Start Expo dev server
+npm run mobile
+
+# Run on Android
+npm run mobile:android
+
+# Run on Web (development)
+npm run mobile:web
 ```
 
 For detailed Bluetooth setup instructions, see [docs/setup/BLUETOOTH_SETUP.md](docs/setup/BLUETOOTH_SETUP.md).
@@ -113,7 +171,73 @@ For detailed Bluetooth setup instructions, see [docs/setup/BLUETOOTH_SETUP.md](d
 - Config screen: Streaming parameter configuration
 - Streaming screen: Real-time data visualization
 
-## Bluetooth Protocol
+## Desktop App: Authentication System
+
+### Overview
+
+The Desktop app implements secure authentication with the InteroperableResearchNode backend using a 4-phase cryptographic handshake protocol.
+
+**Status**: ✅ **Fully Functional** (October 31, 2025)
+
+### Features
+
+- ✅ **User Login/Logout**: Email and password authentication
+- ✅ **JWT Token Management**: Automatic token refresh (5 minutes before expiration)
+- ✅ **Secure Storage**: Tokens encrypted with Electron safeStorage (DPAPI on Windows, Keychain on macOS)
+- ✅ **4-Phase Handshake**: ECDH P-384 key exchange, AES-256-GCM encryption, RSA-2048 signatures
+- ✅ **Perfect Forward Secrecy**: Ephemeral keys discarded after session
+
+### Authentication Flow
+
+```
+1. User enters credentials → Login Screen
+2. Password encoded (Base64) → UserAuthService
+3. Encrypted channel established (AES-256-GCM) → Middleware
+4. Backend validates credentials → Returns JWT token
+5. Token decoded, user info extracted → Auth state stored
+6. User redirected to Home Screen ✅
+```
+
+### Recent Fixes (October 31, 2025)
+
+Three critical bugs were fixed to enable authentication:
+
+1. **Password Encoding Corruption**: Removed incorrect `atob()` call in Login.tsx
+2. **Backend Response Mapping**: Added flexible property mapping for PascalCase/camelCase
+3. **JWT User Extraction**: Created `decodeUserFromToken()` method to extract user from JWT claims
+
+**Documentation**: See [AUTHENTICATION_FIXES.md](AUTHENTICATION_FIXES.md) for detailed technical analysis.
+
+### Usage Example
+
+```typescript
+import { useAuth } from '@/context/AuthContext';
+
+function MyComponent() {
+  const { login, logout, user, isAuthenticated } = useAuth();
+
+  const handleLogin = async () => {
+    await login({
+      username: 'admin@admin.com',
+      password: 'prismadmin'
+    });
+  };
+
+  return (
+    <div>
+      {isAuthenticated ? (
+        <p>Welcome, {user?.name}!</p>
+      ) : (
+        <button onClick={handleLogin}>Login</button>
+      )}
+    </div>
+  );
+}
+```
+
+---
+
+## Mobile App: Bluetooth Protocol
 
 All communication uses JSON messages over Bluetooth SPP (9600 baud, null-terminated):
 
