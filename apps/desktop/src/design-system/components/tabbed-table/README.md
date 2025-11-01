@@ -6,15 +6,24 @@ A generic, reusable tabbed table component that combines tab navigation, search 
 
 The TabbedTable component provides a consistent pattern for displaying different datasets in tabs with search and table functionality. It's perfect for screens like Users/Researchers, SNOMED categories, or any interface that needs to switch between related data views.
 
-**Key Feature**: Each tab can work with different data types through a common base type, allowing maximum flexibility while maintaining type safety.
+**Key Feature**: Each tab has its own independent data array and action button, providing maximum flexibility and type safety.
+
+## ⚠️ Version 2.0 Breaking Changes
+
+**If you're upgrading from v1.x**, see the [CHANGELOG](./CHANGELOG.md) for migration instructions. Key changes:
+- ✅ Each tab now contains its own `data` array
+- ✅ Each tab can have its own `action` button
+- ❌ Global `data` prop removed
+- ❌ `getData` transformation function removed
 
 ## Features
 
 - **Tab Navigation**: Switch between different data views using the ButtonGroup component
-- **Multi-Type Support**: Each tab can transform base data into its own specific type
+- **Independent Data Arrays**: Each tab has its own data array with proper TypeScript typing
+- **Tab-Specific Actions**: Each tab can define its own action button with custom label and handler
+- **Multi-Type Support**: Different tabs can work with completely different data types
 - **Search**: Built-in search functionality with customizable filter logic
 - **Data Table**: Integrated DataTable component with pagination
-- **Flexible Configuration**: Customize columns, filters, and data transformation per tab
 - **Responsive**: Mobile-friendly responsive design
 - **Accessible**: Proper ARIA labels and keyboard navigation
 
@@ -29,11 +38,13 @@ interface User {
     id: string;
     name: string;
     email: string;
-    role: 'admin' | 'researcher' | 'viewer';
+    role: 'admin' | 'researcher';
 }
 
 function MyScreen() {
-    const users: User[] = [...]; // Your data
+    // Prepare data arrays
+    const users: User[] = [...];       // All users
+    const admins: User[] = [...];      // Admin users only
 
     // Define columns
     const userColumns = [
@@ -42,33 +53,27 @@ function MyScreen() {
         { id: 'role', label: 'Role', accessor: 'role' },
     ];
 
-    // Define tabs
-    const tabs: TabbedTableTab<User, User>[] = [
+    // Define tabs with independent data arrays
+    const tabs: TabbedTableTab[] = [
         {
             value: 'all',
             label: 'All Users',
             title: 'All Users',
+            data: users,              // Independent data array
             columns: userColumns,
-            getData: (users) => users, // No filtering
         },
         {
-            value: 'researchers',
-            label: 'Researchers',
-            title: 'Research Users',
+            value: 'admins',
+            label: 'Admins',
+            title: 'Admin Users',
+            data: admins,             // Different data array
             columns: userColumns,
-            getData: (users) => users.filter(u => u.role === 'researcher'),
         },
     ];
 
     return (
         <TabbedTable
             tabs={tabs}
-            data={users}
-            action={{
-                label: 'Add User',
-                icon: <PlusIcon />,
-                onClick: () => console.log('Add clicked'),
-            }}
             search={{
                 placeholder: 'Search users...',
                 filter: (user, query) =>
@@ -85,8 +90,7 @@ function MyScreen() {
 
 | Prop | Type | Description |
 |------|------|-------------|
-| `tabs` | `TabbedTableTab<TBaseData, any>[]` | Array of tab configurations |
-| `data` | `TBaseData[]` | Base data array (transformed by each tab) |
+| `tabs` | `TabbedTableTab[]` | Array of tab configurations (each with its own data) |
 
 ### Optional Props
 
@@ -95,8 +99,8 @@ function MyScreen() {
 | `defaultTab` | `string` | First tab value | Initial tab selection (uncontrolled) |
 | `selectedTab` | `string` | - | Controlled tab value |
 | `onTabChange` | `(tab: string) => void` | - | Tab change handler |
-| `title` | `string \| (tab: string) => string` | Tab label | Card title (can use {tab} placeholder) |
-| `action` | `TabbedTableAction` | - | Action button configuration |
+| `title` | `string \| (tab: string) => string` | Tab title | Card title (can use {tab} placeholder) |
+| `action` | `TabbedTableAction` | - | Global action button (tab actions override this) |
 | `search` | `TabbedTableSearch` | - | Search configuration |
 | `pageSize` | `number` | 10 | Initial page size |
 | `pageSizeOptions` | `number[]` | `[5, 10, 20, 50]` | Available page sizes |
@@ -108,132 +112,147 @@ function MyScreen() {
 
 ## Tab Configuration
 
-Each tab defines how to transform the base data and what columns to display:
+Each tab is completely self-contained with its own data, columns, and optional action:
 
 ```typescript
-interface TabbedTableTab<TBaseData, TTabData> {
-    value: string;                      // Unique identifier
-    label: string;                      // Display label
-    columns: DataTableColumn<TTabData>[]; // Columns for this tab's data type
-    title?: string;                     // Custom card title (optional)
-    getData: (baseData: TBaseData[]) => TTabData[]; // Transform base data to tab data
+interface TabbedTableTab<T = any> {
+    value: string;                        // Unique identifier
+    label: string;                        // Display label
+    data: T[];                            // Data array for this tab
+    columns: DataTableColumn<T>[];        // Columns for this tab's data type
+    title?: string;                       // Custom card title (optional)
+    action?: TabbedTableAction;           // Optional action button (overrides global)
 }
 ```
 
-### Type Parameters
+### Action Configuration
 
-- `TBaseData`: The base/source data type that all tabs receive
-- `TTabData`: The specific data type this tab works with (after transformation)
+```typescript
+interface TabbedTableAction {
+    label: string;                        // Button label
+    icon?: ReactNode;                     // Icon component (usually from Heroicons)
+    onClick: () => void;                  // Click handler
+    variant?: 'primary' | 'secondary' | 'outline'; // Button style
+}
+```
 
-## Advanced Examples
+## Examples
 
-### Same Type, Different Filters
+### Example 1: Different Data Types Per Tab
 
-When all tabs work with the same data type but filter differently:
+Perfect for completely different entities like Users and Researchers:
+
+```tsx
+interface User {
+    id: string;
+    login: string;
+    role: UserRole;
+}
+
+interface Researcher {
+    researcherId: string;
+    name: string;
+    email: string;
+    institution: string;
+}
+
+function UsersAndResearchersScreen() {
+    const users: User[] = [...];
+    const researchers: Researcher[] = [...];
+
+    const tabs: TabbedTableTab[] = [
+        {
+            value: 'users',
+            label: 'Users',
+            title: 'All Users',
+            data: users,
+            columns: [
+                { id: 'login', label: 'Login', accessor: 'login' },
+                { id: 'role', label: 'Role', accessor: 'role' },
+            ],
+            action: {
+                label: 'Add User',
+                icon: <PlusIcon />,
+                onClick: () => openUserForm(),
+                variant: 'primary',
+            },
+        },
+        {
+            value: 'researchers',
+            label: 'Researchers',
+            title: 'All Researchers',
+            data: researchers,
+            columns: [
+                { id: 'name', label: 'Name', accessor: 'name' },
+                { id: 'email', label: 'Email', accessor: 'email' },
+                { id: 'institution', label: 'Institution', accessor: 'institution' },
+            ],
+            action: {
+                label: 'Add Researcher',
+                icon: <PlusIcon />,
+                onClick: () => openResearcherForm(),
+                variant: 'primary',
+            },
+        },
+    ];
+
+    return <TabbedTable tabs={tabs} />;
+}
+```
+
+### Example 2: Same Type, Different Filters
+
+When tabs show the same entity with different filters:
 
 ```tsx
 interface User {
     id: string;
     name: string;
-    role: 'admin' | 'researcher' | 'viewer';
+    active: boolean;
 }
 
-const columns = [
-    { id: 'name', label: 'Name', accessor: 'name' },
-    { id: 'role', label: 'Role', accessor: 'role' },
-];
+function UserManagementScreen() {
+    const allUsers: User[] = [...];
 
-const tabs: TabbedTableTab<User, User>[] = [
-    {
-        value: 'all',
-        label: 'All',
-        columns,
-        getData: (users) => users,
-    },
-    {
-        value: 'admins',
-        label: 'Admins',
-        columns,
-        getData: (users) => users.filter(u => u.role === 'admin'),
-    },
-];
+    // Pre-filter data for each tab
+    const activeUsers = allUsers.filter(u => u.active);
+    const inactiveUsers = allUsers.filter(u => !u.active);
 
-<TabbedTable tabs={tabs} data={users} />
+    const userColumns = [
+        { id: 'name', label: 'Name', accessor: 'name' },
+        { id: 'active', label: 'Status', accessor: 'active' },
+    ];
+
+    const tabs: TabbedTableTab[] = [
+        {
+            value: 'active',
+            label: 'Active',
+            data: activeUsers,
+            columns: userColumns,
+        },
+        {
+            value: 'inactive',
+            label: 'Inactive',
+            data: inactiveUsers,
+            columns: userColumns,
+        },
+    ];
+
+    return (
+        <TabbedTable
+            tabs={tabs}
+            action={{
+                label: 'Add User',
+                onClick: handleAddUser,
+            }}
+        />
+    );
+}
 ```
 
-### Different Types Per Tab
+### Example 3: With Row Actions
 
-When tabs need to transform data into different types:
-
-```tsx
-// Base type
-interface BaseUser {
-    id: string;
-    name: string;
-    email: string;
-    role: string;
-    institution?: string;
-    department?: string;
-}
-
-// Tab-specific types
-interface SystemUser {
-    id: string;
-    name: string;
-    email: string;
-    role: string;
-}
-
-interface ResearchUser {
-    id: string;
-    name: string;
-    institution: string;
-    department: string;
-}
-
-const tabs: TabbedTableTab<BaseUser, any>[] = [
-    {
-        value: 'system',
-        label: 'System Users',
-        columns: [
-            { id: 'name', label: 'Name', accessor: 'name' },
-            { id: 'email', label: 'Email', accessor: 'email' },
-            { id: 'role', label: 'Role', accessor: 'role' },
-        ],
-        getData: (baseUsers): SystemUser[] =>
-            baseUsers
-                .filter(u => u.role !== 'researcher')
-                .map(u => ({
-                    id: u.id,
-                    name: u.name,
-                    email: u.email,
-                    role: u.role,
-                })),
-    },
-    {
-        value: 'research',
-        label: 'Researchers',
-        columns: [
-            { id: 'name', label: 'Name', accessor: 'name' },
-            { id: 'institution', label: 'Institution', accessor: 'institution' },
-            { id: 'department', label: 'Department', accessor: 'department' },
-        ],
-        getData: (baseUsers): ResearchUser[] =>
-            baseUsers
-                .filter(u => u.role === 'researcher')
-                .map(u => ({
-                    id: u.id,
-                    name: u.name,
-                    institution: u.institution || 'N/A',
-                    department: u.department || 'N/A',
-                })),
-    },
-];
-
-<TabbedTable tabs={tabs} data={baseUsers} />
-```
-
-### With Action Buttons in Rows
+Add action buttons in each row:
 
 ```tsx
 const columns = [
@@ -247,57 +266,190 @@ const columns = [
         align: 'center',
         render: (_, user) => (
             <div style={{ display: 'flex', gap: '8px' }}>
-                <button onClick={() => viewUser(user)}>View</button>
-                <button onClick={() => editUser(user)}>Edit</button>
+                <button onClick={() => viewUser(user)}>
+                    <EyeIcon className="w-5 h-5" />
+                </button>
+                <button onClick={() => editUser(user)}>
+                    <PencilIcon className="w-5 h-5" />
+                </button>
             </div>
         ),
     },
 ];
 
-const tabs: TabbedTableTab<User, User>[] = [
+const tabs: TabbedTableTab[] = [
     {
-        value: 'all',
-        label: 'All Users',
+        value: 'users',
+        label: 'Users',
+        data: users,
         columns,
-        getData: (users) => users,
     },
 ];
 ```
 
-### Controlled Component
+### Example 4: Tab-Specific vs Global Action
+
+Most tabs use the same action, but one needs different behavior:
+
+```tsx
+<TabbedTable
+    tabs={[
+        {
+            value: 'active',
+            label: 'Active Users',
+            data: activeUsers,
+            columns: userColumns,
+            // Uses global action
+        },
+        {
+            value: 'archived',
+            label: 'Archived',
+            data: archivedUsers,
+            columns: userColumns,
+            action: {
+                label: 'Restore User',       // Override for this tab
+                icon: <ArrowPathIcon />,
+                onClick: handleRestoreUser,
+            },
+        },
+    ]}
+    action={{
+        label: 'Add User',                   // Default for other tabs
+        icon: <PlusIcon />,
+        onClick: handleAddUser,
+    }}
+/>
+```
+
+### Example 5: Controlled Component
+
+Control the active tab from parent component:
 
 ```tsx
 function ControlledExample() {
     const [selectedTab, setSelectedTab] = useState('users');
 
+    const handleTabChange = (tab: string) => {
+        console.log('Tab changed to:', tab);
+        setSelectedTab(tab);
+    };
+
     return (
         <TabbedTable
             tabs={tabs}
-            data={data}
             selectedTab={selectedTab}
-            onTabChange={setSelectedTab}
+            onTabChange={handleTabChange}
         />
     );
 }
 ```
 
-### Custom Search Filter
+### Example 6: Custom Search Filter
+
+Implement complex search logic:
 
 ```tsx
 <TabbedTable
     tabs={tabs}
-    data={data}
     search={{
-        placeholder: 'Search by name or email...',
+        placeholder: 'Search by name, email, or ID...',
         filter: (user, query) => {
             const lowerQuery = query.toLowerCase();
             return (
                 user.name.toLowerCase().includes(lowerQuery) ||
-                user.email.toLowerCase().includes(lowerQuery)
+                user.email.toLowerCase().includes(lowerQuery) ||
+                user.id.includes(query)
             );
         },
     }}
 />
+```
+
+### Example 7: Dynamic Tab Title
+
+Generate title dynamically based on selected tab:
+
+```tsx
+<TabbedTable
+    tabs={tabs}
+    title={(selectedTab) => {
+        const tab = tabs.find(t => t.value === selectedTab);
+        const count = tab?.data.length || 0;
+        return `${tab?.label || 'Items'} (${count})`;
+    }}
+/>
+```
+
+## Best Practices
+
+### ✅ DO
+
+- **Pre-filter data** before passing to tabs for better performance
+- **Use useMemo** to prevent unnecessary re-renders of tab configurations
+- **Use TypeScript generics** for type-safe column definitions
+- **Provide meaningful action labels** ("Add User" instead of just "Add")
+- **Include dependencies** in useMemo arrays when using callbacks
+
+```tsx
+// ✅ Good: Pre-filter and memoize
+const tabs = useMemo(() => [
+    {
+        value: 'users',
+        data: users.filter(u => u.active),
+        columns: userColumns,
+        action: {
+            label: 'Add User',
+            onClick: handleAddUser,
+        },
+    },
+], [users, userColumns, handleAddUser]);
+```
+
+### ❌ DON'T
+
+- **Don't transform data on every render** - pre-filter instead
+- **Don't use inline arrow functions** in tabs without memoization
+- **Don't forget to handle empty states** - provide good empty messages
+- **Don't use generic action labels** like "Add" when more specific labels are better
+
+```tsx
+// ❌ Bad: Recreating tabs on every render
+const tabs = [
+    {
+        value: 'users',
+        data: users.filter(u => u.active), // Filters on every render!
+        columns: userColumns,
+        action: {
+            onClick: () => handleAdd(),    // New function every render!
+        },
+    },
+];
+```
+
+## Performance Tips
+
+1. **Memoize tab configurations**:
+```tsx
+const tabs = useMemo(() => [...], [dependencies]);
+```
+
+2. **Pre-filter data outside component**:
+```tsx
+const activeUsers = useMemo(() => users.filter(u => u.active), [users]);
+```
+
+3. **Use stable column arrays**:
+```tsx
+const columns = useMemo(() => [...], []);
+```
+
+4. **Avoid inline render functions when possible**:
+```tsx
+// Instead of inline:
+render: (value) => <span>{value}</span>
+
+// Extract to stable function:
+const renderValue = useCallback((value) => <span>{value}</span>, []);
 ```
 
 ## Design Tokens
@@ -332,6 +484,20 @@ The component uses these design tokens from the IRIS Design System:
 - [SearchBar](../search-bar/README.md) - Search input
 - [Button](../button/README.md) - Action button
 
+## Changelog
+
+See [CHANGELOG.md](./CHANGELOG.md) for version history and migration guides.
+
 ## Figma Design
 
 Based on IRIS Design System - Figma node `6804:13670`
+
+## TypeScript
+
+Full TypeScript support with proper generic typing:
+
+```typescript
+import type { TabbedTableTab, TabbedTableProps, TabbedTableAction } from './TabbedTable.types';
+```
+
+The component automatically infers types from your data arrays, providing excellent IDE autocomplete and type checking.

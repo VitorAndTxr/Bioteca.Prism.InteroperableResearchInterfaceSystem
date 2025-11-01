@@ -209,14 +209,14 @@
     {
       "id": "019",
       "name": "Pesquisas",
-      "nodeId": "pending-extraction",
+      "nodeId": "6910-4277",
       "module": "Research Management",
       "type": "Screen",
       "priority": "High",
       "dimensions": "1280x720",
-      "status": "pending",
+      "status": "verified",
       "discoveredIn": "2025-11-01",
-      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=TBD"
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6910-4277"
     },
     {
       "id": "020",
@@ -245,122 +245,122 @@
     {
       "id": "022",
       "name": "Voluntários",
-      "nodeId": "pending-extraction",
+      "nodeId": "6910-4277",
       "module": "User Management",
       "type": "Screen",
       "priority": "High",
       "dimensions": "1280x720",
-      "status": "pending",
+      "status": "verified",
       "discoveredIn": "2025-11-01",
-      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=TBD"
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6910-4277"
     },
     {
       "id": "023",
       "name": "Novo evento clínico",
-      "nodeId": "pending-extraction",
+      "nodeId": "6910-2905",
       "module": "SNOMED",
       "type": "Screen",
       "priority": "Medium",
       "dimensions": "1280x720",
-      "status": "pending",
+      "status": "verified",
       "discoveredIn": "2025-11-01",
-      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=TBD"
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6910-2905"
     },
     {
       "id": "024",
       "name": "Nova condição clínica",
-      "nodeId": "pending-extraction",
+      "nodeId": "6910-2825",
       "module": "SNOMED",
       "type": "Screen",
       "priority": "Medium",
       "dimensions": "1280x720",
-      "status": "pending",
+      "status": "verified",
       "discoveredIn": "2025-11-01",
-      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=TBD"
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6910-2825"
     },
     {
       "id": "025",
       "name": "Pesquisas - Incluir pesquisador",
-      "nodeId": "pending-extraction",
+      "nodeId": "6910-4029",
       "module": "Research Management",
       "type": "Screen",
       "priority": "Medium",
       "dimensions": "1280x720",
-      "status": "pending",
+      "status": "verified",
       "discoveredIn": "2025-11-01",
-      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=TBD"
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6910-4029"
     },
     {
       "id": "026",
       "name": "Novo modificador topográfico",
-      "nodeId": "pending-extraction",
+      "nodeId": "6910-2719",
       "module": "SNOMED",
       "type": "Screen",
       "priority": "Medium",
       "dimensions": "1280x720",
-      "status": "pending",
+      "status": "verified",
       "discoveredIn": "2025-11-01",
-      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=TBD"
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6910-2719"
     },
     {
       "id": "027",
       "name": "Nova alergia/Intolerância",
-      "nodeId": "pending-extraction",
+      "nodeId": "6910-3177",
       "module": "SNOMED",
       "type": "Screen",
       "priority": "Medium",
       "dimensions": "1280x720",
-      "status": "pending",
+      "status": "verified",
       "discoveredIn": "2025-11-01",
-      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=TBD"
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6910-3177"
     },
     {
       "id": "028",
       "name": "Nova medicação",
-      "nodeId": "pending-extraction",
+      "nodeId": "6910-3052",
       "module": "SNOMED",
       "type": "Screen",
       "priority": "Medium",
       "dimensions": "1280x720",
-      "status": "pending",
+      "status": "verified",
       "discoveredIn": "2025-11-01",
-      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=TBD"
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6910-3052"
     },
     {
       "id": "029",
       "name": "Nova estrutura do corpo",
-      "nodeId": "pending-extraction",
+      "nodeId": "6910-2612",
       "module": "SNOMED",
       "type": "Screen",
       "priority": "Medium",
       "dimensions": "1280x720",
-      "status": "pending",
+      "status": "verified",
       "discoveredIn": "2025-11-01",
-      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=TBD"
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6910-2612"
     },
     {
       "id": "030",
       "name": "Nova conexão",
-      "nodeId": "pending-extraction",
+      "nodeId": "6910-3543",
       "module": "NPI Management",
       "type": "Screen",
       "priority": "Medium",
       "dimensions": "1280x720",
-      "status": "pending",
+      "status": "verified",
       "discoveredIn": "2025-11-01",
-      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=TBD"
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6910-3543"
     },
     {
       "id": "031",
       "name": "Nova região do corpo",
-      "nodeId": "pending-extraction",
+      "nodeId": "6910-2488",
       "module": "SNOMED",
       "type": "Screen",
       "priority": "Medium",
       "dimensions": "1280x720",
-      "status": "pending",
+      "status": "verified",
       "discoveredIn": "2025-11-01",
-      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=TBD"
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6910-2488"
     }
   ]
 }
