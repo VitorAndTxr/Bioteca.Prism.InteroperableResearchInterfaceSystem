@@ -14,15 +14,16 @@ import { initializeAndHydrate, cleanupMiddleware } from './services/middleware';
 import Login from './screens/Login/Login';
 import UsersAndResearchesersScreen from './screens/UsersAndResearchesers/UsersAndResearchesersScreen';
 import HomeScreen from './screens/Home/HomeScreen';
+import SNOMEDScreen from './screens/SNOMED/SnomedScreen';
 
 
-type DemoPage = 'home' | 'users';
+type DemoPage = 'home' | 'users' | 'snomed';
 
 /**
  * Main App Content (requires AuthContext)
  */
 function AppContent() {
-    const { isAuthenticated, authState, user, logout } = useAuth();
+    const { isAuthenticated, authState} = useAuth();
     const [version, setVersion] = useState<string>('');
     const [currentPage, setCurrentPage] = useState<DemoPage>('home');
     const [activePath, setActivePath] = useState<string>('/dashboard');
@@ -54,6 +55,9 @@ function AppContent() {
 
         // Navigate to appropriate page based on path
         switch (path) {
+            case '/snomed':
+                setCurrentPage('snomed');
+                break;  
             case '/users':
                 setCurrentPage('users');
                 break;
@@ -72,6 +76,12 @@ function AppContent() {
     // Render content based on current page
     const renderContent = () => {
         switch (currentPage) {
+            case 'snomed':
+                return (
+                    <SNOMEDScreen
+                        handleNavigation={handleNavigation}
+                    />
+                );
             case 'users':
                 return (
                     <UsersAndResearchesersScreen

@@ -6,8 +6,8 @@
  * Now uses the generic TabbedTable component from the design system.
  */
 
-import React, { useMemo } from 'react';
-import { User, UserRole } from '@iris/domain';
+import { useMemo } from 'react';
+import { Researcher, ResearcherRole, User, UserRole } from '@iris/domain';
 import { TabbedTable } from '../../design-system/components/tabbed-table';
 import type { TabbedTableTab } from '../../design-system/components/tabbed-table';
 import type { DataTableColumn } from '../../design-system/components/data-table/DataTable.types';
@@ -18,49 +18,63 @@ export interface UsersListProps {
     onUserAdd?: () => void;
     onUserEdit?: (user: User) => void;
     onUserView?: (user: User) => void;
+    onResearcherAdd?: () => void;
+    onResearcherEdit?: (researcher: Researcher) => void;
+    onResearcherView?: (researcher: Researcher) => void;
 }
 
 export function UsersList({
     onUserAdd,
     onUserEdit,
     onUserView,
+    onResearcherAdd,
+    onResearcherEdit,
+    onResearcherView,
 }: UsersListProps) {
     // Mock data - Replace with real API calls
     const mockUsers: User[] = useMemo(() => [
         {
             id: '1',
-            email: 'admin@iris.com',
-            name: 'Admin User',
+            login: 'usuario1',
             role: UserRole.ADMIN,
-            createdAt: new Date('2024-01-01'),
-            lastLogin: new Date('2025-01-15T14:30:00'),
+            researcher: {
+                researcherId: '1',
+                researchNodeId: 'RN1',
+                name: 'Pesquisador 1',
+                email: 'pesquisador1@example.com',
+                institution: 'Instituição 1',
+                orcid: '0000-0001-2345-6789',
+                role: ResearcherRole.CHIEF,
+            },
         },
         {
             id: '2',
-            email: 'researcher@iris.com',
-            name: 'Dr. Silva',
+            login: 'usuario2',
             role: UserRole.RESEARCHER,
-            createdAt: new Date('2024-02-15'),
-            lastLogin: new Date('2025-01-14T09:15:00'),
-        },
-        {
-            id: '3',
-            email: 'clinician@iris.com',
-            name: 'Dr. Santos',
-            role: UserRole.CLINICIAN,
-            createdAt: new Date('2024-03-20'),
-            lastLogin: new Date('2025-01-13T16:45:00'),
-        },
-        {
-            id: '4',
-            email: 'viewer@iris.com',
-            name: 'João Oliveira',
-            role: UserRole.VIEWER,
-            createdAt: new Date('2024-04-10'),
-            lastLogin: new Date('2025-01-10T11:20:00'),
+            
         },
     ], []);
 
+    const mockResearchers: Researcher[] = useMemo(() => [
+        {
+            researcherId: '1',
+            researchNodeId: 'RN1',
+            name: 'Pesquisador 1',
+            email: 'pesquisador1@example.com',
+            institution: 'Instituição 1',
+            orcid: '0000-0001-2345-6789',
+            role: ResearcherRole.CHIEF,
+        },
+        {
+            researcherId: '2',
+            researchNodeId: 'RN1',
+            name: 'Pesquisador 2',
+            email: 'pesquisador2@example.com',
+            institution: 'Instituição 2',
+            orcid: '0000-0001-2345-6789',
+            role: ResearcherRole.RESEARCHER,
+        },
+    ], []);
     // Format date helper
     const formatDate = (date?: Date) => {
         if (!date) return '-';
@@ -89,7 +103,7 @@ export function UsersList({
         {
             id: 'login',
             label: 'Login',
-            accessor: 'email',
+            accessor: 'login',
             sortable: true,
             width: '25%',
         },
@@ -104,7 +118,7 @@ export function UsersList({
         {
             id: 'researcher',
             label: 'Pesquisador',
-            accessor: 'name',
+            accessor: 'researcher.name',
             sortable: true,
             width: '25%',
         },
@@ -151,24 +165,108 @@ export function UsersList({
         },
     ], [onUserEdit, onUserView]);
 
+    const researcherColumns: DataTableColumn<Researcher>[] = useMemo(() => [
+    {
+        id: 'nome',
+        label: 'Nome',
+        accessor: 'name',
+        sortable: true,
+        width: '20%',
+    },
+    {
+        id: 'email',
+        label: 'Email',
+        accessor: 'email',
+        sortable: true,
+        width: '20%'
+    },
+    {
+        id: 'institution',
+        label: 'Instituição',
+        accessor: 'institution',
+        sortable: true,
+        width: '10%',
+    },
+    {
+        id: 'role',
+        label: 'Tipo',
+        accessor: 'role',
+        sortable: true,
+        width: '10%',
+    },
+        {
+        id: 'orcid',
+        label: 'Orcid',
+        accessor: 'orcid',
+        sortable: true,
+        width: '10%',
+    },
+    {
+        id: 'actions',
+        label: 'Ações',
+        accessor: 'id',
+        width: '10%',
+        align: 'center',
+        render: (_, researcher) => (
+            <div className="researcher-actions">
+                <button
+                    className="action-button view"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        onResearcherView?.(researcher);
+                    }}
+                    aria-label="Visualizar usuário"
+                    title="Visualizar"
+                >
+                    <EyeIcon />
+                </button>
+                <button
+                    className="action-button edit"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        onResearcherEdit?.(researcher);
+                    }}
+                    aria-label="Editar usuário"
+                    title="Editar"
+                >
+                    <EditIcon />
+                </button>
+            </div>
+        ),
+    },
+], [onResearcherEdit, onResearcherView]);
+
+
     // Tab configurations
-    // Both tabs work with User type, but filter differently
+    // Each tab has its own data array, columns, and action button
     const tabs: TabbedTableTab[] = useMemo(() => [
         {
             value: 'users',
             label: 'Usuários',
             title: 'Todos os usuários',
+            data: mockUsers,
             columns: userColumns,
-            getData: (users: User[]) => users.filter(u => u.role !== UserRole.RESEARCHER),
+            action: {
+                label: 'Adicionar Usuário',
+                icon: <PlusIcon />,
+                onClick: onUserAdd || (() => console.log('Add user clicked')),
+                variant: 'primary',
+            },
         },
         {
             value: 'researchers',
             label: 'Pesquisadores',
             title: 'Todos os pesquisadores',
-            columns: userColumns,
-            getData: (users: User[]) => users.filter(u => u.role === UserRole.RESEARCHER),
+            data: mockResearchers,
+            columns: researcherColumns,
+            action: {
+                label: 'Adicionar Pesquisador',
+                icon: <PlusIcon />,
+                onClick: onResearcherAdd || (() => console.log('Add researcher clicked')),
+                variant: 'primary',
+            },
         },
-    ], [userColumns]);
+    ], [userColumns, researcherColumns, mockUsers, mockResearchers, onUserAdd, onResearcherAdd]);
 
     // Custom search filter
     const searchFilter = (user: any, query: string) => {
@@ -184,19 +282,12 @@ export function UsersList({
         <div className="users-list-screen">
             <TabbedTable
                 tabs={tabs}
-                data={mockUsers}
-                action={{
-                    label: 'Adicionar',
-                    icon: <PlusIcon />,
-                    onClick: onUserAdd || (() => console.log('Add user clicked')),
-                    variant: 'primary',
-                }}
                 search={{
-                    placeholder: 'Buscar usuários...',
+                    placeholder: 'Buscar...',
                     filter: searchFilter,
                 }}
-                emptyMessage="Nenhum usuário cadastrado."
-                emptySearchMessage="Nenhum usuário encontrado com os critérios de busca."
+                emptyMessage="Nenhum registro cadastrado."
+                emptySearchMessage="Nenhum registro encontrado com os critérios de busca."
                 striped
                 hoverable
             />

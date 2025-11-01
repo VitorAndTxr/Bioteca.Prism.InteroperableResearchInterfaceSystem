@@ -4,6 +4,8 @@
   "page": "Design System",
   "baseUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype",
   "mappingDate": "2025-10-17",
+  "lastUpdated": "2025-11-01",
+  "updateNotes": "Added Figma URLs for all design system components. Verified component node IDs after project reorganization.",
   "totalComponents": 33,
   "components": [
     {
@@ -12,7 +14,9 @@
       "nodeId": "2803-4053",
       "category": "Feedback",
       "type": "Frame",
-      "dimensions": "1004x973"
+      "dimensions": "1004x973",
+      "status": "pending",
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=2803-4053"
     },
     {
       "id": "DS-002",
@@ -20,7 +24,9 @@
       "nodeId": "2803-4064",
       "category": "Visual Elements",
       "type": "Frame",
-      "dimensions": "1196x1469"
+      "dimensions": "1196x1469",
+      "status": "pending",
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=2803-4064"
     },
     {
       "id": "DS-003",
@@ -28,7 +34,9 @@
       "nodeId": "2803-4028",
       "category": "Content",
       "type": "Frame",
-      "dimensions": "834x798"
+      "dimensions": "834x798",
+      "status": "pending",
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=2803-4028"
     },
     {
       "id": "DS-004",
@@ -36,7 +44,9 @@
       "nodeId": "2803-3974",
       "category": "Navigation",
       "type": "Frame",
-      "dimensions": "1123x1376"
+      "dimensions": "1123x1376",
+      "status": "pending",
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=2803-3974"
     },
     {
       "id": "DS-005",
@@ -44,7 +54,9 @@
       "nodeId": "2803-3884",
       "category": "Input",
       "type": "Frame",
-      "dimensions": "1854x2762"
+      "dimensions": "1854x2762",
+      "status": "pending",
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=2803-3884"
     },
     {
       "id": "DS-006",
@@ -52,7 +64,9 @@
       "nodeId": "2803-3776",
       "category": "Input",
       "type": "Frame",
-      "dimensions": "1146x1529"
+      "dimensions": "1146x1529",
+      "status": "pending",
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=2803-3776"
     },
     {
       "id": "DS-007",
@@ -60,7 +74,9 @@
       "nodeId": "2803-3574",
       "category": "Actions",
       "type": "Frame",
-      "dimensions": "1123x1309"
+      "dimensions": "1123x1309",
+      "status": "pending",
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=2803-3574"
     },
     {
       "id": "DS-008",
@@ -68,7 +84,9 @@
       "nodeId": "2803-3568",
       "category": "Feedback",
       "type": "Frame",
-      "dimensions": "1491x1158"
+      "dimensions": "1491x1158",
+      "status": "pending",
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=2803-3568"
     },
     {
       "id": "DS-009",
@@ -76,7 +94,9 @@
       "nodeId": "2803-3526",
       "category": "Layout",
       "type": "Frame",
-      "dimensions": "1440x900"
+      "dimensions": "1440x900",
+      "status": "pending",
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=2803-3526"
     },
     {
       "id": "DS-010",
@@ -84,7 +104,9 @@
       "nodeId": "2803-3525",
       "category": "Layout",
       "type": "Frame",
-      "dimensions": "617x350"
+      "dimensions": "617x350",
+      "status": "pending",
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=2803-3525"
     },
     {
       "id": "DS-011",
@@ -92,7 +114,9 @@
       "nodeId": "2803-3514",
       "category": "Feedback",
       "type": "Frame",
-      "dimensions": "595x460"
+      "dimensions": "595x460",
+      "status": "pending",
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=2803-3514"
     },
     {
       "id": "DS-012",
@@ -100,7 +124,9 @@
       "nodeId": "2803-3498",
       "category": "Layout",
       "type": "Auto layout",
-      "dimensions": "375x1350"
+      "dimensions": "375x1350",
+      "status": "pending",
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=2803-3498"
     },
     {
       "id": "DS-013",
@@ -108,7 +134,9 @@
       "nodeId": "2803-3415",
       "category": "Navigation",
       "type": "Frame",
-      "dimensions": "1607x1515"
+      "dimensions": "1607x1515",
+      "status": "pending",
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=2803-3415"
     },
     {
       "id": "DS-014",
@@ -116,7 +144,9 @@
       "nodeId": "2803-3275",
       "category": "Navigation",
       "type": "Frame",
-      "dimensions": "821x540"
+      "dimensions": "821x540",
+      "status": "pending",
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=2803-3275"
     },
     {
       "id": "DS-015",
@@ -124,7 +154,9 @@
       "nodeId": "2803-3248",
       "category": "Visual Elements",
       "type": "Frame",
-      "dimensions": "853x800"
+      "dimensions": "853x800",
+      "status": "pending",
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=2803-3248"
     },
     {
       "id": "DS-016",
@@ -132,7 +164,9 @@
       "nodeId": "2803-3214",
       "category": "Content",
       "type": "Frame",
-      "dimensions": "1689x1899"
+      "dimensions": "1689x1899",
+      "status": "pending",
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=2803-3214"
     },
     {
       "id": "DS-017",
@@ -140,7 +174,9 @@
       "nodeId": "2803-2455",
       "category": "Input",
       "type": "Frame",
-      "dimensions": "1954x1708"
+      "dimensions": "1954x1708",
+      "status": "pending",
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=2803-2455"
     },
     {
       "id": "DS-018",
@@ -148,7 +184,9 @@
       "nodeId": "2803-2414",
       "category": "Input",
       "type": "Frame",
-      "dimensions": "2078x2573"
+      "dimensions": "2078x2573",
+      "status": "pending",
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=2803-2414"
     },
     {
       "id": "DS-019",
@@ -156,7 +194,9 @@
       "nodeId": "2803-2339",
       "category": "Input",
       "type": "Frame",
-      "dimensions": "1830x2395"
+      "dimensions": "1830x2395",
+      "status": "pending",
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=2803-2339"
     },
     {
       "id": "DS-020",
@@ -164,7 +204,9 @@
       "nodeId": "2803-2339",
       "category": "Input",
       "type": "Frame",
-      "note": "Shares same node ID as Dropdown - may be grouped"
+      "note": "Shares same node ID as Dropdown - may be grouped",
+      "status": "pending",
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=2803-2339"
     },
     {
       "id": "DS-021",
@@ -172,7 +214,9 @@
       "nodeId": "2803-3514",
       "category": "Input",
       "type": "Frame",
-      "note": "Shares same node ID as Progress - may be grouped"
+      "note": "Shares same node ID as Progress - may be grouped",
+      "status": "pending",
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=2803-3514"
     },
     {
       "id": "DS-022",
@@ -180,7 +224,9 @@
       "nodeId": "2803-2225",
       "category": "Input",
       "type": "Frame",
-      "dimensions": "1097x1176"
+      "dimensions": "1097x1176",
+      "status": "pending",
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=2803-2225"
     },
     {
       "id": "DS-023",
@@ -188,7 +234,9 @@
       "nodeId": "2803-1366",
       "category": "Actions",
       "type": "Frame",
-      "dimensions": "2888x1783"
+      "dimensions": "2888x1783",
+      "status": "pending",
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=2803-1366"
     },
     {
       "id": "DS-024",
@@ -196,7 +244,9 @@
       "nodeId": "2803-1115",
       "category": "Foundation",
       "type": "Frame",
-      "dimensions": "1568x541"
+      "dimensions": "1568x541",
+      "status": "pending",
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=2803-1115"
     },
     {
       "id": "DS-025",
@@ -204,7 +254,9 @@
       "nodeId": "2803-1087",
       "category": "Foundation",
       "type": "Frame",
-      "dimensions": "1301x475"
+      "dimensions": "1301x475",
+      "status": "pending",
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=2803-1087"
     },
     {
       "id": "DS-026",
@@ -212,7 +264,9 @@
       "nodeId": "2803-720",
       "category": "Foundation",
       "type": "Frame",
-      "dimensions": "375x812"
+      "dimensions": "375x812",
+      "status": "pending",
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=2803-720"
     },
     {
       "id": "DS-027",
@@ -220,7 +274,9 @@
       "nodeId": "2803-696",
       "category": "Foundation",
       "type": "Frame",
-      "dimensions": "1280x900"
+      "dimensions": "1280x900",
+      "status": "pending",
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=2803-696"
     },
     {
       "id": "DS-028",
@@ -228,7 +284,9 @@
       "nodeId": "2803-437",
       "category": "Foundation",
       "type": "Frame",
-      "dimensions": "979x1634"
+      "dimensions": "979x1634",
+      "status": "pending",
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=2803-437"
     },
     {
       "id": "DS-029",
@@ -236,7 +294,9 @@
       "nodeId": "2803-437",
       "category": "Foundation",
       "type": "Frame",
-      "note": "Shares same node ID as Spacing - may be grouped"
+      "note": "Shares same node ID as Spacing - may be grouped",
+      "status": "pending",
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=2803-437"
     },
     {
       "id": "DS-030",
@@ -244,7 +304,9 @@
       "nodeId": "2803-696",
       "category": "Foundation",
       "type": "Frame",
-      "note": "Shares same node ID as Desktop Layout - may be grouped"
+      "note": "Shares same node ID as Desktop Layout - may be grouped",
+      "status": "pending",
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=2803-696"
     }
   ],
   "categorySummary": {

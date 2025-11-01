@@ -194,11 +194,15 @@ export class ResearchNodeMiddleware {
 
         console.log('[Middleware]    Challenge received:', challengeResponse.challengeData.substring(0, 20) + '...');
 
+        // Determine which timestamp to use for authentication (ensure consistency)
+        const authTimestamp = challengeResponse.challengeTimestamp ?? challengeRequestTimestamp;
+        console.log('[Middleware]    Using timestamp for authentication:', authTimestamp);
+
         const signature = await this.options.signChallenge({
             channelId: channel.channelId,
             nodeId,
             challengeData: challengeResponse.challengeData,
-            timestamp: challengeResponse.challengeTimestamp ?? challengeRequestTimestamp,
+            timestamp: authTimestamp,
             certificate
         });
 
@@ -209,7 +213,7 @@ export class ResearchNodeMiddleware {
             nodeId,
             challengeData: challengeResponse.challengeData,
             signature,
-            timestamp: challengeResponse.challengeTimestamp ?? new Date().toISOString()
+            timestamp: authTimestamp
         });
 
         if (!authResult.authenticated) {

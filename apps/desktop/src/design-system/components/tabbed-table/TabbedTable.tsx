@@ -21,7 +21,6 @@ import './TabbedTable.css';
 
 export function TabbedTable({
     tabs,
-    data,
     defaultTab,
     selectedTab: controlledTab,
     onTabChange,
@@ -52,11 +51,11 @@ export function TabbedTable({
         [tabs, selectedTab]
     );
 
-    // Get tab-specific data by calling the tab's getData function
+    // Get tab-specific data from the tab's data array
     const tabData = useMemo(() => {
         if (!currentTab) return [];
-        return currentTab.getData(data);
-    }, [data, currentTab]);
+        return currentTab.data || [];
+    }, [currentTab]);
 
     // Filter data by search query
     const filteredData = useMemo(() => {
@@ -84,6 +83,11 @@ export function TabbedTable({
         }
         return currentTab?.title || currentTab?.label || '';
     }, [title, selectedTab, currentTab]);
+
+    // Get action button (tab-specific overrides global)
+    const actionButton = useMemo(() => {
+        return currentTab?.action || action;
+    }, [currentTab, action]);
 
     // Handle tab change
     const handleTabChange = (value: string) => {
@@ -125,15 +129,15 @@ export function TabbedTable({
                 {/* Card Header */}
                 <div className="tabbed-table__header">
                     <h2 className="tabbed-table__title">{cardTitle}</h2>
-                    {action && (
+                    {actionButton && (
                         <Button
-                            variant={action.variant || 'primary'}
+                            variant={actionButton.variant || 'primary'}
                             size="medium"
-                            onClick={action.onClick}
-                            icon={action.icon}
+                            onClick={actionButton.onClick}
+                            icon={actionButton.icon}
                             iconPosition="left"
                         >
-                            {action.label}
+                            {actionButton.label}
                         </Button>
                     )}
                 </div>

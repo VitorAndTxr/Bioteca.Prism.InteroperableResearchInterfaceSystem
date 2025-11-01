@@ -3,7 +3,9 @@
   "fileName": "I.R.I.S.-Prototype",
   "baseUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype",
   "mappingDate": "2025-10-17",
-  "totalFrames": 18,
+  "lastUpdated": "2025-11-01",
+  "updateNotes": "Project reorganized in Figma. Added 13 previously unmapped frames discovered during verification audit. Some frame node IDs have changed due to structural reorganization.",
+  "totalFrames": 31,
   "frames": [
     {
       "id": "001",
@@ -12,7 +14,9 @@
       "module": "Auth",
       "type": "Screen",
       "priority": "High",
-      "dimensions": "1280x720"
+      "dimensions": "1280x720",
+      "status": "verified",
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6804-13742"
     },
     {
       "id": "002",
@@ -21,16 +25,21 @@
       "module": "User Management",
       "type": "Screen",
       "priority": "High",
-      "dimensions": "1280x720"
+      "dimensions": "1280x720",
+      "status": "verified",
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6804-13670"
     },
     {
       "id": "003",
       "name": "Pesquisadores",
-      "nodeId": "6804-12845",
+      "nodeId": "6910-3378",
       "module": "User Management",
       "type": "Screen",
       "priority": "High",
-      "dimensions": "1280x720"
+      "dimensions": "1280x720",
+      "status": "updated",
+      "previousNodeId": "6804-12845",
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6910-3378"
     },
     {
       "id": "004",
@@ -39,7 +48,9 @@
       "module": "User Management",
       "type": "Screen",
       "priority": "Medium",
-      "dimensions": "1280x720"
+      "dimensions": "1280x720",
+      "status": "pending",
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6804-12778"
     },
     {
       "id": "005",
@@ -48,7 +59,9 @@
       "module": "User Management",
       "type": "Screen",
       "priority": "Medium",
-      "dimensions": "1280x720"
+      "dimensions": "1280x720",
+      "status": "pending",
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6804-12812"
     },
     {
       "id": "006",
@@ -57,7 +70,9 @@
       "module": "User Management",
       "type": "Modal",
       "priority": "Medium",
-      "dimensions": "617x350"
+      "dimensions": "617x350",
+      "status": "pending",
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6835-991"
     },
     {
       "id": "007",
@@ -66,7 +81,9 @@
       "module": "User Management",
       "type": "Modal",
       "priority": "Medium",
-      "dimensions": "617x350"
+      "dimensions": "617x350",
+      "status": "verified",
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6835-1017"
     },
     {
       "id": "008",
@@ -75,7 +92,9 @@
       "module": "User Management",
       "type": "Modal",
       "priority": "Low",
-      "dimensions": "353x42"
+      "dimensions": "353x42",
+      "status": "pending",
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6816-2701"
     },
     {
       "id": "009",
@@ -84,7 +103,9 @@
       "module": "User Management",
       "type": "Modal",
       "priority": "Low",
-      "dimensions": "391x42"
+      "dimensions": "391x42",
+      "status": "pending",
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6816-2702"
     },
     {
       "id": "010",
@@ -93,7 +114,9 @@
       "module": "NPI Management",
       "type": "Screen",
       "priority": "High",
-      "dimensions": "1280x720"
+      "dimensions": "1280x720",
+      "status": "verified",
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6804-13591"
     },
     {
       "id": "011",
@@ -102,7 +125,9 @@
       "module": "NPI Management",
       "type": "Screen",
       "priority": "High",
-      "dimensions": "1280x720"
+      "dimensions": "1280x720",
+      "status": "pending",
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6804-13512"
     },
     {
       "id": "012",
@@ -111,7 +136,9 @@
       "module": "SNOMED",
       "type": "Screen",
       "priority": "Medium",
-      "dimensions": "1280x720"
+      "dimensions": "1280x720",
+      "status": "pending",
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6804-12924"
     },
     {
       "id": "013",
@@ -120,7 +147,9 @@
       "module": "SNOMED",
       "type": "Screen",
       "priority": "Medium",
-      "dimensions": "1280x720"
+      "dimensions": "1280x720",
+      "status": "pending",
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6804-13008"
     },
     {
       "id": "014",
@@ -129,7 +158,9 @@
       "module": "SNOMED",
       "type": "Screen",
       "priority": "Medium",
-      "dimensions": "1280x720"
+      "dimensions": "1280x720",
+      "status": "pending",
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6804-13092"
     },
     {
       "id": "015",
@@ -138,7 +169,9 @@
       "module": "SNOMED",
       "type": "Screen",
       "priority": "Medium",
-      "dimensions": "1280x720"
+      "dimensions": "1280x720",
+      "status": "pending",
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6804-13176"
     },
     {
       "id": "016",
@@ -147,7 +180,9 @@
       "module": "SNOMED",
       "type": "Screen",
       "priority": "Medium",
-      "dimensions": "1280x720"
+      "dimensions": "1280x720",
+      "status": "pending",
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6804-13260"
     },
     {
       "id": "017",
@@ -156,7 +191,9 @@
       "module": "SNOMED",
       "type": "Screen",
       "priority": "Medium",
-      "dimensions": "1280x720"
+      "dimensions": "1280x720",
+      "status": "pending",
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6804-13344"
     },
     {
       "id": "018",
@@ -165,7 +202,165 @@
       "module": "SNOMED",
       "type": "Screen",
       "priority": "Medium",
-      "dimensions": "1280x720"
+      "dimensions": "1280x720",
+      "status": "pending",
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6804-13428"
+    },
+    {
+      "id": "019",
+      "name": "Pesquisas",
+      "nodeId": "pending-extraction",
+      "module": "Research Management",
+      "type": "Screen",
+      "priority": "High",
+      "dimensions": "1280x720",
+      "status": "pending",
+      "discoveredIn": "2025-11-01",
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=TBD"
+    },
+    {
+      "id": "020",
+      "name": "Pesquisa específica - Voluntários",
+      "nodeId": "6910-4190",
+      "module": "Research Management",
+      "type": "Screen",
+      "priority": "Medium",
+      "dimensions": "1280x720",
+      "status": "verified",
+      "discoveredIn": "2025-11-01",
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6910-4190"
+    },
+    {
+      "id": "021",
+      "name": "Pesquisa específica - Pesquisadores",
+      "nodeId": "6910-3745",
+      "module": "Research Management",
+      "type": "Screen",
+      "priority": "Medium",
+      "dimensions": "1280x720",
+      "status": "verified",
+      "discoveredIn": "2025-11-01",
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6910-3745"
+    },
+    {
+      "id": "022",
+      "name": "Voluntários",
+      "nodeId": "pending-extraction",
+      "module": "User Management",
+      "type": "Screen",
+      "priority": "High",
+      "dimensions": "1280x720",
+      "status": "pending",
+      "discoveredIn": "2025-11-01",
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=TBD"
+    },
+    {
+      "id": "023",
+      "name": "Novo evento clínico",
+      "nodeId": "pending-extraction",
+      "module": "SNOMED",
+      "type": "Screen",
+      "priority": "Medium",
+      "dimensions": "1280x720",
+      "status": "pending",
+      "discoveredIn": "2025-11-01",
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=TBD"
+    },
+    {
+      "id": "024",
+      "name": "Nova condição clínica",
+      "nodeId": "pending-extraction",
+      "module": "SNOMED",
+      "type": "Screen",
+      "priority": "Medium",
+      "dimensions": "1280x720",
+      "status": "pending",
+      "discoveredIn": "2025-11-01",
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=TBD"
+    },
+    {
+      "id": "025",
+      "name": "Pesquisas - Incluir pesquisador",
+      "nodeId": "pending-extraction",
+      "module": "Research Management",
+      "type": "Screen",
+      "priority": "Medium",
+      "dimensions": "1280x720",
+      "status": "pending",
+      "discoveredIn": "2025-11-01",
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=TBD"
+    },
+    {
+      "id": "026",
+      "name": "Novo modificador topográfico",
+      "nodeId": "pending-extraction",
+      "module": "SNOMED",
+      "type": "Screen",
+      "priority": "Medium",
+      "dimensions": "1280x720",
+      "status": "pending",
+      "discoveredIn": "2025-11-01",
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=TBD"
+    },
+    {
+      "id": "027",
+      "name": "Nova alergia/Intolerância",
+      "nodeId": "pending-extraction",
+      "module": "SNOMED",
+      "type": "Screen",
+      "priority": "Medium",
+      "dimensions": "1280x720",
+      "status": "pending",
+      "discoveredIn": "2025-11-01",
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=TBD"
+    },
+    {
+      "id": "028",
+      "name": "Nova medicação",
+      "nodeId": "pending-extraction",
+      "module": "SNOMED",
+      "type": "Screen",
+      "priority": "Medium",
+      "dimensions": "1280x720",
+      "status": "pending",
+      "discoveredIn": "2025-11-01",
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=TBD"
+    },
+    {
+      "id": "029",
+      "name": "Nova estrutura do corpo",
+      "nodeId": "pending-extraction",
+      "module": "SNOMED",
+      "type": "Screen",
+      "priority": "Medium",
+      "dimensions": "1280x720",
+      "status": "pending",
+      "discoveredIn": "2025-11-01",
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=TBD"
+    },
+    {
+      "id": "030",
+      "name": "Nova conexão",
+      "nodeId": "pending-extraction",
+      "module": "NPI Management",
+      "type": "Screen",
+      "priority": "Medium",
+      "dimensions": "1280x720",
+      "status": "pending",
+      "discoveredIn": "2025-11-01",
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=TBD"
+    },
+    {
+      "id": "031",
+      "name": "Nova região do corpo",
+      "nodeId": "pending-extraction",
+      "module": "SNOMED",
+      "type": "Screen",
+      "priority": "Medium",
+      "dimensions": "1280x720",
+      "status": "pending",
+      "discoveredIn": "2025-11-01",
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=TBD"
     }
   ]
 }

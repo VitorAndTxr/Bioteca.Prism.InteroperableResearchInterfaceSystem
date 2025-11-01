@@ -14,17 +14,19 @@ import type { DataTableColumn } from '../data-table/DataTable.types';
  * Each tab can work with any data type.
  * The component uses union types to support multiple different types simultaneously.
  */
-export interface TabbedTableTab {
+export interface TabbedTableTab<T = any> {
     /** Unique identifier for the tab */
     value: string;
     /** Display label for the tab */
     label: string;
+    /** Data array for this tab */
+    data: T[];
     /** Table columns for this tab's data type */
-    columns: DataTableColumn<any>[];
+    columns: DataTableColumn<T>[];
     /** Optional: Custom title for the card when this tab is selected */
     title?: string;
-    /** Filter and transform function to get tab-specific data from base data */
-    getData: (baseData: any[]) => any[];
+    /** Optional: Action button configuration for this tab (overrides global action) */
+    action?: TabbedTableAction;
 }
 
 /**
@@ -55,11 +57,8 @@ export interface TabbedTableSearch {
  * TabbedTable component props
  */
 export interface TabbedTableProps {
-    /** Tab configurations - each tab can transform data to any type */
+    /** Tab configurations - each tab contains its own data array */
     tabs: TabbedTableTab[];
-
-    /** Base data to display (will be transformed by each tab's getData function) */
-    data: any[];
 
     /** Optional: Default tab value (defaults to first tab) */
     defaultTab?: string;
