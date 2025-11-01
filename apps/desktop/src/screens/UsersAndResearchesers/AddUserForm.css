@@ -1,0 +1,92 @@
+/**
+ * AddUserForm Styles
+ * Based on Figma design node 6804-12778
+ */
+
+.add-user-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 0;
+    background-color: #fcfcfc;
+    min-height: 100%;
+}
+
+.add-user-form__container {
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+    width: 100%;
+    max-width: 672px;
+}
+
+.add-user-form__fields {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 32px;
+    align-items: flex-start;
+}
+
+/* Two-column layout for most fields */
+.add-user-form__fields > * {
+    width: calc(50% - 16px);
+}
+
+/* Full-width for the last field (researcher) */
+.add-user-form__fields > *:last-child,
+.add-user-form__full-width {
+    width: 100%;
+}
+
+/* Field with inline action (generate password) */
+.add-user-form__field-with-action {
+    position: relative;
+    width: calc(50% - 16px);
+}
+
+.add-user-form__generate-password {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background: none;
+    border: none;
+    color: #53b7be;
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    text-decoration: underline;
+    cursor: pointer;
+    padding: 0;
+    transition: color 0.2s;
+}
+
+.add-user-form__generate-password:hover {
+    color: #49a2a8;
+}
+
+.add-user-form__generate-password:active {
+    color: #387f84;
+}
+
+.add-user-form__actions {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    width: 100%;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .add-user-form__fields > * {
+        width: 100%;
+    }
+
+    .add-user-form__field-with-action {
+        width: 100%;
+    }
+
+    .add-user-form {
+        padding: 24px 16px;
+    }
+}

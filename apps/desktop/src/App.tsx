@@ -13,11 +13,13 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { initializeAndHydrate, cleanupMiddleware } from './services/middleware';
 import Login from './screens/Login/Login';
 import UsersAndResearchesersScreen from './screens/UsersAndResearchesers/UsersAndResearchesersScreen';
+import AddUserForm from './screens/UsersAndResearchesers/AddUserForm';
+import AddResearcherForm from './screens/UsersAndResearchesers/AddResearcherForm';
 import HomeScreen from './screens/Home/HomeScreen';
 import SNOMEDScreen from './screens/SNOMED/SnomedScreen';
 
 
-type DemoPage = 'home' | 'users' | 'snomed';
+type DemoPage = 'home' | 'users' | 'snomed' | 'add-user' | 'add-researcher';
 
 /**
  * Main App Content (requires AuthContext)
@@ -57,9 +59,15 @@ function AppContent() {
         switch (path) {
             case '/snomed':
                 setCurrentPage('snomed');
-                break;  
+                break;
             case '/users':
                 setCurrentPage('users');
+                break;
+            case '/users/add':
+                setCurrentPage('add-user');
+                break;
+            case '/researchers/add':
+                setCurrentPage('add-researcher');
                 break;
             case '/dashboard':
             default:
@@ -85,6 +93,18 @@ function AppContent() {
             case 'users':
                 return (
                     <UsersAndResearchesersScreen
+                        handleNavigation={handleNavigation}
+                    />
+                );
+            case 'add-user':
+                return (
+                    <AddUserForm
+                        handleNavigation={handleNavigation}
+                    />
+                );
+            case 'add-researcher':
+                return (
+                    <AddResearcherForm
                         handleNavigation={handleNavigation}
                     />
                 );

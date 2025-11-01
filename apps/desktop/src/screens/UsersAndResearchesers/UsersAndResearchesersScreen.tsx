@@ -13,13 +13,16 @@ const  UsersAndResearchesersScreen: React.FC<UsersAndResearchesersScreenProps> =
                         }}
                         header={{
                             title: 'Usuários e Pesquisadores',
-                            showUserMenu: false
+                            showUserMenu: true
                         }}
                     >
                         <UsersList
-                            onUserAdd={() => console.log('Add user clicked')}
+                            onUserAdd={() => handleNavigation('/users/add')}
                             onUserEdit={(user) => console.log('Edit user:', user)}
                             onUserView={(user) => console.log('View user:', user)}
+                            onResearcherAdd={() => handleNavigation('/researchers/add')}
+                            onResearcherEdit={(researcher) => console.log('Edit researcher:', researcher)}
+                            onResearcherView={(researcher) => console.log('View researcher:', researcher)}
                         />
                     </AppLayout>
     );
