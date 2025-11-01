@@ -12,7 +12,7 @@ import { TabbedTable } from '../../design-system/components/tabbed-table';
 import type { TabbedTableTab } from '../../design-system/components/tabbed-table';
 import type { DataTableColumn } from '../../design-system/components/data-table/DataTable.types';
 import { EyeIcon, PencilIcon as EditIcon, PlusIcon } from '@heroicons/react/24/outline';
-import './UsersList.css';
+import '../../styles/shared/List.css';
 
 export interface UsersListProps {
     onUserAdd?: () => void;
@@ -137,7 +137,7 @@ export function UsersList({
             width: '10%',
             align: 'center',
             render: (_, user) => (
-                <div className="user-actions">
+                <div className="list-actions">
                     <button
                         className="action-button view"
                         onClick={(e) => {
@@ -279,7 +279,7 @@ export function UsersList({
     };
 
     return (
-        <div className="users-list-screen">
+        <div className="list-screen">
             <TabbedTable
                 tabs={tabs}
                 search={{

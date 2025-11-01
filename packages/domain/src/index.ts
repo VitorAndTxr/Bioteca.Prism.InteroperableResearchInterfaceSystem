@@ -18,3 +18,6 @@ export * from './models/Device';
 
 // Authentication and Authorization
 export * from './models/Auth';
+
+// SNOMED CT Medical Terminology
+export * from './models/Snomed';

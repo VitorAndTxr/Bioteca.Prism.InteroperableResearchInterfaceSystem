@@ -17,9 +17,22 @@ import AddUserForm from './screens/UsersAndResearchesers/AddUserForm';
 import AddResearcherForm from './screens/UsersAndResearchesers/AddResearcherForm';
 import HomeScreen from './screens/Home/HomeScreen';
 import SNOMEDScreen from './screens/SNOMED/SnomedScreen';
+import AddBodyRegionForm from './screens/SNOMED/AddBodyRegionForm';
+import AddBodyStructureForm from './screens/SNOMED/AddBodyStructureForm';
+import AddTopographicModifierForm from './screens/SNOMED/AddTopographicModifierForm';
+import AddClinicalConditionForm from './screens/SNOMED/AddClinicalConditionForm';
 
 
-type DemoPage = 'home' | 'users' | 'snomed' | 'add-user' | 'add-researcher';
+type DemoPage =
+    | 'home'
+    | 'users'
+    | 'snomed'
+    | 'add-user'
+    | 'add-researcher'
+    | 'add-body-region'
+    | 'add-body-structure'
+    | 'add-topographic-modifier'
+    | 'add-clinical-condition';
 
 /**
  * Main App Content (requires AuthContext)
@@ -60,6 +73,18 @@ function AppContent() {
             case '/snomed':
                 setCurrentPage('snomed');
                 break;
+            case '/snomed/body-region/add':
+                setCurrentPage('add-body-region');
+                break;
+            case '/snomed/body-structure/add':
+                setCurrentPage('add-body-structure');
+                break;
+            case '/snomed/topographic-modifier/add':
+                setCurrentPage('add-topographic-modifier');
+                break;
+            case '/snomed/clinical-condition/add':
+                setCurrentPage('add-clinical-condition');
+                break;
             case '/users':
                 setCurrentPage('users');
                 break;
@@ -87,6 +112,30 @@ function AppContent() {
             case 'snomed':
                 return (
                     <SNOMEDScreen
+                        handleNavigation={handleNavigation}
+                    />
+                );
+            case 'add-body-region':
+                return (
+                    <AddBodyRegionForm
+                        handleNavigation={handleNavigation}
+                    />
+                );
+            case 'add-body-structure':
+                return (
+                    <AddBodyStructureForm
+                        handleNavigation={handleNavigation}
+                    />
+                );
+            case 'add-topographic-modifier':
+                return (
+                    <AddTopographicModifierForm
+                        handleNavigation={handleNavigation}
+                    />
+                );
+            case 'add-clinical-condition':
+                return (
+                    <AddClinicalConditionForm
                         handleNavigation={handleNavigation}
                     />
                 );

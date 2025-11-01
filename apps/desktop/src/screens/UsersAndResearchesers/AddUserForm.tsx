@@ -22,7 +22,7 @@ import { Button } from '../../design-system/components/button';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { mainMenuItems } from '../../config/menu';
 import type { UserRole } from '@iris/domain';
-import './AddUserForm.css';
+import '../../styles/shared/AddForm.css';
 
 export interface AddUserFormProps {
     handleNavigation: (path: string) => void;
@@ -161,9 +161,9 @@ export function AddUserForm({ handleNavigation, onSave, onCancel }: AddUserFormP
                 showUserMenu: true,
             }}
         >
-            <div className="add-user-form">
-                <form className="add-user-form__container" onSubmit={handleSubmit}>
-                    <div className="add-user-form__fields">
+            <div className="add-form">
+                <form className="add-form__container" onSubmit={handleSubmit}>
+                    <div className="add-form__fields">
                         {/* Login */}
                         <Input
                             label="Login"
@@ -207,7 +207,7 @@ export function AddUserForm({ handleNavigation, onSave, onCancel }: AddUserFormP
                         />
 
                         {/* Password Confirmation */}
-                        <div className="add-user-form__field-with-action">
+                        <div className="add-form__field-with-action">
                             <Password
                                 label="Confirmação de senha"
                                 placeholder="Digite novamente a senha"
@@ -223,7 +223,7 @@ export function AddUserForm({ handleNavigation, onSave, onCancel }: AddUserFormP
                             />
                             <button
                                 type="button"
-                                className="add-user-form__generate-password"
+                                className="add-form__generate-password"
                                 onClick={handleGeneratePassword}
                             >
                                 Gerar senha
@@ -238,12 +238,12 @@ export function AddUserForm({ handleNavigation, onSave, onCancel }: AddUserFormP
                             value={relatedResearcher}
                             onChange={(value) => setRelatedResearcher(value as string)}
                             searchable
-                            className="add-user-form__full-width"
+                            className="add-form__full-width"
                         />
                     </div>
 
                     {/* Action Buttons */}
-                    <div className="add-user-form__actions">
+                    <div className="add-form__actions">
                         <Button
                             variant="outline"
                             size="medium"

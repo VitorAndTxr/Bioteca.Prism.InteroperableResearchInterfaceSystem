@@ -1,0 +1,108 @@
+/**
+ * Shared List Styles
+ *
+ * Common styles for all list/table screens across the application.
+ * This includes user lists, SNOMED lists, and other data management screens.
+ *
+ * Usage:
+ * 1. Import this file in your list component
+ * 2. Use the class name pattern: .list-screen for container
+ * 3. Use .list-actions for action button containers
+ * 4. Use .action-button for individual action buttons
+ *
+ * Classes follow BEM naming convention:
+ * - .list-screen (base container)
+ * - .list-actions (action buttons container)
+ * - .action-button (individual action button)
+ * - .action-button.view (view action modifier)
+ * - .action-button.edit (edit action modifier)
+ */
+
+/* Base list container */
+.list-screen {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background-color: #F4F4F4; /* Neutros-200 */
+    overflow: hidden;
+    padding: 0;
+    padding-top: 16px;
+}
+
+/* Action buttons container (appears in table cells) */
+.list-actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+/* Individual action button base styles */
+.action-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 4px;
+    background-color: transparent;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: #727272; /* Default neutral color */
+}
+
+/* Icon sizing within action buttons */
+.action-button svg {
+    width: 18px;
+    height: 18px;
+}
+
+/* Base hover state */
+.action-button:hover {
+    background-color: #F4F4F4;
+    color: #2C3131;
+}
+
+/* Base active state */
+.action-button:active {
+    background-color: #E0E0E0;
+}
+
+/* Base focus state (accessibility) */
+.action-button:focus {
+    outline: 2px solid #49A2A8;
+    outline-offset: 2px;
+}
+
+/* View action button - Cyan/Teal theme */
+.action-button.view:hover {
+    color: #49A2A8; /* Primary cyan */
+}
+
+/* Edit action button - Purple theme */
+.action-button.edit:hover {
+    color: #7B6FDB; /* Secondary purple */
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .list-screen {
+        padding-top: 8px;
+    }
+
+    .list-actions {
+        gap: 4px;
+    }
+
+    .action-button {
+        width: 24px;
+        height: 24px;
+    }
+
+    .action-button svg {
+        width: 16px;
+        height: 16px;
+    }
+}

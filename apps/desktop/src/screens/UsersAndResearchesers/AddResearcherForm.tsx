@@ -21,7 +21,7 @@ import { Button } from '../../design-system/components/button';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { mainMenuItems } from '../../config/menu';
 import type { ResearcherRole } from '@iris/domain';
-import './AddResearcherForm.css';
+import '../../styles/shared/AddForm.css';
 
 export interface AddResearcherFormProps {
     handleNavigation: (path: string) => void;
@@ -159,9 +159,9 @@ export function AddResearcherForm({ handleNavigation, onSave, onCancel }: AddRes
                 showUserMenu: true,
             }}
         >
-            <div className="add-researcher-form">
-                <form className="add-researcher-form__container" onSubmit={handleSubmit}>
-                    <div className="add-researcher-form__fields">
+            <div className="add-form">
+                <form className="add-form__container" onSubmit={handleSubmit}>
+                    <div className="add-form__fields">
                         {/* Name */}
                         <Input
                             label="Nome completo"
@@ -227,12 +227,12 @@ export function AddResearcherForm({ handleNavigation, onSave, onCancel }: AddRes
                             validation={touched.role && errors.role ? 'error' : 'none'}
                             errorMessage={touched.role ? errors.role : undefined}
                             required
-                            className="add-researcher-form__full-width"
+                            className="add-form__full-width"
                         />
                     </div>
 
                     {/* Action Buttons */}
-                    <div className="add-researcher-form__actions">
+                    <div className="add-form__actions">
                         <Button
                             variant="outline"
                             size="medium"
