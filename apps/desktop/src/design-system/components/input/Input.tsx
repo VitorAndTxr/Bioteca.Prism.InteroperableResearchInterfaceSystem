@@ -95,6 +95,7 @@ const Input = forwardRef<HTMLInputElement | HTMLTextAreaElement, InputComponentP
 
             if (fullWidth) {
                 classes.push('iris-input-container--full-width');
+                classes.push('add-form__full-width'); // Grid support
             }
 
             if (className) {

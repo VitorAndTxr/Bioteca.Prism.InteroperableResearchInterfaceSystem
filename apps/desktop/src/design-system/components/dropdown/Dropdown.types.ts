@@ -167,6 +167,9 @@ export interface DropdownProps {
   /** Whether the dropdown is required */
   required?: boolean;
 
+  /** Whether the dropdown should span full width in grid layouts */
+  fullWidth?: boolean;
+
   /** Whether to open the menu by default */
   defaultOpen?: boolean;
 

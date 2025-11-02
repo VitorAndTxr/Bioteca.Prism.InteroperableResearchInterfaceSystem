@@ -174,7 +174,6 @@ export function AddUserForm({ handleNavigation, onSave, onCancel }: AddUserFormP
                             validationStatus={touched.login && errors.login ? 'error' : 'none'}
                             errorMessage={touched.login ? errors.login : undefined}
                             required
-                            fullWidth
                         />
 
                         {/* User Type */}
@@ -203,7 +202,6 @@ export function AddUserForm({ handleNavigation, onSave, onCancel }: AddUserFormP
                             showStrengthIndicator
                             showStrengthLabel
                             required
-                            fullWidth
                         />
 
                         {/* Password Confirmation */}
@@ -219,7 +217,6 @@ export function AddUserForm({ handleNavigation, onSave, onCancel }: AddUserFormP
                                 helperText="As senhas devem ser iguais"
                                 showStrengthIndicator={false}
                                 required
-                                fullWidth
                             />
                             <button
                                 type="button"
@@ -238,7 +235,7 @@ export function AddUserForm({ handleNavigation, onSave, onCancel }: AddUserFormP
                             value={relatedResearcher}
                             onChange={(value) => setRelatedResearcher(value as string)}
                             searchable
-                            className="add-form__full-width"
+                            fullWidth
                         />
                     </div>
 

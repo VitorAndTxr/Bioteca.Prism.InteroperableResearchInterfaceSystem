@@ -172,7 +172,6 @@ export function AddResearcherForm({ handleNavigation, onSave, onCancel }: AddRes
                             validationStatus={touched.name && errors.name ? 'error' : 'none'}
                             errorMessage={touched.name ? errors.name : undefined}
                             required
-                            fullWidth
                         />
 
                         {/* Email */}
@@ -186,7 +185,6 @@ export function AddResearcherForm({ handleNavigation, onSave, onCancel }: AddRes
                             validationStatus={touched.email && errors.email ? 'error' : 'none'}
                             errorMessage={touched.email ? errors.email : undefined}
                             required
-                            fullWidth
                         />
 
                         {/* Institution */}
@@ -199,7 +197,6 @@ export function AddResearcherForm({ handleNavigation, onSave, onCancel }: AddRes
                             validationStatus={touched.institution && errors.institution ? 'error' : 'none'}
                             errorMessage={touched.institution ? errors.institution : undefined}
                             required
-                            fullWidth
                         />
 
                         {/* ORCID */}
@@ -213,7 +210,6 @@ export function AddResearcherForm({ handleNavigation, onSave, onCancel }: AddRes
                             errorMessage={touched.orcid ? errors.orcid : undefined}
                             helperText="Formato: 0000-0000-0000-0000"
                             required
-                            fullWidth
                         />
 
                         {/* Researcher Role */}
@@ -227,7 +223,7 @@ export function AddResearcherForm({ handleNavigation, onSave, onCancel }: AddRes
                             validation={touched.role && errors.role ? 'error' : 'none'}
                             errorMessage={touched.role ? errors.role : undefined}
                             required
-                            className="add-form__full-width"
+                            fullWidth
                         />
                     </div>
 

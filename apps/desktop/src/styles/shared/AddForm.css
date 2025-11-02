@@ -47,8 +47,7 @@
     align-items: flex-start;
 }
 
-/* Full-width for specific fields */
-.add-form__fields > *:last-child,
+/* Full-width modifier - only applied when explicitly needed */
 .add-form__full-width {
     grid-column: 1 / -1;
 }

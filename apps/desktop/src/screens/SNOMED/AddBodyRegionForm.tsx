@@ -139,7 +139,6 @@ export function AddBodyRegionForm({ handleNavigation, onSave, onCancel }: AddBod
                             validationStatus={touched.snomedCode && errors.snomedCode ? 'error' : 'none'}
                             errorMessage={touched.snomedCode ? errors.snomedCode : undefined}
                             required
-                            fullWidth
                         />
 
                         {/* Name */}
@@ -152,7 +151,6 @@ export function AddBodyRegionForm({ handleNavigation, onSave, onCancel }: AddBod
                             validationStatus={touched.displayName && errors.displayName ? 'error' : 'none'}
                             errorMessage={touched.displayName ? errors.displayName : undefined}
                             required
-                            fullWidth
                         />
 
                         {/* Description */}
@@ -165,7 +163,6 @@ export function AddBodyRegionForm({ handleNavigation, onSave, onCancel }: AddBod
                             validationStatus={touched.description && errors.description ? 'error' : 'none'}
                             errorMessage={touched.description ? errors.description : undefined}
                             required
-                            fullWidth
                         />
 
                         {/* Parent Region */}

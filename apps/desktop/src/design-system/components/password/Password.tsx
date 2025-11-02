@@ -122,6 +122,7 @@ const Password = forwardRef<HTMLInputElement, PasswordProps>(
 
             if (fullWidth) {
                 classes.push('iris-password-container--full-width');
+                classes.push('add-form__full-width'); // Grid support
             }
 
             if (className) {

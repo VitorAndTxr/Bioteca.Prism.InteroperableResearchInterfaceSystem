@@ -75,6 +75,7 @@ export const Dropdown: React.FC<DropdownProps> = ({
   // State & Interaction
   disabled = false,
   required = false,
+  fullWidth = false,
   defaultOpen = false,
   open: controlledOpen,
   onOpenChange,
@@ -388,7 +389,7 @@ export const Dropdown: React.FC<DropdownProps> = ({
 
   return (
     <div
-      className={`dropdown-container ${className}`}
+      className={`dropdown-container ${fullWidth ? 'add-form__full-width' : ''} ${className}`}
       style={style}
       data-testid={testId}
     >

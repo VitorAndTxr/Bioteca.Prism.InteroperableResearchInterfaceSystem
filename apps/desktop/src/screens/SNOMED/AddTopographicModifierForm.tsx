@@ -144,7 +144,6 @@ export function AddTopographicModifierForm({ handleNavigation, onSave, onCancel 
                             validationStatus={touched.code && errors.code ? 'error' : 'none'}
                             errorMessage={touched.code ? errors.code : undefined}
                             required
-                            fullWidth
                         />
 
                         {/* Category */}
@@ -170,7 +169,6 @@ export function AddTopographicModifierForm({ handleNavigation, onSave, onCancel 
                             validationStatus={touched.displayName && errors.displayName ? 'error' : 'none'}
                             errorMessage={touched.displayName ? errors.displayName : undefined}
                             required
-                            fullWidth
                         />
 
                         {/* Description */}
@@ -183,7 +181,6 @@ export function AddTopographicModifierForm({ handleNavigation, onSave, onCancel 
                             validationStatus={touched.description && errors.description ? 'error' : 'none'}
                             errorMessage={touched.description ? errors.description : undefined}
                             required
-                            fullWidth
                         />
                     </div>
 

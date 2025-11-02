@@ -171,7 +171,6 @@ export function AddBodyStructureForm({ handleNavigation, onSave, onCancel }: Add
                             validationStatus={touched.snomedCode && errors.snomedCode ? 'error' : 'none'}
                             errorMessage={touched.snomedCode ? errors.snomedCode : undefined}
                             required
-                            fullWidth
                         />
 
                         {/* Type */}
@@ -197,7 +196,6 @@ export function AddBodyStructureForm({ handleNavigation, onSave, onCancel }: Add
                             validationStatus={touched.displayName && errors.displayName ? 'error' : 'none'}
                             errorMessage={touched.displayName ? errors.displayName : undefined}
                             required
-                            fullWidth
                         />
 
                         {/* Description */}
@@ -210,7 +208,6 @@ export function AddBodyStructureForm({ handleNavigation, onSave, onCancel }: Add
                             validationStatus={touched.description && errors.description ? 'error' : 'none'}
                             errorMessage={touched.description ? errors.description : undefined}
                             required
-                            fullWidth
                         />
 
                         {/* Body Region */}

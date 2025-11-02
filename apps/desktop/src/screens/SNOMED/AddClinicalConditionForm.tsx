@@ -127,7 +127,6 @@ export function AddClinicalConditionForm({ handleNavigation, onSave, onCancel }:
                             validationStatus={touched.snomedCode && errors.snomedCode ? 'error' : 'none'}
                             errorMessage={touched.snomedCode ? errors.snomedCode : undefined}
                             required
-                            fullWidth
                         />
 
                         {/* Name */}
@@ -140,7 +139,6 @@ export function AddClinicalConditionForm({ handleNavigation, onSave, onCancel }:
                             validationStatus={touched.displayName && errors.displayName ? 'error' : 'none'}
                             errorMessage={touched.displayName ? errors.displayName : undefined}
                             required
-                            fullWidth
                         />
 
                         {/* Description - Full width */}
