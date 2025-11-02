@@ -36,32 +36,26 @@
     flex-direction: column;
     gap: 32px;
     width: 100%;
-    max-width: 672px;
+    max-width: 900px;
 }
 
 /* Fields container - two-column grid layout */
 .add-form__fields {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
     gap: 32px;
     align-items: flex-start;
-}
-
-/* Two-column layout for most fields */
-.add-form__fields > * {
-    width: calc(50% - 16px);
 }
 
 /* Full-width for specific fields */
 .add-form__fields > *:last-child,
 .add-form__full-width {
-    width: 100%;
+    grid-column: 1 / -1;
 }
 
 /* Field with inline action (e.g., generate password button) */
 .add-form__field-with-action {
     position: relative;
-    width: calc(50% - 16px);
 }
 
 /* Generate password button style */
@@ -99,12 +93,13 @@
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
-    .add-form__fields > * {
-        width: 100%;
+    .add-form__fields {
+        grid-template-columns: 1fr;
     }
 
-    .add-form__field-with-action {
-        width: 100%;
+    .add-form__fields > *:last-child,
+    .add-form__full-width {
+        grid-column: 1;
     }
 
     .add-form {
