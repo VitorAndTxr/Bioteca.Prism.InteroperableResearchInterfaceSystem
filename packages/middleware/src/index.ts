@@ -29,7 +29,7 @@ export {
 export type { ResearchNodeMiddlewareContextValue } from './context/ResearchNodeMiddlewareContext';
 
 export { ChannelManager } from './channel/ChannelManager';
-export { SessionManager } from './session/SessionManager';
+export { SessionManager, type JwtTokenProvider } from './session/SessionManager';
 export { WebCryptoDriver } from './crypto/CryptoDriver';
 export type { CryptoDriver, EphemeralKeyPair } from './crypto/CryptoDriver';
 export { FetchHttpClient } from './http/HttpClient';

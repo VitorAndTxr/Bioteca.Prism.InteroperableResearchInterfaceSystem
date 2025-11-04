@@ -27,6 +27,9 @@ export interface User {
     login: string;
     role: UserRole;
     researcher?: Researcher;
+    createdAt?: Date;
+    updatedAt?: Date;
+    lastLogin?: Date;
 }
 
 export interface Researcher{
@@ -130,4 +133,47 @@ export interface SessionInfo {
     expiresAt: Date;
     issuedAt: Date;
     rememberMe: boolean;
+}
+
+/**
+ * Pagination Request
+ *
+ * Matches backend RequestPaging structure
+ */
+export interface PaginationRequest {
+    page: number;
+    pageSize: number;
+}
+
+/**
+ * Pagination Response
+ *
+ * Matches backend ResponsePaging structure
+ */
+export interface PaginationResponse {
+    currentRecord: number;
+    pageSize: number;
+    totalRecords: number;
+}
+
+/**
+ * Paginated Response
+ *
+ * Generic paginated response wrapper
+ */
+export interface PaginatedResponse<T> {
+    data: T[];
+    pagination: PaginationResponse;
+}
+
+/**
+ * New User Data
+ *
+ * Data required to create a new user
+ */
+export interface NewUserData {
+    login: string;
+    password: string;
+    role: string;
+    researcherId?: string;
 }

@@ -4,14 +4,16 @@
  *
  * Displays a list of users and researchers with CRUD operations.
  * Now uses the generic TabbedTable component from the design system.
+ * Integrated with UserService to fetch real data from IRN backend.
  */
 
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { Researcher, ResearcherRole, User, UserRole } from '@iris/domain';
 import { TabbedTable } from '../../design-system/components/tabbed-table';
 import type { TabbedTableTab } from '../../design-system/components/tabbed-table';
 import type { DataTableColumn } from '../../design-system/components/data-table/DataTable.types';
 import { EyeIcon, PencilIcon as EditIcon, PlusIcon } from '@heroicons/react/24/outline';
+import { userService } from '../../services/middleware';
 import '../../styles/shared/List.css';
 
 export interface UsersListProps {
@@ -31,30 +33,40 @@ export function UsersList({
     onResearcherEdit,
     onResearcherView,
 }: UsersListProps) {
-    // Mock data - Replace with real API calls
-    const mockUsers: User[] = useMemo(() => [
-        {
-            id: '1',
-            login: 'usuario1',
-            role: UserRole.ADMIN,
-            researcher: {
-                researcherId: '1',
-                researchNodeId: 'RN1',
-                name: 'Pesquisador 1',
-                email: 'pesquisador1@example.com',
-                institution: 'Instituição 1',
-                orcid: '0000-0001-2345-6789',
-                role: ResearcherRole.CHIEF,
-            },
-        },
-        {
-            id: '2',
-            login: 'usuario2',
-            role: UserRole.RESEARCHER,
-            
-        },
-    ], []);
+    // State for users data
+    const [users, setUsers] = useState<User[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
+    // Pagination state
+    const [currentPage, setCurrentPage] = useState(1);
+    const [pageSize] = useState(10);
+    const [totalRecords, setTotalRecords] = useState(0);
+
+    // Load users from backend
+    useEffect(() => {
+        loadUsers();
+    }, [currentPage, pageSize]);
+
+    const loadUsers = async () => {
+        try {
+            setLoading(true);
+            setError(null);
+
+            const response = await userService.getUsers(currentPage, pageSize);
+
+            console.log('Fetched users:', response);
+            setUsers(response.data);
+            setTotalRecords(response.pagination.totalRecords);
+        } catch (err) {
+            console.error('Failed to load users:', err);
+            setError(err instanceof Error ? err.message : 'Failed to load users');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Mock researchers data (kept as is until researcher endpoint is available)
     const mockResearchers: Researcher[] = useMemo(() => [
         {
             researcherId: '1',
@@ -121,6 +133,7 @@ export function UsersList({
             accessor: 'researcher.name',
             sortable: true,
             width: '25%',
+            render: (value) => value || '-',
         },
         {
             id: 'lastAccess',
@@ -244,7 +257,7 @@ export function UsersList({
             value: 'users',
             label: 'Usuários',
             title: 'Todos os usuários',
-            data: mockUsers,
+            data: users,
             columns: userColumns,
             action: {
                 label: 'Adicionar Usuário',
@@ -266,7 +279,7 @@ export function UsersList({
                 variant: 'primary',
             },
         },
-    ], [userColumns, researcherColumns, mockUsers, mockResearchers, onUserAdd, onResearcherAdd]);
+    ], [userColumns, researcherColumns, users, mockResearchers, onUserAdd, onResearcherAdd]);
 
     // Custom search filter
     const searchFilter = (user: any, query: string) => {
@@ -278,19 +291,93 @@ export function UsersList({
         );
     };
 
+    // Show error if loading failed
+    if (error) {
+        return (
+            <div className="list-screen">
+                <div className="error-message" style={{ padding: '20px', textAlign: 'center', color: '#ef4444' }}>
+                    <p>Erro ao carregar usuários: {error}</p>
+                    <button
+                        onClick={loadUsers}
+                        style={{
+                            marginTop: '10px',
+                            padding: '8px 16px',
+                            backgroundColor: '#3b82f6',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '4px',
+                            cursor: 'pointer'
+                        }}
+                    >
+                        Tentar novamente
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="list-screen">
-            <TabbedTable
-                tabs={tabs}
-                search={{
-                    placeholder: 'Buscar...',
-                    filter: searchFilter,
-                }}
-                emptyMessage="Nenhum registro cadastrado."
-                emptySearchMessage="Nenhum registro encontrado com os critérios de busca."
-                striped
-                hoverable
-            />
+            {loading && (
+                <div style={{ padding: '20px', textAlign: 'center' }}>
+                    Carregando usuários...
+                </div>
+            )}
+            {!loading && (
+                <TabbedTable
+                    tabs={tabs}
+                    search={{
+                        placeholder: 'Buscar...',
+                        filter: searchFilter,
+                    }}
+                    emptyMessage="Nenhum registro cadastrado."
+                    emptySearchMessage="Nenhum registro encontrado com os critérios de busca."
+                    striped
+                    hoverable
+                />
+            )}
+            {!loading && totalRecords > pageSize && (
+                <div style={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    gap: '10px',
+                    padding: '20px',
+                    borderTop: '1px solid #e5e7eb'
+                }}>
+                    <button
+                        onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                        disabled={currentPage === 1}
+                        style={{
+                            padding: '8px 16px',
+                            backgroundColor: currentPage === 1 ? '#e5e7eb' : '#3b82f6',
+                            color: currentPage === 1 ? '#9ca3af' : 'white',
+                            border: 'none',
+                            borderRadius: '4px',
+                            cursor: currentPage === 1 ? 'not-allowed' : 'pointer'
+                        }}
+                    >
+                        Anterior
+                    </button>
+                    <span>
+                        Página {currentPage} de {Math.ceil(totalRecords / pageSize)}
+                    </span>
+                    <button
+                        onClick={() => setCurrentPage(prev => prev + 1)}
+                        disabled={currentPage >= Math.ceil(totalRecords / pageSize)}
+                        style={{
+                            padding: '8px 16px',
+                            backgroundColor: currentPage >= Math.ceil(totalRecords / pageSize) ? '#e5e7eb' : '#3b82f6',
+                            color: currentPage >= Math.ceil(totalRecords / pageSize) ? '#9ca3af' : 'white',
+                            border: 'none',
+                            borderRadius: '4px',
+                            cursor: currentPage >= Math.ceil(totalRecords / pageSize) ? 'not-allowed' : 'pointer'
+                        }}
+                    >
+                        Próxima
+                    </button>
+                </div>
+            )}
         </div>
     );
 }

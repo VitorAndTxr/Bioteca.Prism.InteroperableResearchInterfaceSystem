@@ -56,27 +56,55 @@ export class ElectronSecureStorage implements SecureStorage {
         const scopedKey = this.scopedKey(key);
 
         try {
+            console.log(`[ElectronSecureStorage] getItem called for key: "${key}"`);
+            console.log(`[ElectronSecureStorage]    Scoped key: "${scopedKey}"`);
+            console.log(`[ElectronSecureStorage]    Encryption available: ${this.isAvailable}`);
+
             if (this.isAvailable && this.safeStorage) {
                 // Use Electron safeStorage
                 const encryptedString = localStorage.getItem(scopedKey);
+                console.log(`[ElectronSecureStorage]    Encrypted string:`, encryptedString ? `Found (${encryptedString.length} chars)` : 'null');
+
                 if (!encryptedString) {
+                    console.log(`[ElectronSecureStorage]    Returning null (no data)`);
                     return null;
                 }
 
                 // Decrypt using safeStorage
+                console.log(`[ElectronSecureStorage]    Converting to buffer...`);
                 const encryptedBuffer = Buffer.from(encryptedString, 'base64');
+                console.log(`[ElectronSecureStorage]    Buffer size: ${encryptedBuffer.length} bytes`);
+
+                console.log(`[ElectronSecureStorage]    Decrypting...`);
                 const decryptedBuffer = this.safeStorage.decryptString(encryptedBuffer);
-                return JSON.parse(decryptedBuffer) as T;
+                console.log(`[ElectronSecureStorage]    Decrypted result type:`, typeof decryptedBuffer);
+                console.log(`[ElectronSecureStorage]    Decrypted length:`, decryptedBuffer.length);
+
+                console.log(`[ElectronSecureStorage]    Parsing JSON...`);
+                const parsed = JSON.parse(decryptedBuffer) as T;
+                console.log(`[ElectronSecureStorage]    ✅ Successfully parsed, keys:`, Object.keys(parsed || {}));
+                return parsed;
             } else {
                 // Fallback to localStorage
+                console.log(`[ElectronSecureStorage]    Using localStorage fallback`);
                 const item = localStorage.getItem(scopedKey);
+                console.log(`[ElectronSecureStorage]    Item:`, item ? `Found (${item.length} chars)` : 'null');
+
                 if (!item) {
+                    console.log(`[ElectronSecureStorage]    Returning null (no data)`);
                     return null;
                 }
-                return JSON.parse(item) as T;
+
+                console.log(`[ElectronSecureStorage]    Parsing JSON...`);
+                const parsed = JSON.parse(item) as T;
+                console.log(`[ElectronSecureStorage]    ✅ Successfully parsed, keys:`, Object.keys(parsed || {}));
+                return parsed;
             }
         } catch (error) {
-            console.error(`[ElectronSecureStorage] Failed to get item "${key}":`, error);
+            console.error(`[ElectronSecureStorage] ❌ Failed to get item "${key}":`, error);
+            console.error(`[ElectronSecureStorage]    Error type:`, error?.constructor?.name);
+            console.error(`[ElectronSecureStorage]    Error message:`, error instanceof Error ? error.message : String(error));
+            console.error(`[ElectronSecureStorage]    Error stack:`, error instanceof Error ? error.stack : 'No stack trace');
             return null;
         }
     }
@@ -88,19 +116,44 @@ export class ElectronSecureStorage implements SecureStorage {
         const scopedKey = this.scopedKey(key);
 
         try {
+            console.log(`[ElectronSecureStorage] setItem called for key: "${key}"`);
+            console.log(`[ElectronSecureStorage]    Scoped key: "${scopedKey}"`);
+            console.log(`[ElectronSecureStorage]    Value keys:`, Object.keys(value || {}));
+            console.log(`[ElectronSecureStorage]    Encryption available: ${this.isAvailable}`);
+
             const jsonString = JSON.stringify(value);
+            console.log(`[ElectronSecureStorage]    JSON string length: ${jsonString.length} chars`);
 
             if (this.isAvailable && this.safeStorage) {
                 // Use Electron safeStorage
+                console.log(`[ElectronSecureStorage]    Encrypting...`);
                 const encryptedBuffer = this.safeStorage.encryptString(jsonString);
+                console.log(`[ElectronSecureStorage]    Encrypted buffer size: ${encryptedBuffer.length} bytes`);
+
                 const encryptedString = encryptedBuffer.toString('base64');
+                console.log(`[ElectronSecureStorage]    Base64 string length: ${encryptedString.length} chars`);
+
+                console.log(`[ElectronSecureStorage]    Saving to localStorage...`);
                 localStorage.setItem(scopedKey, encryptedString);
+                console.log(`[ElectronSecureStorage]    ✅ Saved successfully`);
+
+                // Verify save
+                const verify = localStorage.getItem(scopedKey);
+                console.log(`[ElectronSecureStorage]    Verification: ${verify ? 'SUCCESS' : 'FAILED'}`);
             } else {
                 // Fallback to localStorage
+                console.log(`[ElectronSecureStorage]    Using localStorage fallback`);
                 localStorage.setItem(scopedKey, jsonString);
+                console.log(`[ElectronSecureStorage]    ✅ Saved successfully (unencrypted)`);
+
+                // Verify save
+                const verify = localStorage.getItem(scopedKey);
+                console.log(`[ElectronSecureStorage]    Verification: ${verify ? 'SUCCESS' : 'FAILED'}`);
             }
         } catch (error) {
-            console.error(`[ElectronSecureStorage] Failed to set item "${key}":`, error);
+            console.error(`[ElectronSecureStorage] ❌ Failed to set item "${key}":`, error);
+            console.error(`[ElectronSecureStorage]    Error type:`, error?.constructor?.name);
+            console.error(`[ElectronSecureStorage]    Error message:`, error instanceof Error ? error.message : String(error));
             throw new Error(`Failed to set secure storage item: ${error}`);
         }
     }

@@ -287,9 +287,9 @@ export abstract class BaseService {
     /**
      * Check if middleware has active session
      *
-     * @returns True if middleware is in session state
+     * @returns True if middleware is in session-ready state
      */
     protected hasActiveSession(): boolean {
-        return this.middleware.currentStatus === 'session';
+        return this.middleware.currentStatus === 'session-ready';
     }
 }

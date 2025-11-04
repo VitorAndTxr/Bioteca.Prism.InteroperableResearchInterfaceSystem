@@ -22,6 +22,7 @@ import {
 } from '@iris/middleware';
 import { createElectronSecureStorage } from '../storage/ElectronSecureStorage';
 import { RealAuthService } from './auth/RealAuthService';
+import { UserService } from './UserService';
 import * as forge from 'node-forge';
 
 /**
@@ -203,6 +204,41 @@ function initializeMiddleware() {
     // Create session manager
     const sessionManager = new SessionManager(httpClient, cryptoDriver);
 
+    // Set JWT token provider for Authorization header
+    // This retrieves the JWT token from secure storage for [Authorize] endpoints
+    sessionManager.setJwtTokenProvider(async () => {
+        console.log('[Middleware] JWT Token Provider called - fetching from storage...');
+
+        try {
+            // Check if there's anything in localStorage first
+            const rawValue = localStorage.getItem('iris:userauth:state');
+            console.log('[Middleware] Raw localStorage value:', rawValue ? `Found (${rawValue.length} chars)` : 'null');
+
+            // UserAuthService stores auth state with key 'userauth:state'
+            // Format: { token: string, expiresAt: string, user: User }
+            const authState = await storage.getItem('userauth:state') as any;
+            console.log('[Middleware] Storage result after decryption:', authState ? 'Auth state found' : 'null/undefined');
+
+            if (authState && authState.token) {
+                console.log('[Middleware] ✅ JWT Token extracted:', `${authState.token.substring(0, 20)}...`);
+                return authState.token;
+            }
+
+            console.log('[Middleware] ⚠️ No token found in decrypted state');
+            return null;
+        } catch (error) {
+            console.error('[Middleware] ❌ DECRYPTION ERROR:', error);
+            console.error('[Middleware]    Error message:', error instanceof Error ? error.message : String(error));
+            console.error('[Middleware]    Error stack:', error instanceof Error ? error.stack : 'No stack trace');
+
+            // Check if encryption is available
+            const isEncryptionAvailable = (storage as any).isEncryptionAvailable?.();
+            console.log('[Middleware]    Encryption available:', isEncryptionAvailable);
+
+            return null;
+        }
+    });
+
     // Create middleware instance without persisted state initially
     // State will be loaded and hydrated in initializeAndHydrate()
     const middleware = new ResearchNodeMiddleware({
@@ -256,10 +292,14 @@ function initializeMiddleware() {
     // Now using BaseService pattern with middleware services container
     const authService = new RealAuthService(middlewareServices, userAuthService);
 
+    // Create user service
+    const userService = new UserService(middlewareServices);
+
     return {
         middleware,
         userAuthService,
         authService,
+        userService,
         storage,
         httpClient,
         cryptoDriver,
@@ -317,7 +357,7 @@ export async function initializeAndHydrate() {
 }
 
 // Export commonly used services directly for synchronous imports
-export const { middleware, authService, userAuthService } = getMiddlewareServices();
+export const { middleware, authService, userAuthService, userService } = getMiddlewareServices();
 
 /**
  * Cleanup middleware resources

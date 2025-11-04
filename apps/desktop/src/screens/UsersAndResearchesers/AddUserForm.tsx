@@ -21,20 +21,14 @@ import { Password } from '../../design-system/components/password';
 import { Button } from '../../design-system/components/button';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { mainMenuItems } from '../../config/menu';
-import type { UserRole } from '@iris/domain';
+import type { UserRole, NewUserData } from '@iris/domain';
+import { userService } from '../../services/middleware';
 import '../../styles/shared/AddForm.css';
 
 export interface AddUserFormProps {
     handleNavigation: (path: string) => void;
     onSave?: (userData: NewUserData) => void;
     onCancel?: () => void;
-}
-
-export interface NewUserData {
-    login: string;
-    role: UserRole;
-    password: string;
-    researcherId?: string;
 }
 
 const userTypeOptions = [
@@ -62,6 +56,10 @@ export function AddUserForm({ handleNavigation, onSave, onCancel }: AddUserFormP
     // Validation state
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [touched, setTouched] = useState<Record<string, boolean>>({});
+
+    // Submission state
+    const [submitting, setSubmitting] = useState(false);
+    const [submitError, setSubmitError] = useState<string | null>(null);
 
     // Mark field as touched
     const handleBlur = (field: string) => {
@@ -97,7 +95,7 @@ export function AddUserForm({ handleNavigation, onSave, onCancel }: AddUserFormP
     };
 
     // Handle form submission
-    const handleSubmit = (e: FormEvent) => {
+    const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
 
         // Mark all fields as touched
@@ -114,17 +112,34 @@ export function AddUserForm({ handleNavigation, onSave, onCancel }: AddUserFormP
 
         const userData: NewUserData = {
             login,
-            role: userType as UserRole,
+            role: userType,
             password,
             researcherId: relatedResearcher || undefined,
         };
 
+        // If custom save handler provided, use it
         if (onSave) {
             onSave(userData);
-        } else {
-            console.log('User data to save:', userData);
+            return;
+        }
+
+        // Otherwise, save via UserService
+        try {
+            setSubmitting(true);
+            setSubmitError(null);
+
+            console.log('Creating user:', userData);
+            const createdUser = await userService.createUser(userData);
+            console.log('✅ User created successfully:', createdUser);
+
             // Navigate back to users list
             handleNavigation('/users');
+        } catch (err) {
+            console.error('Failed to create user:', err);
+            const errorMessage = err instanceof Error ? err.message : 'Failed to create user';
+            setSubmitError(errorMessage);
+        } finally {
+            setSubmitting(false);
         }
     };
 
@@ -163,6 +178,20 @@ export function AddUserForm({ handleNavigation, onSave, onCancel }: AddUserFormP
         >
             <div className="add-form">
                 <form className="add-form__container" onSubmit={handleSubmit}>
+                    {/* Error message */}
+                    {submitError && (
+                        <div style={{
+                            padding: '12px 16px',
+                            backgroundColor: '#fee',
+                            color: '#c33',
+                            borderRadius: '4px',
+                            marginBottom: '20px',
+                            border: '1px solid #fcc'
+                        }}>
+                            <strong>Erro:</strong> {submitError}
+                        </div>
+                    )}
+
                     <div className="add-form__fields">
                         {/* Login */}
                         <Input
@@ -247,6 +276,7 @@ export function AddUserForm({ handleNavigation, onSave, onCancel }: AddUserFormP
                             onClick={handleCancel}
                             icon={<ArrowLeftIcon className="w-5 h-5" />}
                             iconPosition="left"
+                            disabled={submitting}
                         >
                             Voltar
                         </Button>
@@ -254,8 +284,9 @@ export function AddUserForm({ handleNavigation, onSave, onCancel }: AddUserFormP
                             type="submit"
                             variant="primary"
                             size="big"
+                            disabled={submitting}
                         >
-                            Salvar usuário
+                            {submitting ? 'Salvando...' : 'Salvar usuário'}
                         </Button>
                     </div>
                 </form>

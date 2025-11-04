@@ -15,8 +15,27 @@ import type {
     SessionWhoAmIResult
 } from '../types';
 
+/**
+ * JWT Token Provider function type
+ * Returns the current JWT bearer token, or null if not authenticated
+ */
+export type JwtTokenProvider = () => Promise<string | null> | string | null;
+
 export class SessionManager {
-    constructor(private readonly httpClient: HttpClient, private readonly cryptoDriver: CryptoDriver) {}
+    private jwtTokenProvider: JwtTokenProvider | null = null;
+
+    constructor(
+        private readonly httpClient: HttpClient,
+        private readonly cryptoDriver: CryptoDriver
+    ) {}
+
+    /**
+     * Set JWT token provider for Authorization header
+     * This is used for endpoints that require [Authorize] attribute
+     */
+    setJwtTokenProvider(provider: JwtTokenProvider): void {
+        this.jwtTokenProvider = provider;
+    }
 
     private async encrypt(channel: ChannelRuntimeState, payload: unknown): Promise<EncryptedPayload> {
         return this.cryptoDriver.encrypt(payload, channel.cryptoKey);
@@ -26,7 +45,7 @@ export class SessionManager {
         return this.cryptoDriver.decrypt<T>(payload, channel.cryptoKey);
     }
 
-    private buildHeaders(channel: ChannelRuntimeState, session?: SessionRuntimeState): Record<string, string> {
+    private async buildHeaders(channel: ChannelRuntimeState, session?: SessionRuntimeState): Promise<Record<string, string>> {
         const headers: Record<string, string> = {
             'Content-Type': 'application/json',
             'X-Channel-Id': channel.channelId
@@ -37,6 +56,22 @@ export class SessionManager {
             headers['X-Session-Id'] = session.sessionToken;
         }
 
+        // Add JWT bearer token for ASP.NET Core [Authorize] attribute
+        if (this.jwtTokenProvider) {
+            const token = await this.jwtTokenProvider();
+            console.log('[SessionManager] JWT Token Provider result:', token ? `${token.substring(0, 20)}...` : 'null');
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+                console.log('[SessionManager] ✅ Authorization header added');
+            } else {
+                console.warn('[SessionManager] ⚠️ JWT token provider returned null - Authorization header NOT added');
+            }
+        } else {
+            console.warn('[SessionManager] ⚠️ No JWT token provider configured');
+        }
+
+        console.log('[SessionManager] Final headers:', Object.keys(headers));
+
         return headers;
     }
 
@@ -45,7 +80,7 @@ export class SessionManager {
         const response = await this.httpClient.request<EncryptedPayload>({
             url: '/api/node/identify',
             method: 'POST',
-            headers: this.buildHeaders(channel),
+            headers: await this.buildHeaders(channel),
             body: encrypted
         });
 
@@ -57,7 +92,7 @@ export class SessionManager {
         const response = await this.httpClient.request<EncryptedPayload>({
             url: '/api/node/challenge',
             method: 'POST',
-            headers: this.buildHeaders(channel),
+            headers: await this.buildHeaders(channel),
             body: encrypted
         });
 
@@ -69,7 +104,7 @@ export class SessionManager {
         const response = await this.httpClient.request<EncryptedPayload>({
             url: '/api/node/authenticate',
             method: 'POST',
-            headers: this.buildHeaders(channel),
+            headers: await this.buildHeaders(channel),
             body: encrypted
         });
 
@@ -86,7 +121,7 @@ export class SessionManager {
         const response = await this.httpClient.request<EncryptedPayload>({
             url: '/api/session/whoami',
             method: 'POST',
-            headers: this.buildHeaders(channel),
+            headers: await this.buildHeaders(channel),
             body: encrypted
         });
 
@@ -104,7 +139,7 @@ export class SessionManager {
         const response = await this.httpClient.request<EncryptedPayload>({
             url: '/api/session/renew',
             method: 'POST',
-            headers: this.buildHeaders(channel),
+            headers: await this.buildHeaders(channel),
             body: encrypted
         });
 
@@ -121,7 +156,7 @@ export class SessionManager {
         await this.httpClient.request<EncryptedPayload>({
             url: '/api/session/revoke',
             method: 'POST',
-            headers: this.buildHeaders(channel),
+            headers: await this.buildHeaders(channel),
             body: encrypted
         });
     }
@@ -133,6 +168,19 @@ export class SessionManager {
         method: HttpMethod,
         payload: TPayload
     ): Promise<TResponse> {
+        // For GET requests, we cannot send a body per HTTP spec
+        // Backend attribute [PrismEncryptedChannelConnection] without generic type handles these
+        if (method === 'GET') {
+            const response = await this.httpClient.request<EncryptedPayload>({
+                url: path,
+                method,
+                headers: await this.buildHeaders(channel, session)
+            });
+
+            return this.decrypt<TResponse>(channel, response.data);
+        }
+
+        // For POST/PUT/PATCH/DELETE, encrypt and send payload as body
         const envelope = await this.encrypt(channel, {
             ...payload,
             channelId: channel.channelId,
@@ -143,7 +191,7 @@ export class SessionManager {
         const response = await this.httpClient.request<EncryptedPayload>({
             url: path,
             method,
-            headers: this.buildHeaders(channel, session),
+            headers: await this.buildHeaders(channel, session),
             body: envelope
         });
 
