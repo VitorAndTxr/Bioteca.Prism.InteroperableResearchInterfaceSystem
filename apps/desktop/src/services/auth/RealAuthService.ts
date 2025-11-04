@@ -3,6 +3,8 @@
  *
  * This service uses the UserAuthService from middleware to authenticate
  * users against the InteroperableResearchNode backend.
+ *
+ * Extends BaseService to gain access to middleware components and common utilities.
  */
 
 import {
@@ -18,6 +20,7 @@ import type {
     SessionInfo
 } from '@iris/domain';
 import type { UserAuthService, LoginCredentials as MiddlewareCredentials } from '@iris/middleware';
+import { BaseService, type MiddlewareServices } from '../BaseService';
 
 /**
  * Adapter to convert domain User to middleware format and vice versa
@@ -30,57 +33,60 @@ function convertMiddlewareUserToDomain(middlewareUser: { id: string; username: s
 
     return {
         id: middlewareUser.id,
-        email: middlewareUser.email,
-        name: middlewareUser.name || middlewareUser.username,
-        role: role,
-        institutionId: 'unknown', // TODO: Get from backend
-        createdAt: new Date(), // TODO: Get from backend
-        lastLogin: new Date()
+        login: middlewareUser.email,
+        role: role
     };
 }
 
 /**
  * Real Authentication Service
+ *
+ * Extends BaseService to access middleware components and use common error handling.
+ * Wraps UserAuthService to provide domain-specific authentication interface.
  */
-export class RealAuthService {
-    constructor(private readonly userAuthService: UserAuthService) {}
+export class RealAuthService extends BaseService {
+    /**
+     * Constructor
+     *
+     * @param services - Middleware services container
+     * @param userAuthService - User authentication service from middleware
+     */
+    constructor(
+        services: MiddlewareServices,
+        private readonly userAuthService: UserAuthService
+    ) {
+        super(services, {
+            serviceName: 'RealAuthService',
+            debug: false
+        });
+    }
 
     /**
      * Login user with real backend
      */
     async login(credentials: LoginCredentials): Promise<LoginResponse> {
-        console.log('[RealAuthService] 🚀 Login request received from UI');
-        console.log('[RealAuthService]    Email:', credentials.email);
-        console.log('[RealAuthService]    Remember me:', credentials.rememberMe || false);
+        return this.handleMiddlewareError(async () => {
+            // Convert domain credentials to middleware format
+            const middlewareCredentials: MiddlewareCredentials = {
+                username: credentials.email, // Backend uses username field
+                password: credentials.password
+            };
 
-        // Convert domain credentials to middleware format
-        const middlewareCredentials: MiddlewareCredentials = {
-            username: credentials.email, // Backend uses username field
-            password: credentials.password
-        };
+            // Login via middleware
+            const authToken = await this.userAuthService.login(middlewareCredentials);
 
-        console.log('[RealAuthService]    Calling userAuthService.login()...');
+            // Get current user
+            const middlewareUser = await this.userAuthService.getCurrentUser();
 
-        // Login via middleware
-        const authToken = await this.userAuthService.login(middlewareCredentials);
+            // Convert to domain User
+            const user = convertMiddlewareUserToDomain(middlewareUser);
 
-        console.log('[RealAuthService]    ✅ UserAuthService login successful');
-
-        // Get current user
-        const middlewareUser = await this.userAuthService.getCurrentUser();
-
-        // Convert to domain User
-        const user = convertMiddlewareUserToDomain(middlewareUser);
-
-        console.log('[RealAuthService] ✅ Login complete - returning to AuthContext');
-        console.log('[RealAuthService]    Domain user:', user.name, `(${user.email})`);
-        console.log('[RealAuthService]    Role:', user.role);
-
-        return {
-            user,
-            token: authToken.token,
-            expiresAt: new Date(authToken.expiresAt)
-        };
+            return {
+                user,
+                token: authToken.token,
+                expiresAt: new Date(authToken.expiresAt)
+            };
+        });
     }
 
     /**
@@ -94,35 +100,46 @@ export class RealAuthService {
      * Get current user by token
      */
     async getCurrentUser(token: string): Promise<User> {
-        // Check if authenticated
-        if (!this.userAuthService.isAuthenticated()) {
-            throw new Error('Not authenticated');
-        }
+        return this.handleMiddlewareError(async () => {
+            // Check if authenticated
+            if (!this.userAuthService.isAuthenticated()) {
+                throw this.createAuthError(
+                    'not_authenticated' as any,
+                    'Not authenticated'
+                );
+            }
 
-        // Get user from middleware
-        const middlewareUser = await this.userAuthService.getCurrentUser();
+            // Get user from middleware
+            const middlewareUser = await this.userAuthService.getCurrentUser();
 
-        return convertMiddlewareUserToDomain(middlewareUser);
+            return convertMiddlewareUserToDomain(middlewareUser);
+        });
     }
 
     /**
      * Refresh authentication token
      */
     async refreshToken(oldToken: string): Promise<LoginResponse> {
-        // Refresh token via middleware
-        const authToken = await this.userAuthService.refreshToken();
+        return this.handleMiddlewareError(async () => {
+            this.log('Refreshing authentication token');
 
-        // Get current user
-        const middlewareUser = await this.userAuthService.getCurrentUser();
+            // Refresh token via middleware
+            const authToken = await this.userAuthService.refreshToken();
 
-        // Convert to domain User
-        const user = convertMiddlewareUserToDomain(middlewareUser);
+            // Get current user
+            const middlewareUser = await this.userAuthService.getCurrentUser();
 
-        return {
-            user,
-            token: authToken.token,
-            expiresAt: new Date(authToken.expiresAt)
-        };
+            // Convert to domain User
+            const user = convertMiddlewareUserToDomain(middlewareUser);
+
+            this.log('✅ Token refreshed successfully');
+
+            return {
+                user,
+                token: authToken.token,
+                expiresAt: new Date(authToken.expiresAt)
+            };
+        });
     }
 
     /**

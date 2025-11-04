@@ -242,8 +242,19 @@ function initializeMiddleware() {
         }
     );
 
+    // Create middleware services container for BaseService pattern
+    const middlewareServices = {
+        middleware,
+        httpClient,
+        cryptoDriver,
+        channelManager,
+        sessionManager,
+        storage
+    };
+
     // Create real auth service (adapter for AuthContext)
-    const authService = new RealAuthService(userAuthService);
+    // Now using BaseService pattern with middleware services container
+    const authService = new RealAuthService(middlewareServices, userAuthService);
 
     return {
         middleware,
@@ -253,7 +264,8 @@ function initializeMiddleware() {
         httpClient,
         cryptoDriver,
         channelManager,
-        sessionManager
+        sessionManager,
+        middlewareServices // Export for use by other services
     };
 }
 

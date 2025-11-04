@@ -33,7 +33,8 @@
       "Read(//d/Repos/Faculdade/PRISM/InteroperableResearchNode/Bioteca.Prism.InteroperableResearchNode/Controllers/**)",
       "Read(//d/Repos/Faculdade/PRISM/InteroperableResearchNode/**)",
       "SlashCommand(/update-figma:*)",
-      "mcp__playwright__browser_press_key"
+      "mcp__playwright__browser_press_key",
+      "Bash(test:*)"
     ],
     "deny": [],
     "ask": []
