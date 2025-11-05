@@ -9,7 +9,7 @@
  * - POST /api/user/New - Create new user
  */
 
-import { BaseService, type MiddlewareServices } from './BaseService';
+import { BaseService, type MiddlewareServices } from '../BaseService';
 import type {
     User,
     NewUserData,

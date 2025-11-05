@@ -21,3 +21,9 @@ export * from './models/Auth';
 
 // SNOMED CT Medical Terminology
 export * from './models/Snomed';
+
+export * from './models/User';
+
+export * from './models/Researcher';
+
+export * from './models/Pagination';

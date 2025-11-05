@@ -223,6 +223,201 @@ Major desktop application restructuring implementing a complete design system, a
 
 ---
 
+### 3. Service Layer Architecture & User Management ✅
+
+**Implementation ID**: impl-003
+**Type**: Infrastructure + Service
+**Platform**: Desktop
+**Status**: ✅ **Completed**
+**Started**: 2025-01-31
+**Completed**: 2025-01-31
+**Duration**: ~6 hours
+
+#### Description
+
+Implemented a comprehensive service layer architecture for the desktop application, including a base service abstraction and a complete user management service. This implementation provides a standardized pattern for creating services that consume the InteroperableResearchNode middleware with automatic session management, error handling, and type conversion.
+
+#### Files Created
+
+**Service Infrastructure:**
+- `apps/desktop/src/services/BaseService.ts` - Abstract base class for all services (296 lines)
+- `apps/desktop/src/services/UserService.ts` - User management service (318 lines)
+
+**Domain Models:**
+- `packages/domain/src/models/User.ts` - User and UserRole types (24 lines)
+- `packages/domain/src/models/Researcher.ts` - Researcher and ResearcherRole types (21 lines)
+- `packages/domain/src/models/Pagination.ts` - Pagination request/response types (30 lines)
+
+**Domain Updates:**
+- `packages/domain/src/models/Auth.ts` - Updated to integrate with User model
+- `packages/domain/src/index.ts` - Export new domain models
+
+#### Features Implemented
+
+**BaseService (Abstract Class):**
+- ✅ Dependency injection for middleware services
+- ✅ Automatic session management with `ensureSession()`
+- ✅ Standardized error handling with `handleMiddlewareError()`
+- ✅ Error code mapping (network, auth, token expiration)
+- ✅ Debug logging with service name prefixes
+- ✅ Lifecycle hooks (initialize, dispose)
+- ✅ Utility methods (status checking, session validation)
+
+**UserService:**
+- ✅ **getUsers()** - Paginated user listing
+  - Query parameters for page and pageSize
+  - Backend integration with `/api/user/GetUsers`
+  - DTO to domain model conversion
+  - Support for pagination metadata
+- ✅ **createUser()** - User creation
+  - Validation (login, password, role, researcherId)
+  - Backend integration with `/api/user/New`
+  - PascalCase payload conversion
+  - Password strength requirements (min 8 characters)
+- ✅ Service-specific error mapping
+  - User not found
+  - User already exists
+  - Invalid payload
+  - Researcher not found
+
+**Domain Models:**
+- ✅ **User** interface with UserRole enum
+  - id, login, role
+  - Optional researcher relationship
+  - Timestamps (createdAt, updatedAt, lastLogin)
+- ✅ **Researcher** interface with ResearcherRole enum
+  - researcherId, researchNodeId
+  - name, email, institution, role, orcid
+  - Optional research associations
+- ✅ **Pagination** types
+  - PaginationRequest (page, pageSize)
+  - PaginationResponse (currentRecord, pageSize, totalRecords)
+  - PaginatedResponse<T> generic wrapper
+
+#### Technical Highlights
+
+**Architecture Pattern:**
+```typescript
+// BaseService provides common middleware wrapping
+export abstract class BaseService {
+    protected async handleMiddlewareError<T>(operation: () => Promise<T>): Promise<T>
+    protected async ensureSession(): Promise<void>
+    protected convertToAuthError(error: unknown): AuthError
+}
+
+// Services extend BaseService for standardized functionality
+export class UserService extends BaseService {
+    async getUsers(page: number, pageSize: number): Promise<PaginatedResponse<User>>
+    async createUser(userData: NewUserData): Promise<User>
+}
+```
+
+**Key Benefits:**
+- **Code Reuse**: All services share common middleware interaction patterns
+- **Type Safety**: Strong typing with domain models and middleware DTOs
+- **Error Consistency**: Standardized AuthError conversion across all services
+- **Separation of Concerns**: Business logic separate from middleware details
+- **Testability**: Dependency injection enables easy mocking
+
+**Implementation Details:**
+- Automatic session establishment before API calls
+- DTO conversion handles PascalCase (backend) ↔ camelCase (frontend)
+- Middleware DTOs kept separate from domain models
+- Debug logging can be toggled per service
+- Generic error handling with service-specific overrides
+
+#### Integration Points
+
+**Desktop App Usage:**
+```typescript
+import { getMiddlewareServices } from '@/services/middleware';
+import { UserService } from '@/services/UserService';
+
+// Initialize service with middleware
+const services = getMiddlewareServices();
+const userService = new UserService(services);
+
+// Use service in screens/components
+const users = await userService.getUsers(1, 10);
+const newUser = await userService.createUser({
+    login: 'researcher@example.com',
+    password: 'SecurePassword123',
+    role: UserRole.RESEARCHER,
+    researcherId: 'abc-123'
+});
+```
+
+**Middleware Integration:**
+- Uses `ResearchNodeMiddleware.invoke<TReq, TRes>()` for encrypted communication
+- Automatic channel establishment (Phase 1)
+- Automatic authentication (Phases 2-3)
+- Session management (Phase 4)
+
+#### Backend Endpoints
+
+**User Management API:**
+- `GET /api/user/GetUsers?page=1&pageSize=10` - List users with pagination
+- `POST /api/user/New` - Create new user
+
+**Request/Response Formats:**
+
+*Create User Request (PascalCase):*
+```json
+{
+  "Login": "user@example.com",
+  "Password": "password123",
+  "Role": "researcher",
+  "ResearcherId": "abc-123"
+}
+```
+
+*Get Users Response (camelCase):*
+```json
+{
+  "data": [
+    {
+      "id": "user-id",
+      "login": "user@example.com",
+      "role": "researcher",
+      "createdAt": "2025-01-31T10:00:00Z",
+      "updatedAt": "2025-01-31T10:00:00Z",
+      "researcher": {
+        "name": "Dr. Smith",
+        "email": "smith@example.com",
+        "role": "chief_researcher",
+        "orcid": "0000-0001-2345-6789"
+      }
+    }
+  ],
+  "currentPage": 1,
+  "pageSize": 10,
+  "totalRecords": 42,
+  "totalPages": 5
+}
+```
+
+#### Next Steps
+
+**Immediate (Service Implementation):**
+1. Create ResearcherService with similar pattern
+2. Create ResearchService for managing research projects
+3. Create VolunteerService for patient/volunteer management
+4. Create SessionService for FES session data
+
+**Short-Term (Integration):**
+1. Update UsersAndResearchers screen to use UserService
+2. Replace mock data with real API calls
+3. Add error handling UI components
+4. Implement user creation form validation
+
+**Medium-Term (Testing):**
+1. Unit tests for BaseService error handling
+2. Integration tests for UserService
+3. Mock middleware for isolated testing
+4. E2E tests for user management flows
+
+---
+
 ## In Progress
 
 🟢 **No tasks currently in progress**
@@ -321,11 +516,13 @@ The following tasks are queued for implementation, ordered by priority:
 
 | Metric | Value |
 |--------|-------|
-| **Total Implementations** | 2 |
-| **Completed** | 2 (100%) |
+| **Total Implementations** | 3 |
+| **Completed** | 3 (100%) |
 | **In Progress** | 0 |
 | **Pending** | 9 tasks queued |
 | **Desktop Components** | 16/30 (53%) ✅ |
+| **Desktop Services** | 2 (BaseService, UserService) ✅ |
+| **Domain Models** | 8 (Auth, User, Researcher, Pagination, etc.) ✅ |
 | **Mobile Screens** | 3/18 (17%) |
 | **Desktop Screens** | 3/18 (17%) |
 | **Tests Written** | 0 |

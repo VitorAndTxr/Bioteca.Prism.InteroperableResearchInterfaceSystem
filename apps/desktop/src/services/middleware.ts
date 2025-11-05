@@ -22,7 +22,7 @@ import {
 } from '@iris/middleware';
 import { createElectronSecureStorage } from '../storage/ElectronSecureStorage';
 import { RealAuthService } from './auth/RealAuthService';
-import { UserService } from './UserService';
+import { UserService } from './user/UserService';
 import * as forge from 'node-forge';
 
 /**

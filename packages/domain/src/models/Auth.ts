@@ -4,50 +4,7 @@
  * Defines types for user authentication and authorization in IRIS applications.
  */
 
-/**
- * User Role
- */
-export enum UserRole {
-    ADMIN = 'admin',
-    RESEARCHER = 'researcher',
-    CLINICIAN = 'clinician',
-    VIEWER = 'viewer'
-}
-
-export enum ResearcherRole {
-    CHIEF = 'chief_researcher',
-    RESEARCHER = 'researcher',
-}
-
-/**
- * User
- */
-export interface User {
-    id: string;
-    login: string;
-    role: UserRole;
-    researcher?: Researcher;
-    createdAt?: Date;
-    updatedAt?: Date;
-    lastLogin?: Date;
-}
-
-export interface Researcher{
-    researcherId: string;
-    researchNodeId: string;
-    name: string;
-    email: string;
-    institution: string;
-    role: ResearcherRole;
-    orcid: string;
-    researches?: ResearcherResearch[];
-}
-
-export interface ResearcherResearch{
-    researchId: string;
-    researchTitle: string;
-    isPrincipal: boolean;
-}
+import { User, UserRole } from "./User";
 
 /**
  * Login Credentials
@@ -136,44 +93,13 @@ export interface SessionInfo {
 }
 
 /**
- * Pagination Request
- *
- * Matches backend RequestPaging structure
- */
-export interface PaginationRequest {
-    page: number;
-    pageSize: number;
-}
-
-/**
- * Pagination Response
- *
- * Matches backend ResponsePaging structure
- */
-export interface PaginationResponse {
-    currentRecord: number;
-    pageSize: number;
-    totalRecords: number;
-}
-
-/**
- * Paginated Response
- *
- * Generic paginated response wrapper
- */
-export interface PaginatedResponse<T> {
-    data: T[];
-    pagination: PaginationResponse;
-}
-
-/**
  * New User Data
  *
- * Data required to create a new user
+ * Payload for creating a new user
  */
 export interface NewUserData {
     login: string;
     password: string;
-    role: string;
+    role: UserRole;
     researcherId?: string;
 }

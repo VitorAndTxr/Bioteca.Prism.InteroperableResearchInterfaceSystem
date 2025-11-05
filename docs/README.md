@@ -49,6 +49,7 @@ Technical API documentation:
 - **[api/BLUETOOTH_COMMANDS.md](api/BLUETOOTH_COMMANDS.md)** - Complete Bluetooth message codes and protocol
 - **[api/CONTEXT_API.md](api/CONTEXT_API.md)** - BluetoothContext hooks and state management API
 - **[api/HOOKS_REFERENCE.md](api/HOOKS_REFERENCE.md)** - Custom React hooks documentation
+- **[api/SERVICES_API.md](api/SERVICES_API.md)** - Service layer API reference (BaseService, UserService, creating custom services)
 
 ### Feature Documentation
 

@@ -167,7 +167,10 @@ IRIS/
 - ✅ **Main app**: Now `src/App.tsx` (was `src/renderer/App.tsx`)
 - ✅ **Entry point**: `src/main.tsx`
 - ✅ **Context providers**: Added `src/context/AuthContext.tsx`
-- ✅ **Services layer**: Added `src/services/auth/AuthService.ts`
+- ✅ **Services layer**: Added `src/services/` with BaseService pattern
+  - ✅ **BaseService**: Abstract class for middleware integration (296 lines)
+  - ✅ **UserService**: User management with pagination (318 lines)
+  - ✅ **AuthService**: Authentication (RealAuthService adapter)
 - ✅ **Configuration**: Added `src/config/menu.ts`
 - ✅ **Design system**: 16 components in `src/design-system/components/`
 - ✅ **Storybook**: Full setup with 8 component stories
@@ -179,6 +182,144 @@ IRIS/
 - ✅ **Streaming feature**: Complete real-time sEMG visualization (215Hz)
 - ✅ **CSV Export**: Full data export functionality
 - ✅ **Bluetooth Protocol**: All 14 message codes implemented
+
+### Service Layer Architecture (Desktop)
+
+The desktop application uses a **service layer pattern** to standardize interaction with the InteroperableResearchNode backend through the middleware.
+
+#### BaseService Abstract Class
+
+All services extend `BaseService` which provides:
+
+**Core Functionality:**
+- **Dependency Injection**: Middleware services (HttpClient, CryptoDriver, SessionManager, etc.)
+- **Session Management**: Automatic `ensureSession()` before API calls
+- **Error Handling**: Standardized `handleMiddlewareError()` with AuthError conversion
+- **Logging**: Debug logging with service name prefixes
+- **Lifecycle Hooks**: `initialize()` and `dispose()` methods
+
+**Pattern:**
+```typescript
+import { BaseService, type MiddlewareServices } from './BaseService';
+
+export class MyService extends BaseService {
+    constructor(services: MiddlewareServices) {
+        super(services, { serviceName: 'MyService', debug: true });
+    }
+
+    async myOperation() {
+        return this.handleMiddlewareError(async () => {
+            await this.ensureSession(); // Automatic 4-phase handshake
+            const response = await this.middleware.invoke<TReq, TRes>({
+                path: '/api/endpoint',
+                method: 'GET',
+                payload: {}
+            });
+            return response;
+        });
+    }
+}
+```
+
+#### Available Services
+
+**UserService** (`apps/desktop/src/services/UserService.ts`):
+- ✅ **getUsers(page, pageSize)** - Paginated user listing
+  - Backend: `GET /api/user/GetUsers?page=1&pageSize=10`
+  - Returns: `PaginatedResponse<User>`
+  - Handles DTO conversion (PascalCase ↔ camelCase)
+- ✅ **createUser(userData)** - User creation
+  - Backend: `POST /api/user/New`
+  - Validation: login, password (min 8 chars), role, researcherId
+  - Returns: `User`
+
+**Usage Example:**
+```typescript
+import { getMiddlewareServices } from '@/services/middleware';
+import { UserService } from '@/services/UserService';
+
+// Initialize
+const services = getMiddlewareServices();
+const userService = new UserService(services);
+
+// Get users with pagination
+const { data, pagination } = await userService.getUsers(1, 10);
+console.log(`Page 1 of ${Math.ceil(pagination.totalRecords / pagination.pageSize)}`);
+
+// Create new user
+const newUser = await userService.createUser({
+    login: 'researcher@example.com',
+    password: 'SecurePassword123',
+    role: UserRole.RESEARCHER,
+    researcherId: 'abc-123'
+});
+```
+
+#### Creating New Services
+
+Follow this pattern when creating new services:
+
+1. **Create Service Class**:
+   ```typescript
+   export class MyService extends BaseService {
+       constructor(services: MiddlewareServices) {
+           super(services, { serviceName: 'MyService', debug: true });
+       }
+
+       async myMethod(): Promise<ResultType> {
+           return this.handleMiddlewareError(async () => {
+               await this.ensureSession();
+               // Call middleware
+               return result;
+           });
+       }
+   }
+   ```
+
+2. **Define Domain Types** (in `packages/domain/src/models/`):
+   ```typescript
+   export interface MyDomainModel {
+       id: string;
+       name: string;
+   }
+   ```
+
+3. **Define Middleware DTOs** (internal to service):
+   ```typescript
+   interface MiddlewareMyDTO {
+       id: string;
+       name: string;
+   }
+   ```
+
+4. **Implement DTO Conversion**:
+   ```typescript
+   private convertToDomain(dto: MiddlewareMyDTO): MyDomainModel {
+       return {
+           id: dto.id,
+           name: dto.name
+       };
+   }
+   ```
+
+5. **Override Error Handling** (optional):
+   ```typescript
+   protected convertToAuthError(error: unknown): AuthError {
+       // Custom error mapping
+       return super.convertToAuthError(error);
+   }
+   ```
+
+**Key Benefits:**
+- **Code Reuse**: All services share middleware interaction patterns
+- **Type Safety**: Strong typing with domain models and DTOs
+- **Error Consistency**: Standardized error format across all services
+- **Separation of Concerns**: Business logic separate from middleware details
+- **Testability**: Dependency injection enables easy mocking
+
+**See also:**
+- Implementation details: `docs/implementation/IMPLEMENTATION_SUMMARY.md#3-service-layer-architecture--user-management`
+- API reference: `docs/api/SERVICES_API.md` (planned)
 
 ### Bluetooth Protocol Implementation
 
