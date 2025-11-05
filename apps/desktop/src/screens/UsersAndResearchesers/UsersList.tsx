@@ -15,7 +15,6 @@ import type { DataTableColumn } from '../../design-system/components/data-table/
 import { EyeIcon, PencilIcon as EditIcon, PlusIcon } from '@heroicons/react/24/outline';
 import { userService, researcherService } from '../../services/middleware';
 import '../../styles/shared/List.css';
-import { c } from 'vite/dist/node/moduleRunnerTransport.d-DJ_mE5sf';
 
 export interface UsersListProps {
     onUserAdd?: () => void;
