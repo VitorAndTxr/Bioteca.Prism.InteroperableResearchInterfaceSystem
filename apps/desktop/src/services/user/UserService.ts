@@ -14,31 +14,28 @@ import type {
     User,
     NewUserData,
     PaginatedResponse,
-    PaginationRequest,
-    PaginationResponse,
     AuthError,
-    AuthErrorCode,
-    Researcher
+    AuthErrorCode
 } from '@iris/domain';
 
 /**
  * Middleware User DTO (camelCase - matches backend JSON serialization)
  * Backend returns User entity with these fields
  */
-interface MiddlewareUserDTO {
+interface UserDTO {
     id: string;
     login: string;
     passwordHash?: string; // Not used, but returned by backend
     role: string;
     createdAt: string;
     updatedAt: string;
-    researcher?: MiddlewareResearcherInfo;
+    researcher?: ResearcherInfo;
 }
 
 /**
  * Middleware Researcher Info (camelCase - matches backend JSON serialization)
  */
-interface MiddlewareResearcherInfo {
+interface ResearcherInfo {
     name: string;
     email: string;
     role: string;
@@ -48,22 +45,11 @@ interface MiddlewareResearcherInfo {
 /**
  * Middleware Add User Payload (PascalCase - matches backend)
  */
-interface MiddlewareAddUserPayload extends Record<string, unknown> {
+interface AddUserPayload extends Record<string, unknown> {
     Login: string;
     Password: string;
     Role: string;
     ResearcherId?: string;
-}
-
-/**
- * Middleware Get Users Response (Backend PagedResult<List<UserDTO>>)
- */
-interface MiddlewarePaginatedResponse<T> {
-    data?: T[];
-    currentPage?: number;
-    pageSize?: number;
-    totalRecords?: number;
-    totalPages?: number;
 }
 
 /**
@@ -117,7 +103,7 @@ export class UserService extends BaseService {
             // Call backend API with pagination
             // Backend uses [PrismEncryptedChannelConnection] without type parameter
             // This handles GET requests without requiring a body
-            const response = await this.middleware.invoke<Record<string, unknown>, MiddlewarePaginatedResponse<MiddlewareUserDTO>>({
+            const response = await this.middleware.invoke<Record<string, unknown>, PaginatedResponse<UserDTO>>({
                 path: `/api/user/GetUsers?${queryParams.toString()}`,
                 method: 'GET',
                 payload: {}
@@ -131,15 +117,11 @@ export class UserService extends BaseService {
             // Convert middleware response to domain types
             const users = (response.data || []).map(this.convertToUser.bind(this));
 
-            const pagination: PaginationResponse = {
+            return {
+                data: users,
                 currentRecord: response.currentPage || 0,
                 pageSize: response.pageSize || users.length,
                 totalRecords: response.totalRecords || users.length
-            };
-
-            return {
-                data: users,
-                pagination
             };
         });
     }
@@ -161,7 +143,7 @@ export class UserService extends BaseService {
             await this.ensureSession();
 
             // Convert to middleware format (PascalCase)
-            const middlewarePayload: MiddlewareAddUserPayload = {
+            const middlewarePayload: AddUserPayload = {
                 Login: userData.login,
                 Password: userData.password,
                 Role: userData.role,
@@ -170,7 +152,7 @@ export class UserService extends BaseService {
 
             // Call backend API
             // Backend returns User entity directly (not wrapped in { User: ... })
-            const response = await this.middleware.invoke<MiddlewareAddUserPayload, MiddlewareUserDTO>({
+            const response = await this.middleware.invoke<AddUserPayload, UserDTO>({
                 path: '/api/user/New',
                 method: 'POST',
                 payload: middlewarePayload
@@ -187,7 +169,7 @@ export class UserService extends BaseService {
     /**
      * Convert middleware UserDTO to domain User type
      */
-    private convertToUser(dto: MiddlewareUserDTO): User {
+    private convertToUser(dto: UserDTO): User {
         const user: User = {
             id: dto.id,
             login: dto.login,

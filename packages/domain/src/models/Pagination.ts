@@ -13,11 +13,6 @@ export interface PaginationRequest {
  *
  * Matches backend ResponsePaging structure
  */
-export interface PaginationResponse {
-    currentRecord: number;
-    pageSize: number;
-    totalRecords: number;
-}
 
 /**
  * Paginated Response
@@ -25,6 +20,9 @@ export interface PaginationResponse {
  * Generic paginated response wrapper
  */
 export interface PaginatedResponse<T> {
-    data: T[];
-    pagination: PaginationResponse;
+    data?: T[];
+    currentPage?: number;
+    pageSize?: number;
+    totalRecords?: number;
+    totalPages?: number;
 }

@@ -16,20 +16,26 @@ export interface SnomedBodyRegion {
   /** Display name */
   displayName: string;
 
-  /** Parent region code (for hierarchical structure) */
-  parentRegionCode?: string;
-
-  /** Description */
+    /** Description */
   description: string;
 
-  /** Whether this code is active */
-  isActive: boolean;
+  /** Parent region code (for hierarchical structure) */
+  parentRegion?: SnomedBodyRegion;
 
-  /** Creation timestamp */
-  createdAt?: Date;
+}
 
-  /** Last update timestamp */
-  updatedAt?: Date;
+export interface AddSnomedBodyRegionPayload extends Record<string, unknown>{
+  /** SNOMED code (primary key) */
+  snomedCode: string;
+
+  /** Display name */
+  displayName: string;
+
+    /** Description */
+  description: string;
+
+  /** Parent region code */
+  parentRegion?: string;
 }
 
 /**

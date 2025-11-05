@@ -14,7 +14,6 @@ import type {
     Researcher,
     NewResearcherData,
     PaginatedResponse,
-    PaginationResponse,
     AuthError,
     AuthErrorCode,
     ResearcherRole
@@ -24,7 +23,7 @@ import type {
  * Middleware Researcher DTO (camelCase - matches backend JSON serialization)
  * Backend returns Researcher entity with these fields
  */
-interface MiddlewareResearcherDTO {
+interface ResearcherDTO {
     researcherId: string;
     researchNodeId: string;
     name: string;
@@ -39,7 +38,7 @@ interface MiddlewareResearcherDTO {
 /**
  * Middleware Add Researcher Payload (PascalCase - matches backend)
  */
-interface MiddlewareAddResearcherPayload extends Record<string, unknown> {
+interface AddResearcherPayload extends Record<string, unknown> {
     Name: string;
     Email: string;
     Institution: string;
@@ -51,13 +50,6 @@ interface MiddlewareAddResearcherPayload extends Record<string, unknown> {
 /**
  * Middleware Get Researchers Response (Backend PagedResult<List<ResearcherDTO>>)
  */
-interface MiddlewarePaginatedResponse<T> {
-    data?: T[];
-    currentPage?: number;
-    pageSize?: number;
-    totalRecords?: number;
-    totalPages?: number;
-}
 
 /**
  * Researcher Service Implementation
@@ -108,7 +100,7 @@ export class ResearcherService extends BaseService {
             });
 
             // Call backend API with pagination
-            const response = await this.middleware.invoke<Record<string, unknown>, MiddlewarePaginatedResponse<MiddlewareResearcherDTO>>({
+            const response = await this.middleware.invoke<Record<string, unknown>, PaginatedResponse<ResearcherDTO>>({
                 path: `/api/researcher/GetResearchers?${queryParams.toString()}`,
                 method: 'GET',
                 payload: {}
@@ -122,15 +114,11 @@ export class ResearcherService extends BaseService {
             // Convert middleware response to domain types
             const researchers = (response.data || []).map(this.convertToResearcher.bind(this));
 
-            const pagination: PaginationResponse = {
+            return {
+                data: researchers,
                 currentRecord: response.currentPage || 0,
                 pageSize: response.pageSize || researchers.length,
                 totalRecords: response.totalRecords || researchers.length
-            };
-
-            return {
-                data: researchers,
-                pagination
             };
         });
     }
@@ -152,7 +140,7 @@ export class ResearcherService extends BaseService {
             await this.ensureSession();
 
             // Convert to middleware format (PascalCase)
-            const middlewarePayload: MiddlewareAddResearcherPayload = {
+            const middlewarePayload: AddResearcherPayload = {
                 Name: researcherData.name,
                 Email: researcherData.email,
                 Institution: researcherData.institution,
@@ -162,7 +150,7 @@ export class ResearcherService extends BaseService {
             };
 
             // Call backend API
-            const response = await this.middleware.invoke<MiddlewareAddResearcherPayload, MiddlewareResearcherDTO>({
+            const response = await this.middleware.invoke<AddResearcherPayload, ResearcherDTO>({
                 path: '/api/researcher/New',
                 method: 'POST',
                 payload: middlewarePayload
@@ -179,7 +167,7 @@ export class ResearcherService extends BaseService {
         return this.handleMiddlewareError(async () => {
             await this.ensureSession();
             const researchNodeId = import.meta.env.VITE_IRN_MIDDLEWARE_RESEARCH_NODE_ID || '';
-            const response = await this.middleware.invoke<Record<string, unknown>, MiddlewareResearcherDTO[]>({
+            const response = await this.middleware.invoke<Record<string, unknown>, ResearcherDTO[]>({
                 path: `/api/researcher/GetResearcherByNodeId/${researchNodeId}`,
                 method: 'GET',
                 payload: {}
@@ -193,7 +181,7 @@ export class ResearcherService extends BaseService {
     /**
      * Convert middleware ResearcherDTO to domain Researcher type
      */
-    private convertToResearcher(dto: MiddlewareResearcherDTO): Researcher {
+    private convertToResearcher(dto: ResearcherDTO): Researcher {
         return {
             researcherId: dto.researcherId,
             researchNodeId: dto.researchNodeId,

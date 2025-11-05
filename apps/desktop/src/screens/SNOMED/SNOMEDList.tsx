@@ -10,7 +10,7 @@
  * Uses the generic TabbedTable component from the design system.
  */
 
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   SnomedBodyRegion,
   SnomedBodyStructure,
@@ -21,6 +21,7 @@ import { TabbedTable } from '../../design-system/components/tabbed-table';
 import type { TabbedTableTab } from '../../design-system/components/tabbed-table';
 import type { DataTableColumn } from '../../design-system/components/data-table/DataTable.types';
 import { EyeIcon, PencilIcon as EditIcon, PlusIcon } from '@heroicons/react/24/outline';
+import { snomedService } from '../../services/middleware';
 import '../../styles/shared/List.css';
 
 export interface SNOMEDListProps {
@@ -45,6 +46,12 @@ export interface SNOMEDListProps {
   onClinicalConditionView?: (condition: ClinicalCondition) => void;
 }
 
+type SnomedTabs =
+  | 'body-region'
+  | 'body-structure'
+  | 'topographic-modifier'
+  | 'clinical-condition';
+
 export function SNOMEDList({
   onBodyRegionAdd,
   onBodyRegionEdit,
@@ -59,30 +66,54 @@ export function SNOMEDList({
   onClinicalConditionEdit,
   onClinicalConditionView,
 }: SNOMEDListProps) {
-  // Mock data - Replace with real API calls
-  const mockBodyRegions: SnomedBodyRegion[] = useMemo(
-    () => [
-      {
-        snomedCode: '123037004',
-        displayName: 'Estrutura da cabeça',
-        description: 'Região anatômica da cabeça',
-        parentRegionCode: undefined,
-        isActive: true,
-        createdAt: new Date('2025-01-01'),
-        updatedAt: new Date('2025-01-01'),
-      },
-      {
-        snomedCode: '302509004',
-        displayName: 'Estrutura do tronco',
-        description: 'Região anatômica do tronco',
-        parentRegionCode: undefined,
-        isActive: true,
-        createdAt: new Date('2025-01-01'),
-        updatedAt: new Date('2025-01-01'),
-      },
-    ],
-    []
-  );
+
+  const [activeTab, setActiveTab] = useState<SnomedTabs>('body-region');
+
+
+  const [pageSize] = useState(10);
+  const [pagination, setPagination] = useState({
+      currentPage: 1,
+      totalRecords: 0
+  });
+
+  const [bodyRegions, setBodyRegions] = useState<SnomedBodyRegion[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    switch(activeTab) {
+      case 'body-region':
+        loadBodyRegions();
+        break;
+      // Future cases for other tabs can be added here
+      default:
+        break;
+    }
+    }, [pagination.currentPage, pageSize, pagination.totalRecords, activeTab]);
+
+
+  const loadBodyRegions = async () => {
+    try{
+      setLoading(true);
+      setError(null);
+
+      const response = await snomedService.getBodyRegionPaginated(pagination.currentPage, pageSize);
+
+      console.log('Fetched body regions:', response);
+      setBodyRegions(response.data || []);
+      setPagination(prev => ({
+          ...prev,
+          totalRecords: response.totalRecords || 0
+      }));
+
+    } catch (err) {
+      console.error('Failed to load body regions:', err);
+      setError(err instanceof Error ? err.message : 'Failed to load body regions');
+    } finally {
+      setLoading(false);
+    }
+  }
+
 
   const mockBodyStructures: SnomedBodyStructure[] = useMemo(
     () => [
@@ -181,7 +212,7 @@ export function SNOMEDList({
       {
         id: 'parentRegionCode',
         label: 'Pertence a',
-        accessor: 'parentRegionCode',
+        accessor: 'parentRegion.displayName',
         sortable: true,
         width: '15%',
         render: (value) => value || '-',
@@ -442,7 +473,7 @@ export function SNOMEDList({
         value: 'body-region',
         label: 'Região do Corpo',
         title: 'Região do corpo',
-        data: mockBodyRegions,
+        data: bodyRegions,
         columns: bodyRegionColumns,
         action: {
           label: 'Adicionar',
@@ -496,7 +527,7 @@ export function SNOMEDList({
       bodyStructureColumns,
       topographicModifierColumns,
       clinicalConditionColumns,
-      mockBodyRegions,
+      bodyRegions,
       mockBodyStructures,
       mockTopographicModifiers,
       mockClinicalConditions,
@@ -518,13 +549,48 @@ export function SNOMEDList({
     );
   };
 
+      if (error) {
+        return (
+            <div className="list-screen">
+                <div className="error-message" style={{ padding: '20px', textAlign: 'center', color: '#ef4444' }}>
+                    {error && activeTab === 'body-region' && <p>Erro ao carregar regiões do corpo: {error}</p>}
+                    {error && activeTab === 'body-structure' && <p>Erro ao carregar estruturas do corpo: {error}</p>}
+                    {error && activeTab === 'topographic-modifier' && <p>Erro ao carregar modificadores topográficos: {error}</p>}
+                    {error && activeTab === 'clinical-condition' && <p>Erro ao carregar condições clínicas: {error}</p>}
+                    <div style={{ marginTop: '10px', display: 'flex', gap: '10px', justifyContent: 'center' }}>
+                        {error && activeTab === 'body-region' && (
+                            <button
+                                onClick={loadBodyRegions}
+                                style={{
+                                    padding: '8px 16px',
+                                    backgroundColor: '#3b82f6',
+                                    color: 'white',
+                                    border: 'none',
+                                    borderRadius: '4px',
+                                    cursor: 'pointer'
+                                }}
+                            >
+                                Recarregar regiões do corpo
+                            </button>
+                        )}
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+
   return (
     <div className="list-screen">
       <TabbedTable
         tabs={tabs}
+        selectedTab={activeTab}
         search={{
           placeholder: 'Buscar...',
           filter: searchFilter,
+        }}
+        onTabChange={(tab)=>{
+          setActiveTab(tab as SnomedTabs);
         }}
         emptyMessage="Nenhum registro cadastrado."
         emptySearchMessage="Nenhum registro encontrado com os critérios de busca."

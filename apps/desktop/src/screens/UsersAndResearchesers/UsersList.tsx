@@ -15,6 +15,7 @@ import type { DataTableColumn } from '../../design-system/components/data-table/
 import { EyeIcon, PencilIcon as EditIcon, PlusIcon } from '@heroicons/react/24/outline';
 import { userService, researcherService } from '../../services/middleware';
 import '../../styles/shared/List.css';
+import { c } from 'vite/dist/node/moduleRunnerTransport.d-DJ_mE5sf';
 
 export interface UsersListProps {
     onUserAdd?: () => void;
@@ -25,6 +26,8 @@ export interface UsersListProps {
     onResearcherView?: (researcher: Researcher) => void;
 }
 
+type UsersTabs = 'users' | 'researchers';
+
 export function UsersList({
     onUserAdd,
     onUserEdit,
@@ -33,69 +36,87 @@ export function UsersList({
     onResearcherEdit,
     onResearcherView,
 }: UsersListProps) {
+    const [activeTab, setActiveTab] = useState<UsersTabs>('users');
+
+    const [pageSize] = useState(10);
+    const [pagination, setPagination] = useState({
+        currentPage: 1,
+        totalRecords: 0
+    });
+
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
     // State for users data
     const [users, setUsers] = useState<User[]>([]);
-    const [loadingUsers, setLoadingUsers] = useState(true);
-    const [usersError, setUsersError] = useState<string | null>(null);
 
     // State for researchers data
     const [researchers, setResearchers] = useState<Researcher[]>([]);
-    const [loadingResearchers, setLoadingResearchers] = useState(true);
-    const [researchersError, setResearchersError] = useState<string | null>(null);
 
-    // Pagination state for users
-    const [currentUserPage, setCurrentUserPage] = useState(1);
-    const [userPageSize] = useState(10);
-    const [totalUserRecords, setTotalUserRecords] = useState(0);
 
-    // Pagination state for researchers
-    const [currentResearcherPage, setCurrentResearcherPage] = useState(1);
-    const [researcherPageSize] = useState(10);
-    const [totalResearcherRecords, setTotalResearcherRecords] = useState(0);
+    // useEffect(() => {
+    //     console.log("reset pagination");
+        
+    //     resetPagination();
+    // }, [activeTab]);
 
     // Load users from backend
     useEffect(() => {
-        loadUsers();
-    }, [currentUserPage, userPageSize]);
 
-    // Load researchers from backend
-    useEffect(() => {
-        loadResearchers();
-    }, [currentResearcherPage, researcherPageSize]);
+        switch(activeTab) {
+            case 'users':
+                loadUsers();
+                break;
+            case 'researchers':
+                loadResearchers();
+                break;
+            default:
+                break;
+        }
+    }, [pagination.currentPage, pageSize, pagination.totalRecords, activeTab]);
 
     const loadUsers = async () => {
         try {
-            setLoadingUsers(true);
-            setUsersError(null);
+            setLoading(true);
+            setError(null);
 
-            const response = await userService.getUsers(currentUserPage, userPageSize);
+            const response = await userService.getUsers(pagination.currentPage, pageSize);
 
             console.log('Fetched users:', response);
-            setUsers(response.data);
-            setTotalUserRecords(response.pagination.totalRecords);
+            setUsers(response.data || []);
+            console.log('Total users:', response.totalRecords || 0);
+
+            setPagination(prev => ({
+                ...prev,
+                totalRecords: response.totalRecords || 0
+            }));
+
         } catch (err) {
             console.error('Failed to load users:', err);
-            setUsersError(err instanceof Error ? err.message : 'Failed to load users');
+            setError(err instanceof Error ? err.message : 'Failed to load users');
         } finally {
-            setLoadingUsers(false);
+            setLoading(false);
         }
     };
 
     const loadResearchers = async () => {
         try {
-            setLoadingResearchers(true);
-            setResearchersError(null);
+            setLoading(true);
+            setError(null);
 
-            const response = await researcherService.getResearchersPaginated(currentResearcherPage, researcherPageSize);
+            const response = await researcherService.getResearchersPaginated(pagination.currentPage, pageSize);
 
             console.log('Fetched researchers:', response);
-            setResearchers(response.data);
-            setTotalResearcherRecords(response.pagination.totalRecords);
+            setResearchers(response.data || []);
+            setPagination(prev => ({
+                ...prev,
+                totalRecords: response.totalRecords || 0
+            }));
         } catch (err) {
             console.error('Failed to load researchers:', err);
-            setResearchersError(err instanceof Error ? err.message : 'Failed to load researchers');
+            setError(err instanceof Error ? err.message : 'Failed to load researchers');
         } finally {
-            setLoadingResearchers(false);
+            setLoading(false);
         }
     };
 
@@ -303,19 +324,16 @@ export function UsersList({
         );
     };
 
-    // Calculate overall loading and error states
-    const loading = loadingUsers || loadingResearchers;
-    const hasError = usersError || researchersError;
 
     // Show error if loading failed
-    if (hasError) {
+    if (error) {
         return (
             <div className="list-screen">
                 <div className="error-message" style={{ padding: '20px', textAlign: 'center', color: '#ef4444' }}>
-                    {usersError && <p>Erro ao carregar usuários: {usersError}</p>}
-                    {researchersError && <p>Erro ao carregar pesquisadores: {researchersError}</p>}
+                    {error && activeTab === 'users' && <p>Erro ao carregar dados: {error}</p>}
+                    {error && activeTab === 'researchers' && <p>Erro ao carregar pesquisadores: {error}</p>}
                     <div style={{ marginTop: '10px', display: 'flex', gap: '10px', justifyContent: 'center' }}>
-                        {usersError && (
+                        {error && activeTab === 'users' && (
                             <button
                                 onClick={loadUsers}
                                 style={{
@@ -330,7 +348,7 @@ export function UsersList({
                                 Recarregar usuários
                             </button>
                         )}
-                        {researchersError && (
+                        {error && activeTab === 'researchers' && (
                             <button
                                 onClick={loadResearchers}
                                 style={{
@@ -355,8 +373,8 @@ export function UsersList({
         <div className="list-screen">
             {loading && (
                 <div style={{ padding: '20px', textAlign: 'center' }}>
-                    {loadingUsers && 'Carregando usuários... '}
-                    {loadingResearchers && 'Carregando pesquisadores...'}
+                    {loading && activeTab === 'users' && 'Carregando usuários... '}
+                    {loading && activeTab === 'researchers' && 'Carregando pesquisadores...'}
                 </div>
             )}
             {!loading && (
@@ -366,6 +384,10 @@ export function UsersList({
                         placeholder: 'Buscar...',
                         filter: searchFilter,
                     }}
+                    onTabChange={async (tab)=>{
+                        setActiveTab(tab as UsersTabs);
+                    }}
+                    selectedTab={activeTab}
                     emptyMessage="Nenhum registro cadastrado."
                     emptySearchMessage="Nenhum registro encontrado com os critérios de busca."
                     striped
@@ -374,7 +396,7 @@ export function UsersList({
             )}
 
             {/* Pagination for Users */}
-            {!loading && totalUserRecords > userPageSize && (
+            {!loading && pagination.totalRecords > pageSize && (
                 <div style={{
                     display: 'flex',
                     justifyContent: 'center',
@@ -383,34 +405,43 @@ export function UsersList({
                     padding: '20px',
                     borderTop: '1px solid #e5e7eb'
                 }}>
-                    <span style={{ fontWeight: 'bold', marginRight: '10px' }}>Usuários:</span>
+                    <span style={{ fontWeight: 'bold', marginRight: '10px' }}>
+                        {activeTab === 'users'&& <>Usuários:</>}
+                        {activeTab === 'researchers'&& <>Pesquisadores:</>}
+                    </span>
                     <button
-                        onClick={() => setCurrentUserPage(prev => Math.max(1, prev - 1))}
-                        disabled={currentUserPage === 1}
+                        onClick={() => setPagination(prev => ({
+                            ...prev,
+                            currentPage: Math.max(1, prev.currentPage - 1)
+                        }))}
+                        disabled={pagination.currentPage === 1}
                         style={{
                             padding: '8px 16px',
-                            backgroundColor: currentUserPage === 1 ? '#e5e7eb' : '#3b82f6',
-                            color: currentUserPage === 1 ? '#9ca3af' : 'white',
+                            backgroundColor: pagination.currentPage === 1 ? '#e5e7eb' : '#3b82f6',
+                            color: pagination.currentPage === 1 ? '#9ca3af' : 'white',
                             border: 'none',
                             borderRadius: '4px',
-                            cursor: currentUserPage === 1 ? 'not-allowed' : 'pointer'
+                            cursor: pagination.currentPage === 1 ? 'not-allowed' : 'pointer'
                         }}
                     >
                         Anterior
                     </button>
                     <span>
-                        Página {currentUserPage} de {Math.ceil(totalUserRecords / userPageSize)}
+                        Página {pagination.currentPage} de {Math.ceil(pagination.totalRecords / pageSize)}
                     </span>
                     <button
-                        onClick={() => setCurrentUserPage(prev => prev + 1)}
-                        disabled={currentUserPage >= Math.ceil(totalUserRecords / userPageSize)}
+                        onClick={() => setPagination(prev => ({
+                            ...prev,
+                            currentPage: Math.min(prev.currentPage + 1, Math.ceil(prev.totalRecords / pageSize))
+                        }))}
+                        disabled={pagination.currentPage >= Math.ceil(pagination.totalRecords / pageSize)}
                         style={{
                             padding: '8px 16px',
-                            backgroundColor: currentUserPage >= Math.ceil(totalUserRecords / userPageSize) ? '#e5e7eb' : '#3b82f6',
-                            color: currentUserPage >= Math.ceil(totalUserRecords / userPageSize) ? '#9ca3af' : 'white',
+                            backgroundColor: pagination.currentPage >= Math.ceil(pagination.totalRecords / pageSize) ? '#e5e7eb' : '#3b82f6',
+                            color: pagination.currentPage >= Math.ceil(pagination.totalRecords / pageSize) ? '#9ca3af' : 'white',
                             border: 'none',
                             borderRadius: '4px',
-                            cursor: currentUserPage >= Math.ceil(totalUserRecords / userPageSize) ? 'not-allowed' : 'pointer'
+                            cursor: pagination.currentPage >= Math.ceil(pagination.totalRecords / pageSize) ? 'not-allowed' : 'pointer'
                         }}
                     >
                         Próxima
@@ -418,50 +449,6 @@ export function UsersList({
                 </div>
             )}
 
-            {/* Pagination for Researchers */}
-            {!loading && totalResearcherRecords > researcherPageSize && (
-                <div style={{
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    gap: '10px',
-                    padding: '20px',
-                    borderTop: '1px solid #e5e7eb'
-                }}>
-                    <span style={{ fontWeight: 'bold', marginRight: '10px' }}>Pesquisadores:</span>
-                    <button
-                        onClick={() => setCurrentResearcherPage(prev => Math.max(1, prev - 1))}
-                        disabled={currentResearcherPage === 1}
-                        style={{
-                            padding: '8px 16px',
-                            backgroundColor: currentResearcherPage === 1 ? '#e5e7eb' : '#3b82f6',
-                            color: currentResearcherPage === 1 ? '#9ca3af' : 'white',
-                            border: 'none',
-                            borderRadius: '4px',
-                            cursor: currentResearcherPage === 1 ? 'not-allowed' : 'pointer'
-                        }}
-                    >
-                        Anterior
-                    </button>
-                    <span>
-                        Página {currentResearcherPage} de {Math.ceil(totalResearcherRecords / researcherPageSize)}
-                    </span>
-                    <button
-                        onClick={() => setCurrentResearcherPage(prev => prev + 1)}
-                        disabled={currentResearcherPage >= Math.ceil(totalResearcherRecords / researcherPageSize)}
-                        style={{
-                            padding: '8px 16px',
-                            backgroundColor: currentResearcherPage >= Math.ceil(totalResearcherRecords / researcherPageSize) ? '#e5e7eb' : '#3b82f6',
-                            color: currentResearcherPage >= Math.ceil(totalResearcherRecords / researcherPageSize) ? '#9ca3af' : 'white',
-                            border: 'none',
-                            borderRadius: '4px',
-                            cursor: currentResearcherPage >= Math.ceil(totalResearcherRecords / researcherPageSize) ? 'not-allowed' : 'pointer'
-                        }}
-                    >
-                        Próxima
-                    </button>
-                </div>
-            )}
         </div>
     );
 }
