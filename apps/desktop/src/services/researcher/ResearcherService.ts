@@ -91,7 +91,7 @@ export class ResearcherService extends BaseService {
      * @param pageSize - Items per page (default: 10, max: 100)
      * @returns Paginated researcher list with metadata
      */
-    async getResearchers(
+    async getResearchersPaginated(
         page: number = 1,
         pageSize: number = 10
     ): Promise<PaginatedResponse<Researcher>> {
@@ -174,6 +174,20 @@ export class ResearcherService extends BaseService {
         });
     }
 
+
+    async getByNodeId(): Promise<Researcher[]> {
+        return this.handleMiddlewareError(async () => {
+            await this.ensureSession();
+            const researchNodeId = import.meta.env.VITE_IRN_MIDDLEWARE_RESEARCH_NODE_ID || '';
+            const response = await this.middleware.invoke<Record<string, unknown>, MiddlewareResearcherDTO[]>({
+                path: `/api/researcher/GetResearcherByNodeId/${researchNodeId}`,
+                method: 'GET',
+                payload: {}
+            });
+
+            return response.map(this.convertToResearcher.bind(this));
+        });
+    }
     // ==================== Private Helpers ====================
 
     /**

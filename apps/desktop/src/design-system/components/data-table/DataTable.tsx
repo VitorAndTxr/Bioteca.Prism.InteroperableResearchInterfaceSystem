@@ -412,90 +412,6 @@ export function DataTable<T = any>({
     );
   };
 
-  const renderPagination = () => {
-    if (!pagination) return null;
-
-    const totalPages = Math.ceil(pagination.totalItems / pagination.pageSize);
-    const startItem = (pagination.currentPage - 1) * pagination.pageSize + 1;
-    const endItem = Math.min(pagination.currentPage * pagination.pageSize, pagination.totalItems);
-
-    return (
-      <div className="data-table-pagination">
-        <div className="pagination-info">
-          Showing {startItem} to {endItem} of {pagination.totalItems} entries
-        </div>
-
-        <div className="pagination-controls">
-          <button
-            className="pagination-button"
-            onClick={() => onPageChange?.(pagination.currentPage - 1)}
-            disabled={pagination.currentPage === 1}
-            aria-label="Previous page"
-          >
-            ←
-          </button>
-
-          {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
-            let pageNumber: number;
-
-            if (totalPages <= 5) {
-              pageNumber = i + 1;
-            } else if (pagination.currentPage <= 3) {
-              pageNumber = i + 1;
-            } else if (pagination.currentPage >= totalPages - 2) {
-              pageNumber = totalPages - 4 + i;
-            } else {
-              pageNumber = pagination.currentPage - 2 + i;
-            }
-
-            return (
-              <button
-                key={pageNumber}
-                className={`pagination-button ${pagination.currentPage === pageNumber ? 'active' : ''}`}
-                onClick={() => onPageChange?.(pageNumber)}
-                aria-label={`Page ${pageNumber}`}
-                aria-current={pagination.currentPage === pageNumber ? 'page' : undefined}
-              >
-                {pageNumber}
-              </button>
-            );
-          })}
-
-          <button
-            className="pagination-button"
-            onClick={() => onPageChange?.(pagination.currentPage + 1)}
-            disabled={pagination.currentPage === totalPages}
-            aria-label="Next page"
-          >
-            →
-          </button>
-        </div>
-
-        {pagination.showPageSizeSelector !== false && pagination.pageSizeOptions && (
-          <div className="pagination-page-size">
-            <label htmlFor="page-size-select">Rows per page:</label>
-            <select
-              id="page-size-select"
-              value={pagination.pageSize}
-              onChange={(e) => onPageSizeChange?.(Number(e.target.value))}
-              aria-label="Rows per page"
-            >
-              {pagination.pageSizeOptions.map((size) => (
-                <option key={size} value={size}>
-                  {size}
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
-      </div>
-    );
-  };
-
-  // ============================================================================
-  // Render
-  // ============================================================================
-
   return (
     <div
       className={`data-table-container ${className}`}
@@ -515,7 +431,6 @@ export function DataTable<T = any>({
           {renderBody()}
         </table>
       </div>
-      {renderPagination()}
     </div>
   );
 }

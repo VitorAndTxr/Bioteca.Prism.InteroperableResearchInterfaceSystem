@@ -86,7 +86,7 @@ export function UsersList({
             setLoadingResearchers(true);
             setResearchersError(null);
 
-            const response = await researcherService.getResearchers(currentResearcherPage, researcherPageSize);
+            const response = await researcherService.getResearchersPaginated(currentResearcherPage, researcherPageSize);
 
             console.log('Fetched researchers:', response);
             setResearchers(response.data);

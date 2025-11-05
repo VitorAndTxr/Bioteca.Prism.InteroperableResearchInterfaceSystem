@@ -13,7 +13,7 @@
  * - Form validation
  */
 
-import React, { useState, FormEvent } from 'react';
+import React, { useState, FormEvent, useEffect } from 'react';
 import { AppLayout } from '../../design-system/components/app-layout';
 import { Input } from '../../design-system/components/input';
 import { Dropdown } from '../../design-system/components/dropdown';
@@ -21,8 +21,8 @@ import { Password } from '../../design-system/components/password';
 import { Button } from '../../design-system/components/button';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { mainMenuItems } from '../../config/menu';
-import type { UserRole, NewUserData } from '@iris/domain';
-import { userService } from '../../services/middleware';
+import type { NewUserData } from '@iris/domain';
+import { userService, researcherService } from '../../services/middleware';
 import '../../styles/shared/AddForm.css';
 
 export interface AddUserFormProps {
@@ -31,27 +31,23 @@ export interface AddUserFormProps {
     onCancel?: () => void;
 }
 
+
+
 const userTypeOptions = [
     { value: 'ADMIN', label: 'Administrador' },
     { value: 'RESEARCHER', label: 'Pesquisador' },
-    { value: 'CLINICIAN', label: 'Clínico' },
-    { value: 'VIEWER', label: 'Visualizador' },
-];
-
-// Mock researchers - Replace with real API call
-const mockResearcherOptions = [
-    { value: '1', label: 'Dr. João Silva - Instituição A' },
-    { value: '2', label: 'Dra. Maria Santos - Instituição B' },
-    { value: '3', label: 'Dr. Pedro Oliveira - Instituição C' },
 ];
 
 export function AddUserForm({ handleNavigation, onSave, onCancel }: AddUserFormProps) {
+
+
     // Form state
     const [login, setLogin] = useState('');
     const [userType, setUserType] = useState<string>('');
     const [password, setPassword] = useState('');
     const [passwordConfirmation, setPasswordConfirmation] = useState('');
     const [relatedResearcher, setRelatedResearcher] = useState<string>('');
+    const [researcherOptions, setResearcherOptions] = useState<{ value: string; label: string }[]>([]);
 
     // Validation state
     const [errors, setErrors] = useState<Record<string, string>>({});
@@ -60,6 +56,18 @@ export function AddUserForm({ handleNavigation, onSave, onCancel }: AddUserFormP
     // Submission state
     const [submitting, setSubmitting] = useState(false);
     const [submitError, setSubmitError] = useState<string | null>(null);
+
+    useEffect(() => {
+        researcherService.getByNodeId().then(response => {
+            const options = response.map(researcher => ({
+                value: researcher.researcherId,
+                label: `${researcher.name} - ${researcher.orcid}`,
+            }));
+            setResearcherOptions(options);
+        }).catch(error => {
+            console.error('Failed to fetch researchers for dropdown:', error);
+        });
+    }, []);
 
     // Mark field as touched
     const handleBlur = (field: string) => {
@@ -260,7 +268,7 @@ export function AddUserForm({ handleNavigation, onSave, onCancel }: AddUserFormP
                         <Dropdown
                             label="Pesquisador relacionado"
                             placeholder="Selecione um pesquisador (opcional)"
-                            options={mockResearcherOptions}
+                            options={researcherOptions}
                             value={relatedResearcher}
                             onChange={(value) => setRelatedResearcher(value as string)}
                             searchable
