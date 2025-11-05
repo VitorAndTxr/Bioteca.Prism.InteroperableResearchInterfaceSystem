@@ -20,21 +20,14 @@ import { Dropdown } from '../../design-system/components/dropdown';
 import { Button } from '../../design-system/components/button';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { mainMenuItems } from '../../config/menu';
-import type { ResearcherRole } from '@iris/domain';
+import type { ResearcherRole, NewResearcherData } from '@iris/domain';
+import { researcherService } from '../../services/middleware';
 import '../../styles/shared/AddForm.css';
 
 export interface AddResearcherFormProps {
     handleNavigation: (path: string) => void;
     onSave?: (researcherData: NewResearcherData) => void;
     onCancel?: () => void;
-}
-
-export interface NewResearcherData {
-    name: string;
-    email: string;
-    institution: string;
-    orcid: string;
-    role: ResearcherRole;
 }
 
 const researcherRoleOptions = [
@@ -53,6 +46,11 @@ export function AddResearcherForm({ handleNavigation, onSave, onCancel }: AddRes
     // Validation state
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [touched, setTouched] = useState<Record<string, boolean>>({});
+
+    // Submission state
+    const [submitting, setSubmitting] = useState(false);
+    const [submitError, setSubmitError] = useState<string | null>(null);
+    const [submitSuccess, setSubmitSuccess] = useState(false);
 
     // Mark field as touched
     const handleBlur = (field: string) => {
@@ -104,8 +102,12 @@ export function AddResearcherForm({ handleNavigation, onSave, onCancel }: AddRes
     };
 
     // Handle form submission
-    const handleSubmit = (e: FormEvent) => {
+    const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
+
+        // Reset submission state
+        setSubmitError(null);
+        setSubmitSuccess(false);
 
         // Mark all fields as touched
         setTouched({
@@ -126,14 +128,35 @@ export function AddResearcherForm({ handleNavigation, onSave, onCancel }: AddRes
             institution,
             orcid,
             role: role as ResearcherRole,
+            researchNodeId: import.meta.env.VITE_IRN_MIDDLEWARE_RESEARCH_NODE_ID || '',
         };
 
+        // If custom onSave handler provided, use it
         if (onSave) {
             onSave(researcherData);
-        } else {
-            console.log('Researcher data to save:', researcherData);
-            // Navigate back to users list
-            handleNavigation('/users');
+            return;
+        }
+
+        // Otherwise, submit to backend via ResearcherService
+        try {
+            setSubmitting(true);
+            console.log('Creating researcher:', researcherData);
+
+            const createdResearcher = await researcherService.createResearcher(researcherData);
+
+            console.log('✅ Researcher created successfully:', createdResearcher);
+            setSubmitSuccess(true);
+
+            // Show success message briefly, then navigate back
+            setTimeout(() => {
+                handleNavigation('/users');
+            }, 1500);
+        } catch (err) {
+            console.error('❌ Failed to create researcher:', err);
+            const errorMessage = err instanceof Error ? err.message : 'Failed to create researcher';
+            setSubmitError(errorMessage);
+        } finally {
+            setSubmitting(false);
         }
     };
 
@@ -227,6 +250,31 @@ export function AddResearcherForm({ handleNavigation, onSave, onCancel }: AddRes
                         />
                     </div>
 
+                    {/* Submission Status Messages */}
+                    {submitError && (
+                        <div style={{
+                            padding: '12px',
+                            backgroundColor: '#fee2e2',
+                            color: '#991b1b',
+                            borderRadius: '4px',
+                            marginTop: '16px'
+                        }}>
+                            ❌ Erro: {submitError}
+                        </div>
+                    )}
+
+                    {submitSuccess && (
+                        <div style={{
+                            padding: '12px',
+                            backgroundColor: '#d1fae5',
+                            color: '#065f46',
+                            borderRadius: '4px',
+                            marginTop: '16px'
+                        }}>
+                            ✅ Pesquisador criado com sucesso! Redirecionando...
+                        </div>
+                    )}
+
                     {/* Action Buttons */}
                     <div className="add-form__actions">
                         <Button
@@ -235,6 +283,7 @@ export function AddResearcherForm({ handleNavigation, onSave, onCancel }: AddRes
                             onClick={handleCancel}
                             icon={<ArrowLeftIcon className="w-5 h-5" />}
                             iconPosition="left"
+                            disabled={submitting}
                         >
                             Voltar
                         </Button>
@@ -242,8 +291,9 @@ export function AddResearcherForm({ handleNavigation, onSave, onCancel }: AddRes
                             type="submit"
                             variant="primary"
                             size="big"
+                            disabled={submitting}
                         >
-                            Salvar pesquisador
+                            {submitting ? 'Salvando...' : 'Salvar pesquisador'}
                         </Button>
                     </div>
                 </form>

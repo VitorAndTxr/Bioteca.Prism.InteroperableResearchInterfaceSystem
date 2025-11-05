@@ -23,6 +23,7 @@ import {
 import { createElectronSecureStorage } from '../storage/ElectronSecureStorage';
 import { RealAuthService } from './auth/RealAuthService';
 import { UserService } from './user/UserService';
+import { ResearcherService } from './researcher/ResearcherService';
 import * as forge from 'node-forge';
 
 /**
@@ -295,11 +296,15 @@ function initializeMiddleware() {
     // Create user service
     const userService = new UserService(middlewareServices);
 
+    // Create researcher service
+    const researcherService = new ResearcherService(middlewareServices);
+
     return {
         middleware,
         userAuthService,
         authService,
         userService,
+        researcherService,
         storage,
         httpClient,
         cryptoDriver,
@@ -357,7 +362,7 @@ export async function initializeAndHydrate() {
 }
 
 // Export commonly used services directly for synchronous imports
-export const { middleware, authService, userAuthService, userService } = getMiddlewareServices();
+export const { middleware, authService, userAuthService, userService, researcherService } = getMiddlewareServices();
 
 /**
  * Cleanup middleware resources

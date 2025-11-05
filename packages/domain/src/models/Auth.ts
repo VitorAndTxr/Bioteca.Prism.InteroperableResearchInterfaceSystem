@@ -92,14 +92,4 @@ export interface SessionInfo {
     rememberMe: boolean;
 }
 
-/**
- * New User Data
- *
- * Payload for creating a new user
- */
-export interface NewUserData {
-    login: string;
-    password: string;
-    role: UserRole;
-    researcherId?: string;
-}
+
