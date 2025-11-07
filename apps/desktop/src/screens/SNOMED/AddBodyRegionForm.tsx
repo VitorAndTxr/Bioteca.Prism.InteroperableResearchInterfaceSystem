@@ -1,51 +1,48 @@
-/**
- * AddBodyRegionForm Component
- *
- * Form for adding a new SNOMED body region.
- * Based on Figma design node 6910-2488
- *
- * Features:
- * - SNOMED code input
- * - Display name input
- * - Description input
- * - Parent region selection (dropdown)
- * - Form validation
- */
-
-import React, { useState, FormEvent } from 'react';
+import React, { useState, FormEvent, useEffect } from 'react';
 import { AppLayout } from '../../design-system/components/app-layout';
 import { Input } from '../../design-system/components/input';
 import { Dropdown } from '../../design-system/components/dropdown';
 import { Button } from '../../design-system/components/button';
 import { ArrowLeftIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
 import { mainMenuItems } from '../../config/menu';
-import type { SnomedBodyRegion } from '@iris/domain';
+import type { AddSnomedBodyRegionPayload, SnomedBodyRegion } from '@iris/domain';
+import { snomedService } from '../../services/middleware';
 import '../../styles/shared/AddForm.css';
 
 export interface AddBodyRegionFormProps {
     handleNavigation: (path: string) => void;
-    onSave?: (regionData: Partial<SnomedBodyRegion>) => void;
+    onSave?: (regionData: Partial<AddSnomedBodyRegionPayload>) => void;
     onCancel?: () => void;
 }
-
-// Mock parent regions - Replace with real API call
-const mockParentRegionOptions = [
-    { value: '123037004', label: 'Estrutura da cabeça' },
-    { value: '302509004', label: 'Estrutura do tronco' },
-    { value: '362874006', label: 'Membro superior' },
-    { value: '362875007', label: 'Membro inferior' },
-];
 
 export function AddBodyRegionForm({ handleNavigation, onSave, onCancel }: AddBodyRegionFormProps) {
     // Form state
     const [snomedCode, setSnomedCode] = useState('');
     const [displayName, setDisplayName] = useState('');
     const [description, setDescription] = useState('');
-    const [parentRegionCode, setParentRegionCode] = useState<string>('');
+    const [parentRegionCode, setParentRegionCode] = useState<string | undefined>();
+    const [parentRegionOption, setParentRegionOption] = useState<{ value: string; label: string }[]>([]);
+
 
     // Validation state
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [touched, setTouched] = useState<Record<string, boolean>>({});
+
+    // Submission state
+    const [submitting, setSubmitting] = useState(false);
+    const [submitError, setSubmitError] = useState<string | null>(null);
+
+    useEffect(() => {
+        snomedService.getActiveBodyRegions().then(response => {
+            const options = response.map(bodyRegion => ({
+                value: bodyRegion.snomedCode,
+                label: `${bodyRegion.displayName}`,
+            }));
+            setParentRegionOption(options);
+        }).catch(error => {
+            console.error('Failed to fetch body regions for dropdown:', error);
+        });
+    }, []);
 
     // Mark field as touched
     const handleBlur = (field: string) => {
@@ -73,7 +70,7 @@ export function AddBodyRegionForm({ handleNavigation, onSave, onCancel }: AddBod
     };
 
     // Handle form submission
-    const handleSubmit = (e: FormEvent) => {
+    const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
 
         // Mark all required fields as touched
@@ -87,20 +84,29 @@ export function AddBodyRegionForm({ handleNavigation, onSave, onCancel }: AddBod
             return;
         }
 
-        const regionData: Partial<SnomedBodyRegion> = {
+        const regionData:AddSnomedBodyRegionPayload = {
             snomedCode,
             displayName,
             description,
-            parentRegionCode: parentRegionCode || undefined,
-            isActive: true,
+            parentRegionCode
         };
 
-        if (onSave) {
-            onSave(regionData);
-        } else {
-            console.log('Body region data to save:', regionData);
-            // Navigate back to SNOMED list
+        try {
+            setSubmitting(true);
+            setSubmitError(null);
+
+            console.log('Creating region:', regionData);
+            const createdRegion = await snomedService.createBodyRegion(regionData);
+            console.log('✅ Region created successfully:', createdRegion);
+
+            // Navigate back to users list
             handleNavigation('/snomed');
+        } catch (err) {
+            console.error('Failed to create region:', err);
+            const errorMessage = err instanceof Error ? err.message : 'Failed to create region';
+            setSubmitError(errorMessage);
+        } finally {
+            setSubmitting(false);
         }
     };
 
@@ -169,7 +175,7 @@ export function AddBodyRegionForm({ handleNavigation, onSave, onCancel }: AddBod
                         <Dropdown
                             label="Pertence a"
                             placeholder="Input placeholder"
-                            options={mockParentRegionOptions}
+                            options={parentRegionOption}
                             value={parentRegionCode}
                             onChange={(value) => setParentRegionCode(value as string)}
                             searchable
@@ -184,6 +190,7 @@ export function AddBodyRegionForm({ handleNavigation, onSave, onCancel }: AddBod
                             onClick={handleCancel}
                             icon={<ArrowLeftIcon className="w-5 h-5" />}
                             iconPosition="left"
+                            disabled={submitting}
                         >
                             Voltar
                         </Button>
@@ -191,10 +198,9 @@ export function AddBodyRegionForm({ handleNavigation, onSave, onCancel }: AddBod
                             type="submit"
                             variant="primary"
                             size="big"
-                            icon={<CheckCircleIcon className="w-5 h-5" />}
-                            iconPosition="left"
+                            disabled={submitting}
                         >
-                            Salvar região do corpo
+                            {submitting ? 'Salvando...' : 'Salvar Região do Corpo'}
                         </Button>
                     </div>
                 </form>

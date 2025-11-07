@@ -24,6 +24,7 @@ export interface SnomedBodyRegion {
 
 }
 
+
 export interface AddSnomedBodyRegionPayload extends Record<string, unknown>{
   /** SNOMED code (primary key) */
   snomedCode: string;

@@ -9,12 +9,6 @@ export interface PaginationRequest {
 }
 
 /**
- * Pagination Response
- *
- * Matches backend ResponsePaging structure
- */
-
-/**
  * Paginated Response
  *
  * Generic paginated response wrapper
