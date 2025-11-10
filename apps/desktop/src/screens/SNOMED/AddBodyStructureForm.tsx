@@ -14,15 +14,16 @@
  * - Form validation
  */
 
-import React, { useState, FormEvent } from 'react';
+import React, { useState, FormEvent, useEffect } from 'react';
 import { AppLayout } from '../../design-system/components/app-layout';
 import { Input } from '../../design-system/components/input';
 import { Dropdown } from '../../design-system/components/dropdown';
 import { Button } from '../../design-system/components/button';
 import { ArrowLeftIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
 import { mainMenuItems } from '../../config/menu';
-import type { SnomedBodyStructure } from '@iris/domain';
+import type { AddSnomedBodyStructurePayload, SnomedBodyStructure } from '@iris/domain';
 import '../../styles/shared/AddForm.css';
+import { snomedService } from '../../services/middleware';
 
 export interface AddBodyStructureFormProps {
     handleNavigation: (path: string) => void;
@@ -39,21 +40,6 @@ const mockStructureTypeOptions = [
     { value: 'Articulação', label: 'Articulação' },
 ];
 
-// Mock body regions - Replace with real API call
-const mockBodyRegionOptions = [
-    { value: '123037004', label: 'Estrutura da cabeça' },
-    { value: '302509004', label: 'Estrutura do tronco' },
-    { value: '362874006', label: 'Membro superior' },
-    { value: '362875007', label: 'Membro inferior' },
-];
-
-// Mock parent structures - Replace with real API call
-const mockParentStructureOptions = [
-    { value: '21483005', label: 'Estrutura do coração' },
-    { value: '39607008', label: 'Estrutura do pulmão' },
-    { value: '113257007', label: 'Estrutura do fígado' },
-];
-
 export function AddBodyStructureForm({ handleNavigation, onSave, onCancel }: AddBodyStructureFormProps) {
     // Form state
     const [snomedCode, setSnomedCode] = useState('');
@@ -61,11 +47,42 @@ export function AddBodyStructureForm({ handleNavigation, onSave, onCancel }: Add
     const [displayName, setDisplayName] = useState('');
     const [description, setDescription] = useState('');
     const [bodyRegionCode, setBodyRegionCode] = useState<string>('');
-    const [parentStructureCode, setParentStructureCode] = useState<string>('');
+    const [parentStructureCode, setParentStructureCode] = useState<string | undefined>();
+
+    const [parentRegionOption, setParentRegionOption] = useState<{ value: string; label: string }[]>([]);
+    const [parentStructureOption, setParentStructureOption] = useState<{ value: string; label: string }[]>([]);
+
 
     // Validation state
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [touched, setTouched] = useState<Record<string, boolean>>({});
+
+    // Submission state
+    const [submitting, setSubmitting] = useState(false);
+    const [submitError, setSubmitError] = useState<string | null>(null);
+
+    useEffect(() => {
+        snomedService.getActiveBodyRegions().then(response => {
+            const options = response.map(bodyRegion => ({
+                value: bodyRegion.snomedCode,
+                label: `${bodyRegion.displayName}`,
+            }));
+            setParentRegionOption(options);
+        }).catch(error => {
+            console.error('Failed to fetch body regions for dropdown:', error);
+        });
+
+        snomedService.getActiveBodyStructures().then(response => {
+            const options = response.map(bodyStructure => ({
+                value: bodyStructure.snomedCode,
+                label: `${bodyStructure.displayName}`,
+            }));
+            setParentStructureOption(options);
+        }).catch(error => {
+            console.error('Failed to fetch body structures for dropdown:', error);
+        });
+
+    }, []);
 
     // Mark field as touched
     const handleBlur = (field: string) => {
@@ -101,7 +118,7 @@ export function AddBodyStructureForm({ handleNavigation, onSave, onCancel }: Add
     };
 
     // Handle form submission
-    const handleSubmit = (e: FormEvent) => {
+    const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
 
         // Mark all required fields as touched
@@ -117,22 +134,32 @@ export function AddBodyStructureForm({ handleNavigation, onSave, onCancel }: Add
             return;
         }
 
-        const structureData: Partial<SnomedBodyStructure> = {
+        const structureData: AddSnomedBodyStructurePayload = {
             snomedCode,
-            structureType,
+            type: structureType,
             displayName,
             description,
-            bodyRegionCode,
-            parentStructureCode: parentStructureCode || undefined,
-            isActive: true,
+            bodyRegionCode: bodyRegionCode,
+            parentStructureCode
         };
 
-        if (onSave) {
-            onSave(structureData);
-        } else {
-            console.log('Body structure data to save:', structureData);
-            // Navigate back to SNOMED list
+        console.log('Submitting structure data:', structureData);
+
+        try {
+            setSubmitting(true);
+            setSubmitError(null);  
+
+            const createdBodyStructure = await snomedService.createBodyStructure(structureData);
+
+            console.log('✅ Structure created successfully:', createdBodyStructure);
+
             handleNavigation('/snomed');
+        } catch (error) {
+            console.error('Failed to create body structure:', error);
+            const errorMessage = error instanceof Error ? error.message : 'Failed to create body structure';
+            setSubmitError(errorMessage);
+        }finally {
+            setSubmitting(false);
         }
     };
 
@@ -214,7 +241,7 @@ export function AddBodyStructureForm({ handleNavigation, onSave, onCancel }: Add
                         <Dropdown
                             label="Região do corpo"
                             placeholder="Input placeholder"
-                            options={mockBodyRegionOptions}
+                            options={parentRegionOption}
                             value={bodyRegionCode}
                             onChange={(value) => setBodyRegionCode(value as string)}
                             onBlur={() => handleBlur('bodyRegionCode')}
@@ -228,7 +255,7 @@ export function AddBodyStructureForm({ handleNavigation, onSave, onCancel }: Add
                         <Dropdown
                             label="Pertence a"
                             placeholder="Input placeholder"
-                            options={mockParentStructureOptions}
+                            options={parentStructureOption}
                             value={parentStructureCode}
                             onChange={(value) => setParentStructureCode(value as string)}
                             searchable
@@ -243,6 +270,7 @@ export function AddBodyStructureForm({ handleNavigation, onSave, onCancel }: Add
                             onClick={handleCancel}
                             icon={<ArrowLeftIcon className="w-5 h-5" />}
                             iconPosition="left"
+                            disabled={submitting}
                         >
                             Voltar
                         </Button>
@@ -250,10 +278,9 @@ export function AddBodyStructureForm({ handleNavigation, onSave, onCancel }: Add
                             type="submit"
                             variant="primary"
                             size="big"
-                            icon={<CheckCircleIcon className="w-5 h-5" />}
-                            iconPosition="left"
+                            disabled={submitting}
                         >
-                            Salvar estrutura do corpo
+                            {submitting ? 'Salvando...' : 'Salvar Estrutura do Corpo'}
                         </Button>
                     </div>
                 </form>

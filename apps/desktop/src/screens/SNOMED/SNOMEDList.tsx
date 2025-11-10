@@ -77,6 +77,7 @@ export function SNOMEDList({
   });
 
   const [bodyRegions, setBodyRegions] = useState<SnomedBodyRegion[]>([]);
+  const [bodyStructures, setBodyStructures] = useState<SnomedBodyStructure[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -85,12 +86,35 @@ export function SNOMEDList({
       case 'body-region':
         loadBodyRegions();
         break;
-      // Future cases for other tabs can be added here
+      case 'body-structure':
+        loadBodyStructures();
+        break;
       default:
         break;
     }
     }, [pagination.currentPage, pageSize, pagination.totalRecords, activeTab]);
 
+  
+  const loadBodyStructures = async () => {
+    try{
+      setLoading(true);
+      setError(null);
+     
+      const response = await snomedService.getBodyStructurePaginated(pagination.currentPage, pageSize);
+
+      console.log('Fetched body structures:', response);
+      setBodyStructures(response.data || []);
+      setPagination(prev => ({
+          ...prev,
+          totalRecords: response.totalRecords || 0
+      }));
+    } catch (err) {
+      console.error('Failed to load body structures:', err);
+      setError(err instanceof Error ? err.message : 'Failed to load body structures');
+    } finally {
+      setLoading(false);
+    }
+  }
 
   const loadBodyRegions = async () => {
     try{
@@ -113,35 +137,6 @@ export function SNOMEDList({
       setLoading(false);
     }
   }
-
-
-  const mockBodyStructures: SnomedBodyStructure[] = useMemo(
-    () => [
-      {
-        snomedCode: '21483005',
-        displayName: 'Estrutura do coração',
-        structureType: 'Órgão',
-        description: 'Órgão muscular responsável pelo bombeamento de sangue',
-        bodyRegionCode: '302509004',
-        parentStructureCode: undefined,
-        isActive: true,
-        createdAt: new Date('2025-01-01'),
-        updatedAt: new Date('2025-01-01'),
-      },
-      {
-        snomedCode: '39607008',
-        displayName: 'Estrutura do pulmão',
-        structureType: 'Órgão',
-        description: 'Órgão responsável pela respiração',
-        bodyRegionCode: '302509004',
-        parentStructureCode: undefined,
-        isActive: true,
-        createdAt: new Date('2025-01-01'),
-        updatedAt: new Date('2025-01-01'),
-      },
-    ],
-    []
-  );
 
   const mockTopographicModifiers: SnomedTopographicalModifier[] = useMemo(
     () => [
@@ -486,7 +481,7 @@ export function SNOMEDList({
         value: 'body-structure',
         label: 'Estrutura do corpo',
         title: 'Estrutura do corpo',
-        data: mockBodyStructures,
+        data: bodyStructures,
         columns: bodyStructureColumns,
         action: {
           label: 'Adicionar',
@@ -528,7 +523,7 @@ export function SNOMEDList({
       topographicModifierColumns,
       clinicalConditionColumns,
       bodyRegions,
-      mockBodyStructures,
+      bodyStructures,
       mockTopographicModifiers,
       mockClinicalConditions,
       onBodyRegionAdd,
@@ -549,54 +544,119 @@ export function SNOMEDList({
     );
   };
 
-      if (error) {
-        return (
-            <div className="list-screen">
-                <div className="error-message" style={{ padding: '20px', textAlign: 'center', color: '#ef4444' }}>
-                    {error && activeTab === 'body-region' && <p>Erro ao carregar regiões do corpo: {error}</p>}
-                    {error && activeTab === 'body-structure' && <p>Erro ao carregar estruturas do corpo: {error}</p>}
-                    {error && activeTab === 'topographic-modifier' && <p>Erro ao carregar modificadores topográficos: {error}</p>}
-                    {error && activeTab === 'clinical-condition' && <p>Erro ao carregar condições clínicas: {error}</p>}
-                    <div style={{ marginTop: '10px', display: 'flex', gap: '10px', justifyContent: 'center' }}>
-                        {error && activeTab === 'body-region' && (
-                            <button
-                                onClick={loadBodyRegions}
-                                style={{
-                                    padding: '8px 16px',
-                                    backgroundColor: '#3b82f6',
-                                    color: 'white',
-                                    border: 'none',
-                                    borderRadius: '4px',
-                                    cursor: 'pointer'
-                                }}
-                            >
-                                Recarregar regiões do corpo
-                            </button>
-                        )}
-                    </div>
-                </div>
-            </div>
-        );
-    }
+  if (error) {
+      return (
+          <div className="list-screen">
+              <div className="error-message" style={{ padding: '20px', textAlign: 'center', color: '#ef4444' }}>
+                  {error && activeTab === 'body-region' && <p>Erro ao carregar regiões do corpo: {error}</p>}
+                  {error && activeTab === 'body-structure' && <p>Erro ao carregar estruturas do corpo: {error}</p>}
+                  {error && activeTab === 'topographic-modifier' && <p>Erro ao carregar modificadores topográficos: {error}</p>}
+                  {error && activeTab === 'clinical-condition' && <p>Erro ao carregar condições clínicas: {error}</p>}
+                  <div style={{ marginTop: '10px', display: 'flex', gap: '10px', justifyContent: 'center' }}>
+                      {error && activeTab === 'body-region' && (
+                          <button
+                              onClick={loadBodyRegions}
+                              style={{
+                                  padding: '8px 16px',
+                                  backgroundColor: '#3b82f6',
+                                  color: 'white',
+                                  border: 'none',
+                                  borderRadius: '4px',
+                                  cursor: 'pointer'
+                              }}
+                          >
+                              Recarregar regiões do corpo
+                          </button>
+                      )}
+                  </div>
+              </div>
+          </div>
+      );
+  }
 
 
   return (
     <div className="list-screen">
-      <TabbedTable
-        tabs={tabs}
-        selectedTab={activeTab}
-        search={{
-          placeholder: 'Buscar...',
-          filter: searchFilter,
-        }}
-        onTabChange={(tab)=>{
-          setActiveTab(tab as SnomedTabs);
-        }}
-        emptyMessage="Nenhum registro cadastrado."
-        emptySearchMessage="Nenhum registro encontrado com os critérios de busca."
-        striped
-        hoverable
-      />
+      {loading && (
+          <div style={{ padding: '20px', textAlign: 'center' }}>
+              {loading && activeTab === 'body-region' && 'Carregando regiões do corpo... '}
+              {loading && activeTab === 'body-structure' && 'Carregando estruturas do corpo...'}
+              {loading && activeTab === 'topographic-modifier' && 'Carregando modificadores topográficos...'}
+              {loading && activeTab === 'clinical-condition' && 'Carregando condições clínicas...'}
+          </div>
+      )}
+      {!loading && (
+          <TabbedTable
+              tabs={tabs}
+              search={{
+                  placeholder: 'Buscar...',
+                  filter: searchFilter,
+              }}
+              onTabChange={async (tab)=>{
+                  setActiveTab(tab as SnomedTabs);
+              }}
+              selectedTab={activeTab}
+              emptyMessage="Nenhum registro cadastrado."
+              emptySearchMessage="Nenhum registro encontrado com os critérios de busca."
+              striped
+              hoverable
+          />
+      )}
+
+       {!loading && pagination.totalRecords > pageSize && (
+                <div style={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    gap: '10px',
+                    padding: '20px',
+                    borderTop: '1px solid #e5e7eb'
+                }}>
+                    <span style={{ fontWeight: 'bold', marginRight: '10px' }}>
+                        {activeTab === 'body-region'&& <>Regiões do corpo:</>}
+                        {activeTab === 'body-structure'&& <>Estruturas do corpo:</>}
+                        {activeTab === 'topographic-modifier'&& <>Modificadores topográficos:</>}
+                        {activeTab === 'clinical-condition'&& <>Condições clínicas:</>}
+                    </span>
+                    <button
+                        onClick={() => setPagination(prev => ({
+                            ...prev,
+                            currentPage: Math.max(1, prev.currentPage - 1)
+                        }))}
+                        disabled={pagination.currentPage === 1}
+                        style={{
+                            padding: '8px 16px',
+                            backgroundColor: pagination.currentPage === 1 ? '#e5e7eb' : '#3b82f6',
+                            color: pagination.currentPage === 1 ? '#9ca3af' : 'white',
+                            border: 'none',
+                            borderRadius: '4px',
+                            cursor: pagination.currentPage === 1 ? 'not-allowed' : 'pointer'
+                        }}
+                    >
+                        Anterior
+                    </button>
+                    <span>
+                        Página {pagination.currentPage} de {Math.ceil(pagination.totalRecords / pageSize)}
+                    </span>
+                    <button
+                        onClick={() => setPagination(prev => ({
+                            ...prev,
+                            currentPage: Math.min(prev.currentPage + 1, Math.ceil(prev.totalRecords / pageSize))
+                        }))}
+                        disabled={pagination.currentPage >= Math.ceil(pagination.totalRecords / pageSize)}
+                        style={{
+                            padding: '8px 16px',
+                            backgroundColor: pagination.currentPage >= Math.ceil(pagination.totalRecords / pageSize) ? '#e5e7eb' : '#3b82f6',
+                            color: pagination.currentPage >= Math.ceil(pagination.totalRecords / pageSize) ? '#9ca3af' : 'white',
+                            border: 'none',
+                            borderRadius: '4px',
+                            cursor: pagination.currentPage >= Math.ceil(pagination.totalRecords / pageSize) ? 'not-allowed' : 'pointer'
+                        }}
+                    >
+                        Próxima
+                    </button>
+                </div>
+            )}
     </div>
   );
 }

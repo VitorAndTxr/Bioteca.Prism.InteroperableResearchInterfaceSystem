@@ -25,6 +25,8 @@ export interface SnomedBodyRegion {
 }
 
 
+
+
 export interface AddSnomedBodyRegionPayload extends Record<string, unknown>{
   /** SNOMED code (primary key) */
   snomedCode: string;
@@ -48,7 +50,7 @@ export interface SnomedBodyStructure {
   snomedCode: string;
 
   /** Body region code */
-  bodyRegionCode: string;
+  parentRegion: SnomedBodyRegion;
 
   /** Display name */
   displayName: string;
@@ -57,19 +59,30 @@ export interface SnomedBodyStructure {
   structureType: string;
 
   /** Parent structure code (for hierarchical structure) */
+  parentStructureCode?: SnomedBodyStructure;
+
+  /** Description */
+  description: string;
+}
+
+
+export interface AddSnomedBodyStructurePayload extends Record<string, unknown>{
+  /** SNOMED code (primary key) */
+  snomedCode: string;
+
+  /** Body region code */
+  bodyRegionCode: string;
+  /** Display name */
+  displayName: string;
+
+  /** Structure type */
+  type: string;
+  /** Parent structure code (for hierarchical structure) */
   parentStructureCode?: string;
 
   /** Description */
   description: string;
 
-  /** Whether this code is active */
-  isActive: boolean;
-
-  /** Creation timestamp */
-  createdAt?: Date;
-
-  /** Last update timestamp */
-  updatedAt?: Date;
 }
 
 /**

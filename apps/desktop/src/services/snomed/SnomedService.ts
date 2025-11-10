@@ -3,7 +3,9 @@ import { BaseService, type MiddlewareServices } from '../BaseService';
 import type {
     PaginatedResponse,
     SnomedBodyRegion,
-    AddSnomedBodyRegionPayload
+    AddSnomedBodyRegionPayload,
+    SnomedBodyStructure,
+    AddSnomedBodyStructurePayload
 } from '@iris/domain';
 
 
@@ -84,6 +86,8 @@ export class SnomedService extends BaseService {
         });
     }
 
+
+
     async getActiveBodyRegions(): Promise<SnomedBodyRegion[]> {
         return this.handleMiddlewareError(async () => {
             this.log('Fetching active body regions');
@@ -99,6 +103,85 @@ export class SnomedService extends BaseService {
             });
 
             this.log(`Retrieved ${response.length} active body regions`);
+
+            return response;
+        });
+    }
+
+    async getBodyStructurePaginated(
+        page: number = 1,
+        pageSize: number = 10
+    ): Promise<PaginatedResponse<SnomedBodyStructure>> {
+        return this.handleMiddlewareError(async () => {
+            this.log(`Fetching body structures (page: ${page}, pageSize: ${pageSize})`);
+            // Ensure we have an authenticated session
+            await this.ensureSession();
+            // Prepare pagination query parameters
+            const queryParams = new URLSearchParams({
+                page: page.toString(),
+                pageSize: pageSize.toString()
+            });
+            // Call backend API with pagination
+
+            const response = await this.middleware.invoke<Record<string, unknown>, PaginatedResponse<SnomedBodyStructure>>({
+                path: `/api/SNOMED/BodyStructure/GetAllBodyStructuresPaginate?${queryParams.toString()}`,
+                method: 'GET',
+                payload: {}
+            }); 
+            // Debug: Log full decrypted response
+            console.log('[SnomedService] 🔍 Full decrypted response:', JSON.stringify(response, null, 2))
+            this.log(`Retrieved ${response.data?.length || 0} body structures`)
+            // Convert middleware response to domain types
+            // Here we assume the response data is already in the correct format    
+            // If conversion is needed, implement it similarly to body regions
+            // For now, we directly use the response data
+            const bodyStructures = response.data ||[];
+            return {
+                data: bodyStructures,
+                currentRecord: response.currentPage || 0,
+                pageSize: response.pageSize || bodyStructures.length,
+                totalRecords: response.totalRecords || bodyStructures.length
+            };
+        });
+    }
+
+    async createBodyStructure(
+        bodyStructure: AddSnomedBodyStructurePayload
+    ): Promise<SnomedBodyStructure> {
+        return this.handleMiddlewareError(async () => {
+            this.log('Creating body structure');
+
+            // Ensure we have an authenticated session
+            await this.ensureSession();
+
+            // Call backend API to create the body structure
+            const response = await this.middleware.invoke<AddSnomedBodyStructurePayload, SnomedBodyStructure>({
+                path: `/api/SNOMED/BodyStructure/New`,
+                method: 'POST',
+                payload: bodyStructure
+            });
+
+            this.log(`Created body structure with code: ${response.snomedCode}`);
+
+            return response;
+        });
+    }
+
+    async getActiveBodyStructures(): Promise<SnomedBodyStructure[]> {
+        return this.handleMiddlewareError(async () => {
+            this.log('Fetching active body structures');
+
+            // Ensure we have an authenticated session
+            await this.ensureSession();
+
+            // Call backend API to get active body structures
+            const response = await this.middleware.invoke<Record<string, unknown>, SnomedBodyStructure[]>({
+                path: `/api/SNOMED/BodyStructure/GetActiveBodyStructures`,
+                method: 'GET',
+                payload: {}
+            });
+
+            this.log(`Retrieved ${response.length} active body structures`);
 
             return response;
         });
