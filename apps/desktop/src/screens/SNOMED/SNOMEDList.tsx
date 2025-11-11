@@ -78,6 +78,9 @@ export function SNOMEDList({
 
   const [bodyRegions, setBodyRegions] = useState<SnomedBodyRegion[]>([]);
   const [bodyStructures, setBodyStructures] = useState<SnomedBodyStructure[]>([]);
+  const [topographicModifiers, setTopographicModifiers] = useState<SnomedTopographicalModifier[]>([]);
+  const [clinicalConditions, setClinicalConditions] = useState<ClinicalCondition[]>([]);
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -88,6 +91,12 @@ export function SNOMEDList({
         break;
       case 'body-structure':
         loadBodyStructures();
+        break;
+      case 'topographic-modifier':
+        loadTopographicModifiers();
+        break;
+      case 'clinical-condition':
+        loadClinicalConditions();
         break;
       default:
         break;
@@ -138,47 +147,46 @@ export function SNOMEDList({
     }
   }
 
-  const mockTopographicModifiers: SnomedTopographicalModifier[] = useMemo(
-    () => [
-      {
-        code: '24028007',
-        displayName: 'Direito',
-        category: 'Lateralidade',
-        description: 'Lado direito do corpo',
-        isActive: true,
-      },
-      {
-        code: '7771000',
-        displayName: 'Esquerdo',
-        category: 'Lateralidade',
-        description: 'Lado esquerdo do corpo',
-        isActive: true,
-      },
-    ],
-    []
-  );
+  const loadTopographicModifiers = async () => {
+    try{
+      setLoading(true);
+      setError(null);
+      // Placeholder for real data fetching
 
-  const mockClinicalConditions: ClinicalCondition[] = useMemo(
-    () => [
-      {
-        snomedCode: '38341003',
-        displayName: 'Hipertensão arterial',
-        description: 'Pressão arterial elevada persistente',
-        isActive: true,
-        createdAt: new Date('2025-01-01'),
-        updatedAt: new Date('2025-01-01'),
-      },
-      {
-        snomedCode: '73211009',
-        displayName: 'Diabetes mellitus',
-        description: 'Distúrbio metabólico caracterizado por hiperglicemia',
-        isActive: true,
-        createdAt: new Date('2025-01-01'),
-        updatedAt: new Date('2025-01-01'),
-      },
-    ],
-    []
-  );
+      const response = await snomedService.getTopographicalModifiersPaginated(pagination.currentPage, pageSize);
+      console.log('Fetched topographic modifiers:', response);
+      setTopographicModifiers(response.data || []);
+      setPagination(prev => ({
+          ...prev,
+          totalRecords: response.totalRecords || 0
+      }));
+    } catch (err) {
+      console.error('Failed to load topographic modifiers:', err);
+      setError(err instanceof Error ? err.message : 'Failed to load topographic modifiers');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const loadClinicalConditions = async () => {
+    try{
+      setLoading(true);
+      setError(null);
+      // Placeholder for real data fetching
+      const response = await snomedService.getClinicalConditionsPaginated(pagination.currentPage, pageSize);
+      console.log('Fetched clinical conditions:', response);
+      setClinicalConditions(response.data || []);
+      setPagination(prev => ({
+          ...prev,
+          totalRecords: response.totalRecords || 0
+      }));
+    } catch (err) {
+      console.error('Failed to load clinical conditions:', err);
+      setError(err instanceof Error ? err.message : 'Failed to load clinical conditions');
+    } finally {
+      setLoading(false);
+    }
+  }
 
   // Column definitions for Body Region
   const bodyRegionColumns: DataTableColumn<SnomedBodyRegion>[] = useMemo(
@@ -336,9 +344,9 @@ export function SNOMEDList({
   const topographicModifierColumns: DataTableColumn<SnomedTopographicalModifier>[] = useMemo(
     () => [
       {
-        id: 'code',
+        id: 'snomedCode',
         label: 'Código SNOMED',
-        accessor: 'code',
+        accessor: 'snomedCode',
         sortable: true,
         width: '20%',
       },
@@ -494,7 +502,7 @@ export function SNOMEDList({
         value: 'topographic-modifier',
         label: 'Modificador topográfico',
         title: 'Modificador topográfico',
-        data: mockTopographicModifiers,
+        data: topographicModifiers,
         columns: topographicModifierColumns,
         action: {
           label: 'Adicionar',
@@ -507,7 +515,7 @@ export function SNOMEDList({
         value: 'clinical-condition',
         label: 'Condição clínica',
         title: 'Condição clínica',
-        data: mockClinicalConditions,
+        data: clinicalConditions,
         columns: clinicalConditionColumns,
         action: {
           label: 'Adicionar',
@@ -524,8 +532,8 @@ export function SNOMEDList({
       clinicalConditionColumns,
       bodyRegions,
       bodyStructures,
-      mockTopographicModifiers,
-      mockClinicalConditions,
+      topographicModifiers,
+      clinicalConditions,
       onBodyRegionAdd,
       onBodyStructureAdd,
       onTopographicModifierAdd,
@@ -566,6 +574,51 @@ export function SNOMEDList({
                               }}
                           >
                               Recarregar regiões do corpo
+                          </button>
+                      )}
+                      {error && activeTab === 'body-structure' && (
+                          <button
+                              onClick={loadBodyStructures}
+                              style={{
+                                  padding: '8px 16px',
+                                  backgroundColor: '#3b82f6',
+                                  color: 'white',
+                                  border: 'none',
+                                  borderRadius: '4px',
+                                  cursor: 'pointer'
+                              }}
+                          >
+                              Recarregar estruturas do corpo
+                          </button>
+                      )}
+                      {error && activeTab === 'topographic-modifier' && (
+                          <button
+                              onClick={loadTopographicModifiers}
+                              style={{
+                                  padding: '8px 16px',
+                                  backgroundColor: '#3b82f6',
+                                  color: 'white',
+                                  border: 'none',
+                                  borderRadius: '4px',
+                                  cursor: 'pointer'
+                              }}
+                          >
+                              Recarregar modificadores topográficos
+                          </button>
+                      )}
+                      {error && activeTab === 'clinical-condition' && (
+                          <button
+                              onClick={loadClinicalConditions}
+                              style={{
+                                  padding: '8px 16px',
+                                  backgroundColor: '#3b82f6',
+                                  color: 'white',
+                                  border: 'none',
+                                  borderRadius: '4px',
+                                  cursor: 'pointer'
+                              }}
+                          >
+                              Recarregar condições clínicas
                           </button>
                       )}
                   </div>

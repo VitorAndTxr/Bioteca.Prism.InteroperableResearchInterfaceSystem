@@ -89,9 +89,9 @@ export interface AddSnomedBodyStructurePayload extends Record<string, unknown>{
  * Represents a SNOMED CT topographical modifier code
  * Maps to: Bioteca.Prism.Domain.Entities.Snomed.SnomedTopographicalModifier
  */
-export interface SnomedTopographicalModifier {
+export interface SnomedTopographicalModifier extends Record<string, unknown>{
   /** SNOMED code (primary key) */
-  code: string;
+  snomedCode: string;
 
   /** Display name */
   displayName: string;
@@ -101,16 +101,13 @@ export interface SnomedTopographicalModifier {
 
   /** Description */
   description: string;
-
-  /** Whether this code is active */
-  isActive: boolean;
 }
 
 /**
  * Represents a SNOMED CT clinical condition code
  * Maps to: Bioteca.Prism.Domain.Entities.Clinical.ClinicalCondition
  */
-export interface ClinicalCondition {
+export interface ClinicalCondition extends Record<string, unknown>{
   /** SNOMED CT code (primary key) */
   snomedCode: string;
 
@@ -119,13 +116,4 @@ export interface ClinicalCondition {
 
   /** Detailed description of the clinical condition */
   description: string;
-
-  /** Whether this condition is currently active in SNOMED CT */
-  isActive: boolean;
-
-  /** When this condition was created */
-  createdAt?: Date;
-
-  /** When this condition was last updated */
-  updatedAt?: Date;
 }

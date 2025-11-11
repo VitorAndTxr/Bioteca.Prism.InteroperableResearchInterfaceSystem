@@ -5,7 +5,9 @@ import type {
     SnomedBodyRegion,
     AddSnomedBodyRegionPayload,
     SnomedBodyStructure,
-    AddSnomedBodyStructurePayload
+    AddSnomedBodyStructurePayload,
+    SnomedTopographicalModifier,
+    ClinicalCondition
 } from '@iris/domain';
 
 
@@ -42,7 +44,7 @@ export class SnomedService extends BaseService {
 
             // Call backend API with pagination
             const response = await this.middleware.invoke<Record<string, unknown>, PaginatedResponse<SnomedBodyRegion>>({
-                path: `/api/SNOMED/BodyRegion/GetAllBodyRegionsPaginate?${queryParams.toString()}`,
+                path: `/api/SNOMED/BodyRegion/GetAllBodyRegionsPaginated?${queryParams.toString()}`,
                 method: 'GET',
                 payload: {}
                 });
@@ -124,7 +126,7 @@ export class SnomedService extends BaseService {
             // Call backend API with pagination
 
             const response = await this.middleware.invoke<Record<string, unknown>, PaginatedResponse<SnomedBodyStructure>>({
-                path: `/api/SNOMED/BodyStructure/GetAllBodyStructuresPaginate?${queryParams.toString()}`,
+                path: `/api/SNOMED/BodyStructure/GetAllBodyStructuresPaginated?${queryParams.toString()}`,
                 method: 'GET',
                 payload: {}
             }); 
@@ -183,6 +185,126 @@ export class SnomedService extends BaseService {
 
             this.log(`Retrieved ${response.length} active body structures`);
 
+            return response;
+        });
+    }
+
+
+    async getActiveTopographicalModifiers(): Promise<SnomedTopographicalModifier[]> {
+        return this.handleMiddlewareError(async () => {
+            this.log('Fetching active topographical modifiers');
+            // Ensure we have an authenticated session
+            await this.ensureSession();
+
+            // Call backend API to get active topographical modifiers
+            const response = await this.middleware.invoke<Record<string, unknown>, SnomedTopographicalModifier[]>({
+                path: `/api/SNOMED/TopographicalModifier/GetActiveTopographicalModifiers`, 
+                method: 'GET',
+                payload: {}
+            }); 
+            this.log(`Retrieved ${response.length} active topographical modifiers`);
+            return response;
+        });
+    }   
+
+    async createTopographicalModifier(
+        topographicalModifier: SnomedTopographicalModifier
+    ): Promise<SnomedTopographicalModifier> {
+        return this.handleMiddlewareError(async () => {
+            this.log('Creating topographical modifier');
+            // Ensure we have an authenticated session
+            await this.ensureSession();
+            // Call backend API to create the topographical modifier
+            const response = await this.middleware.invoke<SnomedTopographicalModifier, SnomedTopographicalModifier>({
+                path: `/api/SNOMED/TopographicalModifier/New`,
+                method: 'POST',
+                payload: topographicalModifier
+            });
+
+            this.log(`Created topographical modifier with code: ${response.snomedCode}`);
+            return response;
+        });
+    }
+
+    async getTopographicalModifiersPaginated(
+        page: number = 1,
+        pageSize: number = 10
+    ): Promise<PaginatedResponse<SnomedTopographicalModifier>> {
+        return this.handleMiddlewareError(async () => {
+            this.log(`Fetching topographical modifiers (page: ${page}, pageSize: ${pageSize})`);    
+            // Ensure we have an authenticated session
+            await this.ensureSession();
+            // Prepare pagination query parameters
+            const queryParams = new URLSearchParams({
+                page: page.toString(),
+                pageSize: pageSize.toString()   
+            });
+            // Call backend API with pagination
+            const response = await this.middleware.invoke<Record<string, unknown>, PaginatedResponse<SnomedTopographicalModifier>>({
+                path: `/api/SNOMED/TopographicalModifier/GetAllTopographicalModifiersPaginated?${queryParams.toString()}`,
+                method: 'GET',
+                payload: {}
+            });
+            this.log(`Retrieved ${response.data?.length} topographical modifiers (page: ${page})`);
+            return response;
+        });
+    }   
+
+
+    async getActiveClinicalConditions(): Promise<ClinicalCondition[]> {
+        return this.handleMiddlewareError(async () => {
+            this.log('Fetching active clinical conditions');
+            // Ensure we have an authenticated session
+            await this.ensureSession();
+            // Call backend API to get active clinical conditions
+            const response = await this.middleware.invoke<Record<string, unknown>, ClinicalCondition[]>({
+                path: `/api/SNOMED/ClinicalCondition/GetActiveClinicalConditions`,
+                method: 'GET',
+                payload: {}
+            });
+            this.log(`Retrieved ${response.length} active clinical conditions`);
+            return response;
+        });
+    }
+
+    async createClinicalCondition(
+        clinicalCondition: ClinicalCondition
+    ): Promise<ClinicalCondition> { 
+        return this.handleMiddlewareError(async () => {
+            this.log('Creating clinical condition');
+            // Ensure we have an authenticated session
+            await this.ensureSession();
+            // Call backend API to create the clinical condition
+            const response = await this.middleware.invoke<ClinicalCondition, ClinicalCondition>({  
+                path: `/api/SNOMED/ClinicalCondition/New`,
+                method: 'POST',
+                payload: clinicalCondition
+            });
+            this.log(`Created clinical condition with SNOMED code: ${response.snomedCode}`);
+            return response;
+        });
+    }
+
+    async getClinicalConditionsPaginated(
+        page: number = 1,
+        pageSize: number = 10
+    ): Promise<PaginatedResponse<ClinicalCondition>> {
+        return this.handleMiddlewareError(async () => {
+            this.log(`Fetching clinical conditions (page: ${page}, pageSize: ${pageSize})`);
+            // Ensure we have an authenticated session
+            await this.ensureSession();
+            // Prepare pagination query parameters
+            const queryParams = new URLSearchParams({
+                page: page.toString(),
+                pageSize: pageSize.toString()
+            });
+            // Call backend API with pagination
+            const response = await this.middleware.invoke<Record<string, unknown>, PaginatedResponse<ClinicalCondition>>({
+                path: `/api/SNOMED/ClinicalCondition/GetAllClinicalConditionsPaginated?${queryParams.toString()}`,
+                method: 'GET',
+                payload: {}
+            });
+            this.log(`Retrieved ${response.data?.length} clinical conditions (page: ${page})`);
             return response;
         });
     }

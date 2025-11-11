@@ -20,6 +20,7 @@ import { Button } from '../../design-system/components/button';
 import { ArrowLeftIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
 import { mainMenuItems } from '../../config/menu';
 import type { SnomedTopographicalModifier } from '@iris/domain';
+import { snomedService } from '../../services/middleware';
 import '../../styles/shared/AddForm.css';
 
 export interface AddTopographicModifierFormProps {
@@ -46,6 +47,9 @@ export function AddTopographicModifierForm({ handleNavigation, onSave, onCancel 
     // Validation state
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [touched, setTouched] = useState<Record<string, boolean>>({});
+
+    const [submitting, setSubmitting] = useState(false);
+    const [submitError, setSubmitError] = useState<string | null>(null);
 
     // Mark field as touched
     const handleBlur = (field: string) => {
@@ -77,7 +81,7 @@ export function AddTopographicModifierForm({ handleNavigation, onSave, onCancel 
     };
 
     // Handle form submission
-    const handleSubmit = (e: FormEvent) => {
+    const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
 
         // Mark all required fields as touched
@@ -92,20 +96,26 @@ export function AddTopographicModifierForm({ handleNavigation, onSave, onCancel 
             return;
         }
 
-        const modifierData: Partial<SnomedTopographicalModifier> = {
-            code,
+        const modifierData: SnomedTopographicalModifier = {
+            snomedCode: code,
             category,
             displayName,
-            description,
-            isActive: true,
+            description
         };
 
-        if (onSave) {
-            onSave(modifierData);
-        } else {
-            console.log('Topographic modifier data to save:', modifierData);
-            // Navigate back to SNOMED list
+        try{
+            setSubmitting(true);
+            setSubmitError(null);
+
+            const createdModifier = await snomedService.createTopographicalModifier(modifierData);
+
+            console.log('Created Topographical Modifier:', createdModifier);
+
             handleNavigation('/snomed');
+        } catch (error) {
+            setSubmitError(error instanceof Error ? error.message : 'Failed to save topographical modifier');
+        } finally {
+            setSubmitting(false);
         }
     };
 
@@ -192,6 +202,7 @@ export function AddTopographicModifierForm({ handleNavigation, onSave, onCancel 
                             onClick={handleCancel}
                             icon={<ArrowLeftIcon className="w-5 h-5" />}
                             iconPosition="left"
+                            disabled={submitting}
                         >
                             Voltar
                         </Button>
@@ -201,8 +212,9 @@ export function AddTopographicModifierForm({ handleNavigation, onSave, onCancel 
                             size="big"
                             icon={<CheckCircleIcon className="w-5 h-5" />}
                             iconPosition="left"
+                            disabled={submitting}
                         >
-                            Salvar modificador topográfico
+                            {submitting ? 'Salvando...' : 'Salvar modificador topográfico'}
                         </Button>
                     </div>
                 </form>

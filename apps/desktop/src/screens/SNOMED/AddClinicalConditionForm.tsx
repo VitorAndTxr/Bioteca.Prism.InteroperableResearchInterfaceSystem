@@ -19,6 +19,8 @@ import { ArrowLeftIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
 import { mainMenuItems } from '../../config/menu';
 import type { ClinicalCondition } from '@iris/domain';
 import '../../styles/shared/AddForm.css';
+import { snomedService } from '../../services/middleware';
+
 
 export interface AddClinicalConditionFormProps {
     handleNavigation: (path: string) => void;
@@ -35,6 +37,9 @@ export function AddClinicalConditionForm({ handleNavigation, onSave, onCancel }:
     // Validation state
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [touched, setTouched] = useState<Record<string, boolean>>({});
+
+    const [submitting, setSubmitting] = useState(false);
+    const [submitError, setSubmitError] = useState<string | null>(null);
 
     // Mark field as touched
     const handleBlur = (field: string) => {
@@ -62,7 +67,7 @@ export function AddClinicalConditionForm({ handleNavigation, onSave, onCancel }:
     };
 
     // Handle form submission
-    const handleSubmit = (e: FormEvent) => {
+    const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
 
         // Mark all required fields as touched
@@ -76,19 +81,25 @@ export function AddClinicalConditionForm({ handleNavigation, onSave, onCancel }:
             return;
         }
 
-        const conditionData: Partial<ClinicalCondition> = {
+        const conditionData: ClinicalCondition = {
             snomedCode,
             displayName,
-            description,
-            isActive: true,
+            description
         };
 
-        if (onSave) {
-            onSave(conditionData);
-        } else {
-            console.log('Clinical condition data to save:', conditionData);
-            // Navigate back to SNOMED list
+        try{
+            setSubmitting(true);
+            setSubmitError(null);  
+
+            const createdClinicalCondition = await snomedService.createClinicalCondition(conditionData);
+
+            console.log('Created Clinical Condition:', createdClinicalCondition);
+
             handleNavigation('/snomed');
+        } catch (error) {
+            setSubmitError(error instanceof Error ? error.message : 'Failed to save clinical condition');
+        } finally {
+            setSubmitting(false);
         }
     };
 
@@ -163,6 +174,7 @@ export function AddClinicalConditionForm({ handleNavigation, onSave, onCancel }:
                             onClick={handleCancel}
                             icon={<ArrowLeftIcon className="w-5 h-5" />}
                             iconPosition="left"
+                            disabled={submitting}
                         >
                             Voltar
                         </Button>
@@ -172,8 +184,9 @@ export function AddClinicalConditionForm({ handleNavigation, onSave, onCancel }:
                             size="big"
                             icon={<CheckCircleIcon className="w-5 h-5" />}
                             iconPosition="left"
+                            disabled={submitting}
                         >
-                            Salvar condição clínica
+                            {submitting ? 'Salvando...' : 'Salvar condição clínica'}
                         </Button>
                     </div>
                 </form>
