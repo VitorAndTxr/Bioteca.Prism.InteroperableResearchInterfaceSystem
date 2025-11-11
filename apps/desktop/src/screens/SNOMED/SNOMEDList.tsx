@@ -92,7 +92,7 @@ export function SNOMEDList({
       default:
         break;
     }
-    }, [pagination.currentPage, pageSize, pagination.totalRecords, activeTab]);
+    }, [pagination.currentPage, pageSize,  activeTab]);
 
   
   const loadBodyStructures = async () => {

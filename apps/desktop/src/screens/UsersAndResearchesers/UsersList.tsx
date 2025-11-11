@@ -72,7 +72,7 @@ export function UsersList({
             default:
                 break;
         }
-    }, [pagination.currentPage, pageSize, pagination.totalRecords, activeTab]);
+    }, [pagination.currentPage, pageSize, activeTab]);
 
     const loadUsers = async () => {
         try {

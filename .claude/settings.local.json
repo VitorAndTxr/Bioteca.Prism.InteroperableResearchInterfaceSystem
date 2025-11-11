@@ -34,7 +34,8 @@
       "Read(//d/Repos/Faculdade/PRISM/InteroperableResearchNode/**)",
       "SlashCommand(/update-figma:*)",
       "mcp__playwright__browser_press_key",
-      "Bash(test:*)"
+      "Bash(test:*)",
+      "mcp__playwright__browser_network_requests"
     ],
     "deny": [],
     "ask": []

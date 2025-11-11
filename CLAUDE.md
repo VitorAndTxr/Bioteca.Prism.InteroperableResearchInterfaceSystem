@@ -49,17 +49,6 @@ The PRISM framework consists of four interconnected components:
 4. **Future Data Submission**: Will communicate with Research Node for data persistence
 5. **User Experience**: Focused on researcher usability and real-time feedback
 
-### Data Flow (Complete Research Session)
-
-```
-1. Researcher prepares session → This App (React Native UI)
-2. Configure FES parameters → Bluetooth JSON to ESP32 Device
-3. Start session → ESP32 begins sEMG monitoring
-4. Real-time streaming → ESP32 sends biosignal packets to This App
-5. Visualization → React Native charts display sEMG data
-6. Data submission → This App sends to Research Node (future implementation)
-```
-
 ### Navigation for AI Assistants
 
 When working on this codebase:
@@ -77,298 +66,93 @@ When working on this codebase:
 
 **Role in PRISM Ecosystem**: Represents the **Application** abstraction - general-purpose software that adds context (volunteer info, session metadata, research projects), controls device hardware via Bluetooth, visualizes real-time biosignals, manages user authentication, and submits data to Research Nodes for persistence and federation.
 
-## Technology Stack
+## Technology Stack Summary
 
 ### Mobile App (React Native + Expo)
 - **Framework**: React Native 0.76.9 with Expo ~52.0.47
 - **Language**: TypeScript ~5.9.2 (strict mode enabled)
 - **Platforms**: Android (primary), Web
-- **Key Dependencies**:
-  - `react-native-bluetooth-classic` - Bluetooth SPP communication
-  - `react-native-gifted-charts` - Real-time sEMG visualization
-  - `expo-file-system` + `expo-sharing` - CSV data export
+- **Key Features**: Bluetooth SPP communication, real-time sEMG visualization, CSV data export
 
 ### Desktop App (Electron + Vite + React)
 - **Framework**: Electron 28.3.3 + Vite 6.0.7 + React 18.3.1
 - **Language**: TypeScript ~5.9.2 (strict mode enabled)
 - **Platforms**: Windows, macOS, Linux
-- **Key Dependencies**:
-  - `@heroicons/react` v2.2.0 - **All icons use Heroicons library**
-  - `react-router-dom` v7.1.3 - Application routing
-  - `recharts` v2.15.0 - Data visualization
-  - `@storybook/react-vite` - Component documentation (8 stories)
+- **Key Features**: 16 reusable UI components, Storybook documentation, user/researcher management
 
 ### Shared Packages
-- **@iris/domain** - Shared TypeScript types and models (User, Auth, Session, etc.)
-- **@iris/middleware** - Authentication and secure communication middleware ✅
-  - UserAuthService for login/logout/token refresh
-  - Encrypted HTTP client with automatic channel management
-  - 4-phase handshake with cryptographic authentication
-  - Secure token storage (Electron + React Native)
+- **@iris/domain** - Shared TypeScript types and models
+- **@iris/middleware** - Authentication and secure communication (4-phase handshake)
 - **@iris/ui-components** - Shared components (future)
 
-## Monorepo Architecture
+**Detailed Technology Stack**: See `docs/architecture/TECHNOLOGY_STACK.md`
 
-### Project Structure (Updated October 2025)
+---
 
-```
-IRIS/
-├── apps/
-│   ├── mobile/              # React Native (Expo) - Device control
-│   │   └── src/
-│   │       ├── context/     # BluetoothContext (protocol implementation)
-│   │       ├── screens/     # HomeScreen, StreamingScreen, StreamConfigScreen
-│   │       ├── components/  # SEMGChart (real-time visualization)
-│   │       ├── hooks/       # useStreamData
-│   │       ├── utils/       # csvExport, formatters
-│   │       └── types/       # Mobile-specific types
-│   │
-│   └── desktop/             # Electron + Vite + React - Data management
-│       └── src/
-│           ├── design-system/
-│           │   └── components/  # 16 reusable UI components ✅
-│           │       ├── app-layout/      ├── avatar/
-│           │       ├── button/          ├── button-group/
-│           │       ├── data-table/      ├── datepicker/
-│           │       ├── dropdown/        ├── header/
-│           │       ├── input/           ├── modal/
-│           │       ├── password/        ├── search-bar/
-│           │       ├── sidebar/         ├── toast/
-│           │       └── typography/
-│           ├── context/         # AuthContext ✅
-│           ├── screens/         # Login, Home, UsersAndResearchers ✅
-│           ├── services/        # AuthService (real + middleware) ✅
-│           ├── storage/         # ElectronSecureStorage ✅
-│           ├── config/          # menu.ts ✅
-│           ├── stories/         # Storybook examples (8 stories) ✅
-│           ├── App.tsx          # Main app component (routing) ✅
-│           └── main.tsx         # React entry point ✅
-│
-├── packages/
-│   ├── domain/              # Shared types (User, Auth, Session, etc.) ✅
-│   ├── middleware/          # Authentication & secure communication ✅
-│   │   ├── src/auth/        # UserAuthService, login/logout/refresh
-│   │   ├── src/http/        # EncryptedHttpClient, automatic encryption
-│   │   ├── src/crypto/      # CryptoDriver, WebCrypto integration
-│   │   ├── src/channel/     # ChannelManager, ECDH key exchange
-│   │   ├── src/session/     # SessionManager, token management
-│   │   ├── src/storage/     # SecureStorage interface
-│   │   ├── src/service/     # ResearchNodeMiddleware, 4-phase handshake
-│   │   └── src/context/     # ResearchNodeMiddlewareContext (React)
-│   └── ui-components/       # Shared components (future)
-│
-└── docs/                    # Comprehensive documentation
-```
+## Quick Navigation Guide
 
-### Key Structural Changes (October 2025)
+### By Role
 
-**Desktop App Reorganization:**
-- ✅ **Flattened structure**: Moved from `src/renderer/` to `src/`
-- ✅ **Main app**: Now `src/App.tsx` (was `src/renderer/App.tsx`)
-- ✅ **Entry point**: `src/main.tsx`
-- ✅ **Context providers**: Added `src/context/AuthContext.tsx`
-- ✅ **Services layer**: Added `src/services/` with BaseService pattern
-  - ✅ **BaseService**: Abstract class for middleware integration (296 lines)
-  - ✅ **UserService**: User management with pagination (318 lines)
-  - ✅ **AuthService**: Authentication (RealAuthService adapter)
-- ✅ **Configuration**: Added `src/config/menu.ts`
-- ✅ **Design system**: 16 components in `src/design-system/components/`
-- ✅ **Storybook**: Full setup with 8 component stories
-- ✅ **Heroicons**: All SVG icons replaced with @heroicons/react library
-- ✅ **Component reuse**: Eliminated duplicate code, following DRY principle
-- ✅ **Authentication**: Login/logout fully functional with backend integration
+**New Developer** → Start Here:
+1. Setup: `docs/setup/QUICK_START.md`
+2. Architecture: `docs/architecture/ARCHITECTURE_OVERVIEW.md`
+3. Development: `docs/development/DEVELOPMENT_GUIDE.md`
 
-**Mobile App:**
-- ✅ **Streaming feature**: Complete real-time sEMG visualization (215Hz)
-- ✅ **CSV Export**: Full data export functionality
-- ✅ **Bluetooth Protocol**: All 14 message codes implemented
+**Backend Integration** → Focus On:
+- Middleware: `docs/api/MIDDLEWARE_API.md`
+- Services: `docs/api/SERVICES_API.md`
+- Authentication: `docs/features/AUTHENTICATION.md`
 
-### Service Layer Architecture (Desktop)
+**Device Integration** → Focus On:
+- Bluetooth Protocol: `docs/api/BLUETOOTH_COMMANDS.md`
+- Device Communication: `docs/features/BLUETOOTH_INTEGRATION.md`
+- Mobile App: `docs/development/MOBILE_APP_GUIDE.md`
 
-The desktop application uses a **service layer pattern** to standardize interaction with the InteroperableResearchNode backend through the middleware.
+**Desktop UI Development** → Focus On:
+- Design System: `docs/development/DESIGN_SYSTEM.md`
+- Component Library: `apps/desktop/src/design-system/components/`
+- Storybook: `apps/desktop/src/stories/`
 
-#### BaseService Abstract Class
+**AI Assistant (Claude Code)** → Reference:
+- Documentation Standards: `docs/DOCUMENTATION_GUIDELINES.md`
+- Code Patterns: `docs/development/CODE_PATTERNS.md`
+- Architecture: `docs/architecture/`
+- API Reference: `docs/api/`
 
-All services extend `BaseService` which provides:
+### By Topic
 
-**Core Functionality:**
-- **Dependency Injection**: Middleware services (HttpClient, CryptoDriver, SessionManager, etc.)
-- **Session Management**: Automatic `ensureSession()` before API calls
-- **Error Handling**: Standardized `handleMiddlewareError()` with AuthError conversion
-- **Logging**: Debug logging with service name prefixes
-- **Lifecycle Hooks**: `initialize()` and `dispose()` methods
+**Architecture & Design**:
+- `docs/architecture/ARCHITECTURE_OVERVIEW.md` - System design and components
+- `docs/architecture/MONOREPO_STRUCTURE.md` - Project organization
+- `docs/architecture/STATE_MANAGEMENT.md` - Context providers and data flow
 
-**Pattern:**
-```typescript
-import { BaseService, type MiddlewareServices } from './BaseService';
+**Development Workflows**:
+- `docs/development/DEVELOPMENT_GUIDE.md` - Main development workflow
+- `docs/development/CODE_PATTERNS.md` - Common patterns and examples
+- `docs/development/TYPESCRIPT_PATTERNS.md` - TypeScript best practices
 
-export class MyService extends BaseService {
-    constructor(services: MiddlewareServices) {
-        super(services, { serviceName: 'MyService', debug: true });
-    }
+**API Reference**:
+- `docs/api/BLUETOOTH_COMMANDS.md` - Complete Bluetooth protocol reference
+- `docs/api/SERVICES_API.md` - Service layer API reference
+- `docs/api/MIDDLEWARE_API.md` - Middleware API reference
+- `docs/api/CONTEXT_API.md` - Context providers reference
 
-    async myOperation() {
-        return this.handleMiddlewareError(async () => {
-            await this.ensureSession(); // Automatic 4-phase handshake
-            const response = await this.middleware.invoke<TReq, TRes>({
-                path: '/api/endpoint',
-                method: 'GET',
-                payload: {}
-            });
-            return response;
-        });
-    }
-}
-```
+**Features**:
+- `docs/features/BLUETOOTH_INTEGRATION.md` - Device communication guide
+- `docs/features/AUTHENTICATION.md` - Authentication implementation
+- `docs/features/USER_MANAGEMENT.md` - User/researcher management
+- `docs/features/DATA_VISUALIZATION.md` - Charts and real-time display
 
-#### Available Services
+**Testing & Troubleshooting**:
+- `docs/development/TESTING_GUIDE.md` - Testing strategy
+- `docs/troubleshooting/COMMON_ISSUES.md` - Known issues and solutions
+- `docs/troubleshooting/DEBUGGING_GUIDE.md` - Debugging tips
 
-**UserService** (`apps/desktop/src/services/UserService.ts`):
-- ✅ **getUsers(page, pageSize)** - Paginated user listing
-  - Backend: `GET /api/user/GetUsers?page=1&pageSize=10`
-  - Returns: `PaginatedResponse<User>`
-  - Handles DTO conversion (PascalCase ↔ camelCase)
-- ✅ **createUser(userData)** - User creation
-  - Backend: `POST /api/user/New`
-  - Validation: login, password (min 8 chars), role, researcherId
-  - Returns: `User`
-
-**Usage Example:**
-```typescript
-import { getMiddlewareServices } from '@/services/middleware';
-import { UserService } from '@/services/UserService';
-
-// Initialize
-const services = getMiddlewareServices();
-const userService = new UserService(services);
-
-// Get users with pagination
-const { data, pagination } = await userService.getUsers(1, 10);
-console.log(`Page 1 of ${Math.ceil(pagination.totalRecords / pagination.pageSize)}`);
-
-// Create new user
-const newUser = await userService.createUser({
-    login: 'researcher@example.com',
-    password: 'SecurePassword123',
-    role: UserRole.RESEARCHER,
-    researcherId: 'abc-123'
-});
-```
-
-#### Creating New Services
-
-Follow this pattern when creating new services:
-
-1. **Create Service Class**:
-   ```typescript
-   export class MyService extends BaseService {
-       constructor(services: MiddlewareServices) {
-           super(services, { serviceName: 'MyService', debug: true });
-       }
-
-       async myMethod(): Promise<ResultType> {
-           return this.handleMiddlewareError(async () => {
-               await this.ensureSession();
-               // Call middleware
-               return result;
-           });
-       }
-   }
-   ```
-
-2. **Define Domain Types** (in `packages/domain/src/models/`):
-   ```typescript
-   export interface MyDomainModel {
-       id: string;
-       name: string;
-   }
-   ```
-
-3. **Define Middleware DTOs** (internal to service):
-   ```typescript
-   interface MiddlewareMyDTO {
-       id: string;
-       name: string;
-   }
-   ```
-
-4. **Implement DTO Conversion**:
-   ```typescript
-   private convertToDomain(dto: MiddlewareMyDTO): MyDomainModel {
-       return {
-           id: dto.id,
-           name: dto.name
-       };
-   }
-   ```
-
-5. **Override Error Handling** (optional):
-   ```typescript
-   protected convertToAuthError(error: unknown): AuthError {
-       // Custom error mapping
-       return super.convertToAuthError(error);
-   }
-   ```
-
-**Key Benefits:**
-- **Code Reuse**: All services share middleware interaction patterns
-- **Type Safety**: Strong typing with domain models and DTOs
-- **Error Consistency**: Standardized error format across all services
-- **Separation of Concerns**: Business logic separate from middleware details
-- **Testability**: Dependency injection enables easy mocking
-
-**See also:**
-- Implementation details: `docs/implementation/IMPLEMENTATION_SUMMARY.md#3-service-layer-architecture--user-management`
-- API reference: `docs/api/SERVICES_API.md` (planned)
-
-### Bluetooth Protocol Implementation
-
-The application communicates with the ESP32 sEMG/FES device using a JSON-based protocol defined in `BluetoothContext.tsx`. All messages follow this structure:
-
-```typescript
-{
-  cd: number,      // Message code (0-14)
-  mt: string,      // Method: 'r', 'w', 'x', 'a'
-  bd?: object      // Optional body with parameters
-}
-```
-
-**Key Protocol Enumerations**:
-- `NeuraXBluetoothProtocolFunctionEnum` - Message codes (GyroscopeReading, StartSession, StopSession, etc.)
-- `NeuraXBluetoothProtocolMethodEnum` - Methods (READ, WRITE, EXECUTE, ACK)
-- `NeuraXBluetoothProtocolBodyPropertyEnum` - Parameter keys (AMPLITUDE, FREQUENCY, PULSE_WIDTH, etc.)
-
-**Message Encoding**: All Bluetooth messages are null-terminated (`\0`) UTF-8 JSON strings.
-
-### BluetoothContext (Global State)
-
-The `BluetoothContext` manages all Bluetooth connectivity and device communication:
-
-**Core State**:
-- `bluetoothOn` - Bluetooth radio status
-- `neuraDevices` - List of paired "NeuroEstimulator" devices with connection status
-- `selectedDevice` - Currently connected device
-- `fesParams` - FES stimulation parameters (amplitude, frequency, pulse width, difficulty, duration)
-- `triggerDetected` - sEMG trigger event flag (auto-clears after 5s)
-- `emergencyStop` - Emergency stop event flag (auto-clears after 5s)
-
-**Key Functions**:
-- `connectBluetooth(address)` - Connect to device and set up event listeners
-- `disconnect(address)` - Disconnect and clean up subscriptions
-- `sendFesParams(difficulty)` - Send FES configuration (code 7)
-- `SingleFesStimulation(difficulty)` - Configure and trigger single FES pulse
-- `startSession()` / `stopSession()` - Session control (codes 2, 3)
-- `pauseSession()` / `resumeSession()` - Session pause/resume (codes 4, 5)
-- `measureWristAmplitude()` - Request gyroscope reading (code 1)
-- `decodeMessage(message)` - Parse incoming JSON messages and dispatch to state
-
-**Event Subscriptions**:
-- `onDataReceived` - Handles incoming serial data from device
-- `onDeviceDisconnected` - Handles unexpected disconnections
+---
 
 ## Common Development Commands
 
-### Monorepo Setup
+### Monorepo Operations
 
 ```bash
 # Install all dependencies (root + all workspaces)
@@ -381,756 +165,235 @@ npm run type-check:all
 npm run build:all
 ```
 
-### Mobile App (apps/mobile)
+### Mobile App
 
 ```bash
-# Start Expo dev server (interactive menu)
+# Start Expo dev server
 npm run mobile
 
-# Android development
-npm run mobile:android
-
-# Web development
-npm run mobile:web
-
-# iOS development (macOS only)
-npm run mobile:ios
-
-# Type check mobile app
-cd apps/mobile && npm run type-check
+# Platform-specific development
+npm run mobile:android    # Android emulator/device
+npm run mobile:web        # Web browser
+npm run mobile:ios        # iOS simulator (macOS only)
 ```
 
-### Desktop App (apps/desktop)
+### Desktop App
 
 ```bash
-# Start desktop app in development mode
-npm run desktop           # or npm run desktop:dev
+# Development mode
+npm run desktop           # Start Electron app
 
-# Build desktop app
-npm run desktop:build
-
-# Package desktop app (Electron)
-npm run package           # Auto-detect platform
+# Production builds
+npm run desktop:build     # Build for current platform
+npm run package           # Create installer (auto-detect platform)
 npm run package:win       # Windows (NSIS installer)
 npm run package:mac       # macOS (DMG)
 npm run package:linux     # Linux (AppImage)
 
-# Storybook (component documentation)
+# Component documentation
 cd apps/desktop && npm run storybook  # http://localhost:6006
-
-# Type check desktop app
-cd apps/desktop && npm run type-check
 ```
 
-### TypeScript Standards
+**Complete Command Reference**: See `docs/development/COMMAND_REFERENCE.md`
 
-```bash
-# Type check specific workspace
-cd apps/desktop && npm run type-check
-cd apps/mobile && npm run type-check
+---
 
-# Type check all packages
-npm run type-check:all
-```
+## Project Directives (CRITICAL)
 
-## Coding Standards & Best Practices
+### 1. TypeScript Strict Mode
 
-### Icon Usage (CRITICAL: Updated October 2025)
-
-**ALL icons must use Heroicons library (@heroicons/react). NO custom SVG files.**
+**REQUIRED**: TypeScript strict mode is mandatory. No `any` types allowed.
 
 ```typescript
-// ✅ CORRECT: Import from Heroicons
-import { UserIcon, ChevronDownIcon, XMarkIcon } from '@heroicons/react/24/outline';
-import { UserIcon as UserIconSolid } from '@heroicons/react/24/solid';
-import { UserIcon as UserIconMini } from '@heroicons/react/20/solid';
-
-// Usage
-<Button iconLeft={<UserIcon className="w-5 h-5" />}>
-    Add User
-</Button>
-
-// ❌ INCORRECT: Custom SVG imports
-import CustomUserIcon from './assets/user-icon.svg';
-```
-
-**Icon Variants:**
-- `@heroicons/react/24/outline` - 24x24 with 2px stroke (default)
-- `@heroicons/react/24/solid` - 24x24 filled
-- `@heroicons/react/20/solid` - 20x20 solid (mini, for tight spaces)
-
-**Standard Sizes:**
-```typescript
-<UserIcon className="w-4 h-4" />  // 16px (small)
-<UserIcon className="w-5 h-5" />  // 20px (default)
-<UserIcon className="w-6 h-6" />  // 24px (medium)
-<UserIcon className="w-8 h-8" />  // 32px (large)
-```
-
-### Component Reuse (CRITICAL)
-
-**ALWAYS check for existing components before creating new ones.**
-
-```bash
-# Check desktop components
-ls apps/desktop/src/design-system/components/
-
-# Available components:
-# Button, Input, Dropdown, Password, SearchBar, ButtonGroup
-# DataTable, Avatar, Sidebar, Header, AppLayout
-# Modal, Toast, Typography, DatePicker
-```
-
-**DO:**
-- ✅ Reuse existing components with different props
-- ✅ Compose multiple components together
-- ✅ Extend components via composition, not duplication
-
-**DON'T:**
-- ❌ Create duplicate button implementations
-- ❌ Copy-paste component code
-- ❌ Create similar components with different names
-
-```typescript
-// ✅ GOOD: Reuse existing Button
-import { Button } from '../design-system/components/button';
-
-function MyScreen() {
-    return <Button variant="primary">Click me</Button>;
-}
-
-// ❌ BAD: Creating duplicate
-function MyScreen() {
-    return <button className="my-custom-button">Click me</button>;
-}
-```
-
-### TypeScript Strict Mode
-
-**TypeScript strict mode is REQUIRED. No `any` types.**
-
-```typescript
-// ✅ GOOD: Explicit types
+// ✅ CORRECT: Explicit types
 interface User {
     id: string;
     name: string;
-    email: string;
 }
 
-function getUserName(user: User): string {
-    return user.name;
-}
+function getUser(id: string): User { /* ... */ }
 
-// ❌ BAD: Using any
-function getUserName(user: any): any {
-    return user.name;
-}
+// ❌ INCORRECT: Using any
+function getUser(id: any): any { /* ... */ }
 ```
 
-### File Organization
+**Reference**: `docs/development/TYPESCRIPT_PATTERNS.md`
 
-**Desktop Components:**
-```
-components/button/
-├── Button.tsx           # Component logic
-├── Button.types.ts      # TypeScript interfaces
-├── Button.css           # Component styles
-├── Button.stories.tsx   # Storybook stories
-├── Button.test.tsx      # Unit tests (future)
-├── README.md            # Component documentation
-└── index.ts             # Barrel export
+### 2. Icon Usage
+
+**ALL icons MUST use Heroicons library (@heroicons/react). NO custom SVG files.**
+
+```typescript
+// ✅ CORRECT: Import from Heroicons
+import { UserIcon } from '@heroicons/react/24/outline';
+
+// ❌ INCORRECT: Custom SVG
+import CustomIcon from './assets/icon.svg';
 ```
 
-**Naming Conventions:**
+**Variants**:
+- `@heroicons/react/24/outline` - Outlined icons (default)
+- `@heroicons/react/24/solid` - Filled icons
+- `@heroicons/react/20/solid` - Mini icons (tight spaces)
+
+**Reference**: `docs/development/ICON_USAGE.md`
+
+### 3. Component Reuse
+
+**ALWAYS check for existing components before creating new ones.**
+
+Available Design System Components (Desktop):
+- Button, Input, Dropdown, Password, SearchBar, ButtonGroup
+- DataTable, Avatar, Sidebar, Header, AppLayout
+- Modal, Toast, Typography, DatePicker
+
+```bash
+# Check available components
+ls apps/desktop/src/design-system/components/
+```
+
+**DO**:
+- ✅ Reuse existing components with different props
+- ✅ Compose multiple components together
+- ✅ Extend via composition, not duplication
+
+**DON'T**:
+- ❌ Create duplicate implementations
+- ❌ Copy-paste component code
+- ❌ Create similar components with different names
+
+**Reference**: `docs/development/DESIGN_SYSTEM.md`
+
+### 4. File Organization
+
+**Standard structure for all components**:
+
+```
+component-name/
+├── ComponentName.tsx        # Component logic
+├── ComponentName.types.ts   # TypeScript interfaces
+├── ComponentName.css        # Component styles
+├── ComponentName.stories.tsx # Storybook stories
+├── ComponentName.test.tsx   # Unit tests
+├── README.md                # Component documentation
+└── index.ts                 # Barrel export
+```
+
+**Naming Conventions**:
 - Components: `PascalCase.tsx` (Button.tsx)
 - Screens: `PascalCase + Screen.tsx` (LoginScreen.tsx)
 - Hooks: `camelCase + use prefix` (useStreamData.ts)
 - Types: `PascalCase + .types.ts` (Button.types.ts)
-- Styles: `Component.css` (Button.css)
 
-### Documentation Requirements
+**Reference**: `docs/development/FILE_ORGANIZATION.md`
 
-See [docs/development/CODING_STANDARDS.md](docs/development/CODING_STANDARDS.md) for complete coding standards.
+### 5. Documentation Standards
 
----
+**All documentation MUST be written in English** and follow these standards:
 
-## Key Configuration Files
-
-### Desktop App
-
-- **`apps/desktop/package.json`** - Desktop app dependencies and scripts
-- **`apps/desktop/vite.config.ts`** - Vite configuration
-- **`apps/desktop/tsconfig.json`** - TypeScript configuration
-- **`apps/desktop/.storybook/`** - Storybook configuration (8 stories)
-
-### Mobile App
-
-- **`apps/mobile/app.json`** - Expo configuration
-  - `newArchEnabled: true` - Uses React Native's new architecture
-  - `platforms: ["web", "android"]` - Supported platforms
-  - Package name: `com.iris.app`
-
-- **`tsconfig.json`** - TypeScript configuration
-  - Extends `expo/tsconfig.base`
-  - Strict mode enabled
-  - Path alias: `@/*` maps to `./src/*`
-
-- **`.env.example`** - Environment variables template (API_URL, API_KEY, APP_ENV)
-
----
-
-## IRIS Middleware Authentication System
-
-### Overview
-
-The IRIS Middleware provides secure authentication and encrypted communication with the InteroperableResearchNode backend. It implements a 4-phase cryptographic handshake protocol with automatic token refresh and platform-specific secure storage.
-
-**Implementation Status**: ✅ **Complete and Tested** (October 31, 2025)
-**Status**: Login and logout functionality fully operational on Desktop App
-**Files**: `IMPLEMENTATION_VERIFICATION_REPORT.md`, `IMPLEMENTATION_SUMMARY.md`, `AUTHENTICATION_FIXES.md`
-
-### Architecture
-
-```
-┌─────────────────────────────────────────────┐
-│         Application Layer                    │
-│  (React Components, Screens, Contexts)       │
-└──────────────┬──────────────────────────────┘
-               │
-┌──────────────▼──────────────────────────────┐
-│       UserAuthService                       │
-│  - login()/logout()/refreshToken()          │
-│  - Token storage and auto-refresh           │
-│  - Session management                       │
-└──────────────┬──────────────────────────────┘
-               │
-┌──────────────▼──────────────────────────────┐
-│    ResearchNodeMiddleware                   │
-│  - ensureSession() → 4-phase handshake      │
-│  - invoke() → Encrypted communication       │
-│  - State: idle → channel-ready → session    │
-└──────┬───────────┬──────────┬───────────────┘
-       │           │          │
-    ┌──▼───┐  ┌────▼──┐  ┌───▼──────┐
-    │Channel│  │Session│  │CryptoDriver
-    │Manager│  │Manager│  │WebCrypto
-    └───────┘  └───────┘  └──────────┘
-       │           │          │
-       └───────────┼──────────┘
-                   │
-┌──────────────────▼──────────────────────────┐
-│    InteroperableResearchNode                │
-│    (Backend API - http://localhost:5000)    │
-└─────────────────────────────────────────────┘
-```
-
-### Key Features
-
-- **Automatic Token Refresh**: Refreshes 5 minutes before expiration
-- **Secure Storage**: Platform-specific encryption (Electron DPAPI/Keychain, React Native Keychain/EncryptedPreferences)
-- **4-Phase Handshake**: ECDH P-384 key exchange, X.509 certificates, RSA-SHA256 signatures
-- **Encrypted Communication**: AES-256-GCM symmetric encryption
-- **Perfect Forward Secrecy**: Ephemeral keys discarded after session
-
-### Integration Points
-
-**Desktop App** (`apps/desktop/src/services/middleware.ts`):
-- `getMiddlewareServices()` - Get singleton instances
-- `initializeAndHydrate()` - Load persisted state on startup
-- `cleanupMiddleware()` - Cleanup on shutdown
-- `RealAuthService` adapter - Maps domain types to middleware
-
-**Mobile App** (`apps/mobile/src/services/middleware.ts`):
-- Same pattern as desktop with Expo SecureStore integration
-
-### Usage Example
-
-```typescript
-import { authService, initializeAndHydrate } from '@/services/middleware';
-
-// Initialize on app start
-useEffect(() => {
-  initializeAndHydrate();
-}, []);
-
-// Login
-const result = await authService.login({
-  username: 'researcher@example.com',
-  password: 'password'
-});
-
-// Check authentication
-if (authService.isAuthenticated()) {
-  const user = await authService.getCurrentUser();
-}
-
-// Logout
-await authService.logout();
-```
-
-### Authentication Flow Status
-
-✅ **Working Features**:
-- ✅ User login with email/password (Desktop App)
-- ✅ JWT token decoding and user extraction
-- ✅ Secure token storage (Electron safeStorage)
-- ✅ User logout and session cleanup
-- ✅ Password encoding (Base64) matching backend expectations
-- ✅ Backend response mapping (handling PascalCase/camelCase)
-- ✅ 4-phase handshake (Channel → Session → Authentication)
-
-⚠️ **Before Production**:
-- Mock certificates (replace with real X.509)
-- Mock RSA signatures (implement real signing)
-- Automatic token refresh (implemented but needs testing)
-- Mobile app integration (pending)
-
-### Documentation
-
-- **Implementation Details**: `IMPLEMENTATION_SUMMARY.md`
-- **Verification Report**: `IMPLEMENTATION_VERIFICATION_REPORT.md`
-- **API Reference**: `docs/api/MIDDLEWARE_API.md` (see Task 4)
-- **Migration Guide**: `docs/guides/MIGRATION_GUIDE_AUTH.md` (see Task 3)
-
----
-
-## Bluetooth Device Protocol
-
-### Supported Message Codes
-
-| Code | Function | Direction | Description |
-|------|----------|-----------|-------------|
-| 0 | ConnectionHandshake | Bidirectional | Initial connection verification |
-| 1 | GyroscopeReading | App → Device | Request wrist angle measurement |
-| 2 | StartSession | App → Device | Begin sEMG monitoring + FES session |
-| 3 | StopSession | App → Device | End current session |
-| 4 | PauseSession | App → Device | Pause session (can resume) |
-| 5 | ResumeSession | App → Device | Resume paused session |
-| 6 | SingleStimuli | App → Device | Trigger single FES pulse |
-| 7 | FesParam | App → Device | Configure FES parameters |
-| 8 | Status | Device → App | Session status update |
-| 9 | Trigger | Device → App | sEMG trigger detected |
-| 10 | EmergencyStop | Device → App | Emergency stop activated |
-| 11 | StartStream | App → Device | Start real-time sEMG data streaming |
-| 12 | StopStream | App → Device | Stop sEMG data streaming |
-| 13 | StreamData | Device → App | Real-time sEMG data packet |
-| 14 | ConfigStream | App → Device | Configure streaming parameters |
-
-### Message Parameters
-
-#### FES Parameters (Code 7)
-
-When sending FES parameters, the body contains:
-
-```typescript
-{
-  a: number,    // Amplitude (0-15V)
-  f: number,    // Frequency (1-100 Hz)
-  pw: number,   // Pulse width (1-100 ms)
-  df: number,   // sEMG difficulty (1-100%)
-  pd: number    // Pulse duration (1-60 seconds)
-}
-```
-
-#### Session Status (Code 8)
-
-Status updates from device include:
-
-```typescript
-{
-  parameters: {
-    a: number,    // Current amplitude
-    f: number,    // Current frequency
-    pw: number,   // Current pulse width
-    df: number,   // Current difficulty
-    pd: number    // Current duration
-  },
-  status: {
-    csa: number,  // Complete stimuli amount
-    isa: number,  // Interrupted stimuli amount
-    tlt: number,  // Time of last trigger (ms)
-    sd: number    // Session duration (ms)
-  }
-}
-```
-
-#### sEMG Streaming Configuration (Code 14)
-
-Configure streaming parameters before starting:
-
-```typescript
-{
-  rate: number,   // Sampling rate in Hz (10-200)
-  type: string    // Data type: "raw", "filtered", or "rms"
-}
-```
-
-**Available types:**
-- `"raw"` - Unprocessed ADC values
-- `"filtered"` - Butterworth bandpass filtered (10-40 Hz)
-- `"rms"` - Root Mean Square envelope
-
-**Recommended rates:**
-- **10-30 Hz**: Optimal for 9600 baud Bluetooth (default module speed)
-- **50-100 Hz**: Requires 115200 baud Bluetooth module
-- **100-200 Hz**: Maximum rate, requires upgraded hardware
-
-#### sEMG Streaming Data (Code 13)
-
-Real-time data packets sent by device:
-
-```typescript
-{
-  t: number,       // Timestamp (milliseconds since boot)
-  v: number[]      // Array of sEMG values (5-10 samples per packet)
-}
-```
-
-**Packet structure:**
-- **Rate < 100 Hz**: 5 samples per packet
-- **Rate ≥ 100 Hz**: 10 samples per packet
-- Packets sent at `rate / samples_per_packet` Hz
-
-### Communication Flows
-
-#### Connection Flow
-
-1. **Discovery**: `updatePairedDevices()` scans for bonded devices named "NeuroEstimulator"
-2. **Connection**: `connectBluetooth(address)` establishes SPP connection (non-secure socket)
-3. **Event Listeners**: Subscribe to data receive and disconnect events
-4. **Keep-Alive**: `verifyCurrentConnection()` checks connection every 10 seconds
-5. **Disconnection**: `disconnect()` removes subscriptions and clears selected device
-
-#### FES Session Flow
-
-```
-1. Configure parameters:
-   App → {"cd":7,"mt":"w","bd":{"a":7,"f":60,"pw":300,"df":5,"pd":2}}
-
-2. Start session:
-   App → {"cd":2,"mt":"x"}
-   Device → {"cd":2,"mt":"a"}  // ACK
-
-3. During session (automatic):
-   Device → {"cd":9,"mt":"w"}  // Trigger detected
-   Device → {"cd":8,"mt":"w","bd":{...}}  // Status update
-
-4. Stop session:
-   App → {"cd":3,"mt":"x"}
-   Device → {"cd":3,"mt":"a"}  // ACK
-```
-
-#### sEMG Streaming Flow
-
-```
-1. Configure streaming (optional):
-   App → {"cd":14,"mt":"w","bd":{"rate":100,"type":"filtered"}}
-   Device → {"cd":14,"mt":"a"}  // ACK
-
-2. Start streaming:
-   App → {"cd":11,"mt":"x"}
-   Device → {"cd":11,"mt":"a"}  // ACK
-
-3. Receive data packets (automatic):
-   Device → {"cd":13,"mt":"w","bd":{"t":12345,"v":[23.4,25.1,...]}}
-   Device → {"cd":13,"mt":"w","bd":{"t":12445,"v":[22.8,24.5,...]}}
-   ...
-
-4. Stop streaming:
-   App → {"cd":12,"mt":"x"}
-   Device → {"cd":12,"mt":"a"}  // ACK
-```
-
-**Important constraints:**
-- Cannot run FES session and streaming simultaneously (shared timer)
-- Streaming auto-stops after 10 minutes or on disconnect
-- Buffer holds 200 samples; overflow drops oldest data
-
-## Development Patterns
-
-### Adding New Bluetooth Commands
-
-1. Add new enum value to `NeuraXBluetoothProtocolFunctionEnum`
-2. Create payload function in `BluetoothContext`:
-```typescript
-async function newCommand() {
-    let payload: NeuraXBluetoothProtocolPayload = {
-        cd: NeuraXBluetoothProtocolFunctionEnum.NewCommand,
-        mt: NeuraXBluetoothProtocolMethodEnum.EXECUTE
-    }
-    await writeToBluetooth(JSON.stringify(payload))
-}
-```
-3. Add case to `decodeMessage()` switch statement for handling responses
-4. Expose function through context provider
-
-### Using BluetoothContext in Components
-
-```typescript
-import { useBluetoothContext } from '@/context/BluetoothContext';
-
-function MyComponent() {
-    const {
-        selectedDevice,
-        connectBluetooth,
-
-        // Session control
-        startSession,
-        stopSession,
-        pauseSession,
-        resumeSession,
-
-        // FES control
-        fesParams,
-        setFesParams,
-        sendFesParams,
-        singleStimulation,
-
-        // Streaming
-        isStreaming,
-        streamConfig,
-        streamData,
-        configureStream,
-        startStream,
-        stopStream,
-
-        // Session status
-        sessionStatus,
-        isSessionActive
-    } = useBluetoothContext();
-
-    // Example: Configure and start streaming
-    const handleStartStreaming = async () => {
-        await configureStream(100, 'filtered'); // 100Hz, filtered data
-        await startStream();
-    };
-
-    // Example: Start FES session
-    const handleStartFES = async () => {
-        await sendFesParams(); // Send current parameters
-        await startSession();  // Start session
-    };
-}
-```
-
-### Complete Streaming Workflow Example
-
-```typescript
-import { useBluetoothContext, StreamType } from '@/context/BluetoothContext';
-
-function StreamingScreen() {
-    const {
-        selectedDevice,
-        isStreaming,
-        streamData,
-        streamConfig,
-        configureStream,
-        startStream,
-        stopStream,
-        clearStreamData
-    } = useBluetoothContext();
-
-    const handleConfigureAndStart = async () => {
-        // Step 1: Configure streaming (optional - device has defaults)
-        await configureStream(100, 'filtered');
-
-        // Step 2: Start streaming
-        await startStream();
-    };
-
-    const handleStop = async () => {
-        await stopStream();
-        // Optionally clear data
-        clearStreamData();
-    };
-
-    // Render real-time data
-    return (
-        <View>
-            <Text>Streaming: {isStreaming ? 'Active' : 'Inactive'}</Text>
-            <Text>Config: {streamConfig.rate}Hz, {streamConfig.type}</Text>
-            <Text>Packets received: {streamData.length}</Text>
-
-            {streamData.map((packet, idx) => (
-                <Text key={idx}>
-                    t={packet.timestamp}ms: {packet.values.join(', ')}
-                </Text>
-            ))}
-        </View>
-    );
-}
-```
-
-### TypeScript Path Aliases
-
-Import from `src/` using the `@/` alias:
-
-```typescript
-import { HomeScreen } from '@/screens/HomeScreen';
-import { User } from '@/types';
-import { formatDate } from '@/utils';
-```
-
-## Platform-Specific Notes
-
-### Android
-
-- **Bluetooth Permissions**: Requires runtime permissions (handled by `react-native-bluetooth-classic`)
-- **Settings Access**: `openBluetoothSettings()` opens Android Bluetooth settings
-- **Device Discovery**: Only scans bonded (paired) devices, not nearby unpaired devices
-
-### Web
-
-- **Limited Bluetooth**: Web Bluetooth API has limited SPP support; this app is primarily designed for Android
-- **Development**: Useful for UI development without device connection
-- **Metro Bundler**: Expo uses Metro for web bundling (configured in `app.json`)
-
-## Important Implementation Details
-
-### Connection State Management
-
-The app uses a dual-state pattern for device management:
-- `neuraDevices` array tracks all paired devices with `active` flag
-- `selectedDevice` holds the currently connected device
-- Two event subscriptions (`btDataRecieveSubscription`, `btDeviceDisconnectSubscription`) must be cleaned up on disconnect
-
-### Automatic Reconnection
-
-The app does **not** automatically reconnect on disconnect. Instead:
-- `onDeviceDisconnected` event shows `showConnectionErrorModal`
-- User must manually reconnect via UI
-- `updatePairedDevices()` polls every 5s until at least one device is found
-
-### Message Timing
-
-- **Trigger event**: Auto-clears after 5000ms
-- **Emergency stop**: Auto-clears after 5000ms
-- **Connection verification**: Runs every 10000ms for active connections
-- **Serial output check**: Runs every 1000ms (currently commented out in code)
-
-### Null Termination
-
-All messages sent via `writeToBluetooth()` are automatically null-terminated:
-```typescript
-await RNBluetoothClassic.writeToDevice(address, payload + '\0')
-```
-
-This matches the ESP32 firmware expectation for message delimiters.
-
-## Testing
-
-Currently, there are no automated tests configured. Manual testing workflow:
-
-1. Pair ESP32 device ("NeuroEstimulator") via Android Bluetooth settings
-2. Run app: `npm run android`
-3. Connect to device from app UI
-4. Test FES parameters, session control, and trigger detection
-5. Monitor console logs for protocol messages
-
-## Known Limitations
-
-- **Web Bluetooth**: SPP not widely supported; Android is primary platform
-- **Device Name Hardcoded**: Only connects to devices named "NeuroEstimulator" (`BluetoothContext.tsx:90`)
-- **Error Handling**: Connection errors show modal but don't retry automatically
-- **UI Not Implemented**: While all protocol commands are implemented in BluetoothContext, UI components for streaming and advanced features need to be built
-- **Data Visualization**: No real-time chart components for visualizing sEMG stream data yet
-- **Data Persistence**: Stream data is stored in memory only (max 1000 packets); no local storage or backend submission
-
-## Documentation Structure
-
-**All development documentation is organized in `/docs` directory at the project root.**
-
-### Documentation Organization
-
-```
-docs/
-├── README.md                          # Main documentation hub
-├── DOCUMENTATION_GUIDELINES.md        # Standards for writing documentation
-├── architecture/                      # System design and architecture
-│   ├── README.md
-│   ├── ARCHITECTURE_OVERVIEW.md
-│   ├── BLUETOOTH_PROTOCOL.md
-│   ├── STATE_MANAGEMENT.md
-│   └── COMPONENT_STRUCTURE.md
-├── setup/                             # Setup and configuration
-│   ├── README.md
-│   ├── QUICK_START.md
-│   ├── BLUETOOTH_SETUP.md
-│   └── ENVIRONMENT_SETUP.md
-├── development/                       # Development guides
-│   ├── README.md
-│   ├── DEVELOPMENT_GUIDE.md
-│   ├── CODE_PATTERNS.md
-│   ├── TYPESCRIPT_PATTERNS.md
-│   └── TESTING_GUIDE.md
-├── api/                               # API reference
-│   ├── README.md
-│   ├── BLUETOOTH_COMMANDS.md
-│   ├── CONTEXT_API.md
-│   └── HOOKS_REFERENCE.md
-├── features/                          # Feature documentation
-│   ├── README.md
-│   ├── STREAMING.md
-│   ├── FES_SESSION_CONTROL.md
-│   └── DEVICE_CONNECTION.md
-├── implementation/                    # Implementation details
-│   ├── IMPLEMENTATION_SUMMARY.md
-│   └── STREAMING_IMPLEMENTATION.md
-├── troubleshooting/                   # Problem-solving guides
-│   ├── COMMON_ISSUES.md
-│   ├── DEBUGGING_GUIDE.md
-│   ├── ANDROID_ISSUES.md
-│   └── WINDOWS_LONG_PATH_FIX.md
-└── deployment/                        # Build and deployment
-    ├── PRODUCTION_BUILD.md
-    ├── EAS_BUILD.md
-    └── APK_DISTRIBUTION.md
-```
-
-### Quick Navigation for Different Roles
-
-**New Developer?**
-1. Start: `docs/setup/QUICK_START.md`
-2. Learn: `docs/architecture/ARCHITECTURE_OVERVIEW.md`
-3. Code: `docs/development/CODE_PATTERNS.md`
-
-**Implementing a Feature?**
-1. Design: `docs/architecture/`
-2. Implement: `docs/development/DEVELOPMENT_GUIDE.md`
-3. Test: `docs/development/TESTING_GUIDE.md`
-4. Reference: `docs/api/`
-
-**Having Issues?**
-- Troubleshooting: `docs/troubleshooting/COMMON_ISSUES.md`
-- Debugging: `docs/troubleshooting/DEBUGGING_GUIDE.md`
-
-**AI Assistant (Claude Code)?**
-- Guidelines: `docs/DOCUMENTATION_GUIDELINES.md`
-- Architecture: `docs/architecture/`
-- API: `docs/api/`
-- Current file: `docs/README.md`
-
-### Documentation Standards
-
-All documentation must follow standards defined in `docs/DOCUMENTATION_GUIDELINES.md`:
-
-- **Language**: English only
-- **Location**: `/docs` directory (appropriate subdirectory)
-- **File Names**: `UPPERCASE_SNAKE_CASE`
+- **Language**: English only (no Portuguese)
+- **Location**: `/docs` directory in appropriate subdirectory
+- **File Names**: `UPPERCASE_SNAKE_CASE.md`
 - **Format**: Markdown with consistent styling
-- **Quality**: Accurate, current, with examples
+- **Quality**: Accurate, current, with code examples
 - **Links**: Relative paths, prefer internal references
 
-### Key Documentation Files
+**Reference**: `docs/DOCUMENTATION_GUIDELINES.md`
 
-| File | Purpose |
-|------|---------|
-| `docs/README.md` | Main documentation hub with full navigation |
-| `docs/DOCUMENTATION_GUIDELINES.md` | Standards for writing documentation |
-| `docs/architecture/ARCHITECTURE_OVERVIEW.md` | System design and components |
-| `docs/api/BLUETOOTH_COMMANDS.md` | Complete Bluetooth protocol reference |
-| `docs/development/DEVELOPMENT_GUIDE.md` | Main development workflow |
-| `docs/implementation/IMPLEMENTATION_SUMMARY.md` | Feature status and progress |
+### 6. Import Path Aliases
+
+**Use `@/` alias for all imports within each app**:
+
+```typescript
+// ✅ CORRECT: Using path alias
+import { Button } from '@/design-system/components/button';
+import { useAuth } from '@/context/AuthContext';
+import { User } from '@/types';
+
+// ❌ INCORRECT: Relative paths
+import { Button } from '../../../design-system/components/button';
+```
+
+**Configuration**: See `tsconfig.json` in each app
+
+---
+
+## Monorepo Structure
+
+```
+IRIS/
+├── apps/
+│   ├── mobile/              # React Native + Expo (Device control)
+│   │   └── src/
+│   │       ├── context/     # BluetoothContext
+│   │       ├── screens/     # App screens
+│   │       ├── components/  # UI components
+│   │       └── hooks/       # Custom hooks
+│   │
+│   └── desktop/             # Electron + Vite + React (Data management)
+│       └── src/
+│           ├── design-system/    # 16 reusable UI components
+│           ├── context/          # AuthContext
+│           ├── screens/          # App screens
+│           ├── services/         # API services (BaseService pattern)
+│           ├── storage/          # Secure storage
+│           └── stories/          # Storybook documentation
+│
+├── packages/
+│   ├── domain/              # Shared TypeScript types
+│   ├── middleware/          # Authentication & secure communication
+│   └── ui-components/       # Shared UI components (future)
+│
+└── docs/                    # Comprehensive documentation
+    ├── architecture/        # System design
+    ├── development/         # Development guides
+    ├── api/                 # API reference
+    ├── features/            # Feature documentation
+    ├── setup/               # Setup guides
+    ├── troubleshooting/     # Problem-solving
+    └── deployment/          # Build and deployment
+```
+
+**Detailed Structure**: See `docs/architecture/MONOREPO_STRUCTURE.md`
+
+---
+
+## Key Architectural Patterns
+
+### Service Layer (Desktop App)
+
+All services extend `BaseService` which provides:
+- Dependency injection for middleware services
+- Automatic session management (`ensureSession()`)
+- Standardized error handling
+- Debug logging
+
+**Available Services**:
+- `UserService` - User management with pagination
+- `AuthService` - Authentication (RealAuthService adapter)
+
+**Reference**: `docs/api/SERVICES_API.md`
+
+### Bluetooth Protocol (Mobile App)
+
+JSON-based protocol with 14 message codes for ESP32 communication:
+- Connection management (handshake, status)
+- FES control (parameters, session start/stop/pause/resume)
+- sEMG streaming (configure, start/stop, receive data)
+
+**Reference**: `docs/api/BLUETOOTH_COMMANDS.md`
+
+### Authentication System
+
+4-phase cryptographic handshake:
+1. **Channel**: ECDH P-384 key exchange → AES-256-GCM encryption
+2. **Identification**: X.509 certificates + SHA-256 fingerprints
+3. **Authentication**: RSA-2048 challenge-response
+4. **Session**: Bearer token (1-hour TTL with auto-refresh)
+
+**Status**: ✅ Complete and tested (October 31, 2025)
+
+**Reference**: `docs/features/AUTHENTICATION.md`
 
 ---
 
@@ -1139,7 +402,87 @@ All documentation must follow standards defined in `docs/DOCUMENTATION_GUIDELINE
 This application is part of the larger PRISM federated research framework:
 
 - **Device**: Communicates with `InteroperableResearchsEMGDevice` (ESP32 firmware)
-- **Backend**: Will eventually send session data to `InteroperableResearchNode` API
+- **Backend**: Sends session data to `InteroperableResearchNode` API
 - **Protocol Alignment**: Bluetooth message codes match ESP32 firmware specification
 
-For detailed device protocol specification, see `InteroperableResearchsEMGDevice/CLAUDE.md` in the parent repository.
+**Cross-Component Context**: See root `../CLAUDE.md` for complete ecosystem overview
+
+---
+
+## Documentation Index
+
+### Essential Documentation
+
+| Document | Purpose |
+|----------|---------|
+| `docs/README.md` | Main documentation hub with full navigation |
+| `docs/architecture/ARCHITECTURE_OVERVIEW.md` | System design and components |
+| `docs/development/DEVELOPMENT_GUIDE.md` | Main development workflow |
+| `docs/api/BLUETOOTH_COMMANDS.md` | Complete Bluetooth protocol reference |
+| `docs/api/SERVICES_API.md` | Service layer API reference |
+| `docs/api/MIDDLEWARE_API.md` | Middleware API reference |
+
+### Quick Links by Category
+
+**Setup & Getting Started**:
+- `docs/setup/QUICK_START.md` - Get up and running fast
+- `docs/setup/ENVIRONMENT_SETUP.md` - Environment configuration
+- `docs/setup/BLUETOOTH_SETUP.md` - Bluetooth development setup
+
+**Development**:
+- `docs/development/CODE_PATTERNS.md` - Common patterns and examples
+- `docs/development/DESIGN_SYSTEM.md` - UI component library guide
+- `docs/development/MOBILE_APP_GUIDE.md` - Mobile-specific development
+- `docs/development/TESTING_GUIDE.md` - Testing strategy and tools
+
+**Features**:
+- `docs/features/BLUETOOTH_INTEGRATION.md` - Device communication guide
+- `docs/features/USER_MANAGEMENT.md` - User/researcher management
+- `docs/features/DATA_VISUALIZATION.md` - Charts and real-time display
+
+**Troubleshooting**:
+- `docs/troubleshooting/COMMON_ISSUES.md` - Known issues and solutions
+- `docs/troubleshooting/DEBUGGING_GUIDE.md` - Debugging techniques
+- `docs/troubleshooting/WINDOWS_LONG_PATH_FIX.md` - Windows path issues
+
+**Implementation Status**:
+- `docs/implementation/IMPLEMENTATION_SUMMARY.md` - Feature status and progress
+- `IMPLEMENTATION_VERIFICATION_REPORT.md` - Authentication verification
+- `AUTHENTICATION_FIXES.md` - Recent authentication fixes
+
+---
+
+## Current Development Status (November 2025)
+
+**✅ Production-Ready**:
+- Desktop App: Authentication, user management, 16 UI components
+- Mobile App: Bluetooth protocol (14 message codes), real-time streaming, CSV export
+- Middleware: 4-phase handshake, secure token storage, automatic refresh
+
+**🚧 In Progress**:
+- Backend integration for data submission
+- Additional data management features
+- Mobile app authentication integration
+
+**📋 Planned**:
+- Automated testing suite
+- Performance monitoring
+- Production certificate management
+
+**Detailed Status**: See `docs/implementation/IMPLEMENTATION_SUMMARY.md`
+
+---
+
+## Getting Help
+
+### Documentation Hub
+Start at `docs/README.md` for complete documentation navigation.
+
+### Common Issues
+See `docs/troubleshooting/COMMON_ISSUES.md` for troubleshooting guide.
+
+### Project Context
+- This project: Current file (`IRIS/CLAUDE.md`)
+- Backend: `../InteroperableResearchNode/CLAUDE.md`
+- Device: `../InteroperableResearchsEMGDevice/CLAUDE.md`
+- Master overview: `../CLAUDE.md`
