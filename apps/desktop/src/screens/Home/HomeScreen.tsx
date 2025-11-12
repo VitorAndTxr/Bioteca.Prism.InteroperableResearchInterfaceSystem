@@ -2,7 +2,7 @@ import { mainMenuItems } from "../../config/menu";
 import { useAuth } from "../../context";
 import { AppLayout } from "../../design-system/components/app-layout";
 
-const HomeScreen: React.FC<HomeScreenProps> = ({ activePath, handleNavigation, handleUserMenuClick }) => {
+const HomeScreen: React.FC<HomeScreenProps> = ({ activePath, handleNavigation }) => {
     
     const { user, logout } = useAuth();
     return (
@@ -28,7 +28,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ activePath, handleNavigation, h
                 {/* User Info */}
                 <div style={{ marginBottom: '2rem', textAlign: 'center' }}>
                     <p style={{ fontSize: '14px', color: '#666' }}>
-                        Logged in as: <strong>{user?.name}</strong> ({user?.role})
+                        Logged in as: <strong>{user?.login}</strong> ({user?.role})
                     </p>
                     <button
                         onClick={logout}
@@ -90,5 +90,4 @@ export default HomeScreen;
 export type HomeScreenProps = {
     activePath: string;
     handleNavigation: (path: string) => void;
-    handleUserMenuClick: () => void;
 }

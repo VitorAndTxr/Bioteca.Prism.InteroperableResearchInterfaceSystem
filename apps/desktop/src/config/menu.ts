@@ -16,8 +16,8 @@ export const mainMenuItems: SidebarMenuItem[] = [
     },
     {
         id: 'npi',
-        label: 'NPIs e aplicações',
-        path: '/npi-requests',
+        label: 'Conexões',
+        path: '/nodeConnections',
     },
     {
         id: 'research',

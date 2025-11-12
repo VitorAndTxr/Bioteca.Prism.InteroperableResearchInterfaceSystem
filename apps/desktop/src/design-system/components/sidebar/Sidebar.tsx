@@ -16,13 +16,13 @@
  * ```tsx
  * const menuItems = [
  *   { id: '1', label: 'Consultar dados', path: '/dashboard' },
- *   { id: '2', label: 'NPIs e aplicações', path: '/npi-requests' },
+ *   { id: '2', label: 'NPIs e aplicações', path: '/nodeConnections' },
  *   { id: '3', label: 'Pesquisas', path: '/research' },
  * ];
  *
  * <Sidebar
  *   items={menuItems}
- *   activePath="/npi-requests"
+ *   activePath="/nodeConnections"
  *   onNavigate={(path) => navigate(path)}
  * />
  * ```

@@ -20,7 +20,7 @@ export interface SidebarMenuItem {
     label: string;
 
     /**
-     * Navigation path (e.g., "/users", "/npi-requests")
+     * Navigation path (e.g., "/users", "/nodeConnections")
      */
     path: string;
 
