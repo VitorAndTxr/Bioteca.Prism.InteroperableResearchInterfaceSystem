@@ -15,6 +15,7 @@ import type { DataTableColumn } from '../../design-system/components/data-table/
 import { EyeIcon, PencilIcon as EditIcon, PlusIcon } from '@heroicons/react/24/outline';
 import { userService, researcherService } from '../../services/middleware';
 import '../../styles/shared/List.css';
+import Pagination from '@/design-system/components/pagination/Pagination';
 
 export interface UsersListProps {
     onUserAdd?: () => void;
@@ -51,13 +52,6 @@ export function UsersList({
 
     // State for researchers data
     const [researchers, setResearchers] = useState<Researcher[]>([]);
-
-
-    // useEffect(() => {
-    //     console.log("reset pagination");
-        
-    //     resetPagination();
-    // }, [activeTab]);
 
     // Load users from backend
     useEffect(() => {
@@ -395,58 +389,13 @@ export function UsersList({
             )}
 
             {/* Pagination for Users */}
-            {!loading && pagination.totalRecords > pageSize && (
-                <div style={{
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    gap: '10px',
-                    padding: '20px',
-                    borderTop: '1px solid #e5e7eb'
-                }}>
-                    <span style={{ fontWeight: 'bold', marginRight: '10px' }}>
-                        {activeTab === 'users'&& <>Usuários:</>}
-                        {activeTab === 'researchers'&& <>Pesquisadores:</>}
-                    </span>
-                    <button
-                        onClick={() => setPagination(prev => ({
-                            ...prev,
-                            currentPage: Math.max(1, prev.currentPage - 1)
-                        }))}
-                        disabled={pagination.currentPage === 1}
-                        style={{
-                            padding: '8px 16px',
-                            backgroundColor: pagination.currentPage === 1 ? '#e5e7eb' : '#3b82f6',
-                            color: pagination.currentPage === 1 ? '#9ca3af' : 'white',
-                            border: 'none',
-                            borderRadius: '4px',
-                            cursor: pagination.currentPage === 1 ? 'not-allowed' : 'pointer'
-                        }}
-                    >
-                        Anterior
-                    </button>
-                    <span>
-                        Página {pagination.currentPage} de {Math.ceil(pagination.totalRecords / pageSize)}
-                    </span>
-                    <button
-                        onClick={() => setPagination(prev => ({
-                            ...prev,
-                            currentPage: Math.min(prev.currentPage + 1, Math.ceil(prev.totalRecords / pageSize))
-                        }))}
-                        disabled={pagination.currentPage >= Math.ceil(pagination.totalRecords / pageSize)}
-                        style={{
-                            padding: '8px 16px',
-                            backgroundColor: pagination.currentPage >= Math.ceil(pagination.totalRecords / pageSize) ? '#e5e7eb' : '#3b82f6',
-                            color: pagination.currentPage >= Math.ceil(pagination.totalRecords / pageSize) ? '#9ca3af' : 'white',
-                            border: 'none',
-                            borderRadius: '4px',
-                            cursor: pagination.currentPage >= Math.ceil(pagination.totalRecords / pageSize) ? 'not-allowed' : 'pointer'
-                        }}
-                    >
-                        Próxima
-                    </button>
-                </div>
-            )}
+            {!loading && pagination.totalRecords > pageSize && 
+                <Pagination
+                    setPagination={setPagination}
+                    pagination={pagination}
+                    pageSize={pageSize}
+                />
+            }
 
         </div>
     );

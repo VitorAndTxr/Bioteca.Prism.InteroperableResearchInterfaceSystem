@@ -95,7 +95,7 @@ npm install
 npm run desktop
 
 # Build desktop app
-npm run desktop:build
+
 
 # Package for distribution
 npm run package         # Auto-detect platform
