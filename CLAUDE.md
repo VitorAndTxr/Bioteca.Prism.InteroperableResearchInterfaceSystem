@@ -114,6 +114,7 @@ When working on this codebase:
 - Storybook: `apps/desktop/src/stories/`
 
 **AI Assistant (Claude Code)** → Reference:
+- **MCP Skills**: `.claude/skills/mcp-servers/INDEX.md` - Progressive tool discovery
 - Documentation Standards: `docs/DOCUMENTATION_GUIDELINES.md`
 - Code Patterns: `docs/development/CODE_PATTERNS.md`
 - Architecture: `docs/architecture/`
@@ -322,6 +323,16 @@ import { Button } from '../../../design-system/components/button';
 
 ```
 IRIS/
+├── .claude/                 # Claude Code configuration
+│   ├── agents/              # Custom agents (mcp-mapper)
+│   ├── commands/            # Slash commands
+│   └── skills/              # MCP skills documentation
+│       ├── README.md        # Skills usage guide
+│       └── mcp-servers/     # MCP server documentation
+│           ├── INDEX.md     # Global MCP index
+│           ├── playwright/  # 21 browser automation tools
+│           └── figma-desktop/ # 7 design extraction tools
+│
 ├── apps/
 │   ├── mobile/              # React Native + Expo (Device control)
 │   │   └── src/
@@ -397,6 +408,109 @@ JSON-based protocol with 14 message codes for ESP32 communication:
 
 ---
 
+## MCP Skills Documentation
+
+### Overview
+
+IRIS includes comprehensive MCP (Model Context Protocol) skills documentation following the **progressive tool discovery** pattern for token efficiency. Skills are organized so that tool documentation is loaded on-demand rather than upfront, minimizing token usage while maximizing utility.
+
+### Available MCP Servers
+
+#### Playwright (21 tools)
+Browser automation and testing for automated workflows, visual debugging, and web interaction.
+
+**Key Tools**:
+- `mcp__playwright__browser_navigate` - Navigate to URLs
+- `mcp__playwright__browser_snapshot` - Capture accessibility tree (preferred)
+- `mcp__playwright__browser_click` - Click elements with precision
+- `mcp__playwright__browser_type` - Type into input fields
+- `mcp__playwright__browser_fill_form` - Fill multiple form fields
+- `mcp__playwright__browser_take_screenshot` - Capture visual screenshots
+- `mcp__playwright__browser_evaluate` - Execute JavaScript in page context
+- `mcp__playwright__browser_network_requests` - Monitor network traffic
+
+**Documentation**: `.claude/skills/mcp-servers/playwright/INDEX.md`
+
+#### Figma Desktop (7 tools)
+Design-to-code implementation with AI-powered code generation from Figma designs.
+
+**Key Tools**:
+- `mcp__figma-desktop__get_design_context` - Generate code from designs (primary)
+- `mcp__figma-desktop__get_variable_defs` - Extract design tokens
+- `mcp__figma-desktop__get_code_connect_map` - Map designs to codebase
+- `mcp__figma-desktop__get_screenshot` - Capture design visuals
+- `mcp__figma-desktop__get_metadata` - Get structure overview
+
+**Documentation**: `.claude/skills/mcp-servers/figma-desktop/INDEX.md`
+
+### Usage Pattern
+
+**Progressive Discovery Workflow**:
+
+1. **Start with global index**:
+   ```
+   Read: .claude/skills/mcp-servers/INDEX.md
+   ```
+
+2. **Navigate to specific server**:
+   ```
+   Read: .claude/skills/mcp-servers/playwright/INDEX.md
+   Read: .claude/skills/mcp-servers/figma-desktop/INDEX.md
+   ```
+
+3. **Load individual tools as needed**:
+   ```
+   Read: .claude/skills/mcp-servers/playwright/browser_navigate.md
+   Read: .claude/skills/mcp-servers/figma-desktop/get_design_context.md
+   ```
+
+### Token Efficiency Benefits
+
+- **Zero tokens until accessed**: Tool docs only loaded when needed
+- **Succinct documentation**: <200 tokens per tool file
+- **Searchable structure**: Easy to find relevant tools
+- **No redundancy**: Each tool documented once
+
+### Common Use Cases in IRIS
+
+**Desktop App Development**:
+```typescript
+// Automated testing with Playwright
+mcp__playwright__browser_navigate({ url: "http://localhost:5173" })
+mcp__playwright__browser_snapshot({})
+mcp__playwright__browser_click({ element: "Login Button", ref: "btn123" })
+```
+
+**Design System Implementation**:
+```typescript
+// Extract component from Figma
+mcp__figma-desktop__get_design_context({
+  nodeId: "123:456",
+  artifactType: "REUSABLE_COMPONENT",
+  clientFrameworks: "react,typescript",
+  clientLanguages: "typescript,jsx"
+})
+```
+
+**Visual Debugging**:
+```typescript
+// Capture screenshots and console logs
+mcp__playwright__browser_take_screenshot({ fullPage: true })
+mcp__playwright__browser_console_messages({ onlyErrors: true })
+```
+
+### Documentation Standards
+
+All MCP skills documentation follows these standards:
+- **Concise**: Target <200 tokens per tool file
+- **Structured**: Consistent format (parameters, returns, errors, examples)
+- **Practical**: Real-world usage examples
+- **Current**: Matches actual MCP tool implementations
+
+**Complete Skills Guide**: `.claude/skills/README.md`
+
+---
+
 ## Integration with PRISM Ecosystem
 
 This application is part of the larger PRISM federated research framework:
@@ -423,6 +537,12 @@ This application is part of the larger PRISM federated research framework:
 | `docs/api/MIDDLEWARE_API.md` | Middleware API reference |
 
 ### Quick Links by Category
+
+**MCP Skills** (AI Assistant Tools):
+- `.claude/skills/README.md` - MCP Skills overview and usage guide
+- `.claude/skills/mcp-servers/INDEX.md` - Global index of all MCP servers
+- `.claude/skills/mcp-servers/playwright/INDEX.md` - Playwright automation tools (21)
+- `.claude/skills/mcp-servers/figma-desktop/INDEX.md` - Figma design extraction tools (7)
 
 **Setup & Getting Started**:
 - `docs/setup/QUICK_START.md` - Get up and running fast
@@ -477,6 +597,13 @@ This application is part of the larger PRISM federated research framework:
 
 ### Documentation Hub
 Start at `docs/README.md` for complete documentation navigation.
+
+### MCP Skills (AI Assistant)
+For Claude Code automation and tooling:
+- Skills Overview: `.claude/skills/README.md`
+- Global Index: `.claude/skills/mcp-servers/INDEX.md`
+- Playwright Tools: `.claude/skills/mcp-servers/playwright/INDEX.md`
+- Figma Tools: `.claude/skills/mcp-servers/figma-desktop/INDEX.md`
 
 ### Common Issues
 See `docs/troubleshooting/COMMON_ISSUES.md` for troubleshooting guide.

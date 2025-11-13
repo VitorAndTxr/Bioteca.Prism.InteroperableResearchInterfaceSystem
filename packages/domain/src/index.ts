@@ -26,4 +26,6 @@ export * from './models/User';
 
 export * from './models/Researcher';
 
+export * from './models/Research';
+
 export * from './models/Pagination';
