@@ -5,7 +5,8 @@ import { TabbedTable, TabbedTableTab } from "@/design-system/components/tabbed-t
 import { DataTableColumn } from "@/design-system/components/data-table/DataTable.types";
 import { ResearchNodeConnection, AuthorizationStatus, NodeAccessLevel } from "@iris/domain";
 import { nodeConnectionService } from "@/services/middleware";
-import { CheckCircleIcon, XCircleIcon, EyeIcon } from "@heroicons/react/24/outline";
+import { CheckCircleIcon, XCircleIcon, EyeIcon, PencilSquareIcon, ArrowPathIcon, PlusIcon } from "@heroicons/react/24/outline";
+import Button from "@/design-system/components/button/Button";
 import Pagination from '@/design-system/components/pagination/Pagination';
 
 type NodeConnectionsScreenProps = {
@@ -101,42 +102,59 @@ const NodeConnectionsScreen: React.FC<NodeConnectionsScreenProps> = ({ handleNav
         );
     };
 
-    const columns: DataTableColumn<ResearchNodeConnection>[] = useMemo(() => [
+    const formatDate = (date: Date) => {
+        return new Intl.DateTimeFormat('pt-BR', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+        }).format(date);
+    };
+
+    const activeColumns: DataTableColumn<ResearchNodeConnection>[] = useMemo(() => [
         {
             id: 'nodeName',
-            label: 'Nome do Nó',
+            label: 'Nome',
             accessor: 'nodeName',
             sortable: true,
-            width: '25%',
         },
         {
             id: 'nodeUrl',
             label: 'URL',
             accessor: 'nodeUrl',
             sortable: true,
-            width: '30%',
         },
         {
             id: 'status',
             label: 'Status',
             accessor: 'status',
             sortable: true,
-            width: '15%',
             render: (value) => getStatusBadge(value as AuthorizationStatus),
         },
         {
             id: 'nodeAccessLevel',
-            label: 'Acesso',
+            label: 'Nível de acesso',
             accessor: 'nodeAccessLevel',
             sortable: true,
-            width: '15%',
             render: (value) => getAccessLevelBadge(value as NodeAccessLevel),
+        },
+        {
+            id: 'registeredAt',
+            label: 'Data registro',
+            accessor: 'registeredAt',
+            sortable: true,
+            render: (value) => formatDate(value as Date),
+        },
+        {
+            id: 'updatedAt',
+            label: 'Última alteração',
+            accessor: 'updatedAt',
+            sortable: true,
+            render: (value) => formatDate(value as Date),
         },
         {
             id: 'actions',
             label: 'Ações',
             accessor: 'id',
-            width: '15%',
             align: 'center',
             render: (_, connection) => (
                 <div className="flex justify-center gap-2">
@@ -147,24 +165,87 @@ const NodeConnectionsScreen: React.FC<NodeConnectionsScreenProps> = ({ handleNav
                     >
                         <EyeIcon className="w-5 h-5" />
                     </button>
-                    {connection.status === AuthorizationStatus.PENDING && (
-                        <>
-                            <button
-                                className="p-1 text-gray-500 hover:text-green-600 transition-colors"
-                                title="Aprovar"
-                                onClick={() => console.log('Approve', connection)}
-                            >
-                                <CheckCircleIcon className="w-5 h-5" />
-                            </button>
-                            <button
-                                className="p-1 text-gray-500 hover:text-red-600 transition-colors"
-                                title="Rejeitar"
-                                onClick={() => console.log('Reject', connection)}
-                            >
-                                <XCircleIcon className="w-5 h-5" />
-                            </button>
-                        </>
-                    )}
+                    <button
+                        className="p-1 text-gray-500 hover:text-blue-600 transition-colors"
+                        title="Editar"
+                        onClick={() => console.log('Edit', connection)}
+                    >
+                        <PencilSquareIcon className="w-5 h-5" />
+                    </button>
+                    <button
+                        className="p-1 text-gray-500 hover:text-blue-600 transition-colors"
+                        title="Sincronizar"
+                        onClick={() => console.log('Sync', connection)}
+                    >
+                        <ArrowPathIcon className="w-5 h-5" />
+                    </button>
+                </div>
+            ),
+        },
+    ], []);
+
+    const requestColumns: DataTableColumn<ResearchNodeConnection>[] = useMemo(() => [
+        {
+            id: 'nodeName',
+            label: 'Nome',
+            accessor: 'nodeName',
+            sortable: true,
+        },
+        {
+            id: 'nodeUrl',
+            label: 'URL',
+            accessor: 'nodeUrl',
+            sortable: true,
+        },
+        {
+            id: 'status',
+            label: 'Status',
+            accessor: 'status',
+            sortable: true,
+            render: (value) => getStatusBadge(value as AuthorizationStatus),
+        },
+        {
+            id: 'nodeAccessLevel',
+            label: 'Nível de acesso',
+            accessor: 'nodeAccessLevel',
+            sortable: true,
+            render: (value) => getAccessLevelBadge(value as NodeAccessLevel),
+        },
+        {
+            id: 'registeredAt',
+            label: 'Data registro',
+            accessor: 'registeredAt',
+            sortable: true,
+            render: (value) => formatDate(value as Date),
+        },
+        {
+            id: 'updatedAt',
+            label: 'Última alteração',
+            accessor: 'updatedAt',
+            sortable: true,
+            render: (value) => formatDate(value as Date),
+        },
+        {
+            id: 'actions',
+            label: 'Ações',
+            accessor: 'id',
+            align: 'center',
+            render: (_, connection) => (
+                <div className="flex justify-center gap-2">
+                    <button
+                        className="p-1 text-gray-500 hover:text-blue-600 transition-colors"
+                        title="Visualizar detalhes"
+                        onClick={() => console.log('View details', connection)}
+                    >
+                        <EyeIcon className="w-5 h-5" />
+                    </button>
+                    <button
+                        className="p-1 text-gray-500 hover:text-blue-600 transition-colors"
+                        title="Editar"
+                        onClick={() => console.log('Edit', connection)}
+                    >
+                        <PencilSquareIcon className="w-5 h-5" />
+                    </button>
                 </div>
             ),
         },
@@ -174,18 +255,23 @@ const NodeConnectionsScreen: React.FC<NodeConnectionsScreenProps> = ({ handleNav
         {
             value: 'active',
             label: 'Todas as conexões',
-            title: 'Todas as conexões',
+            title: 'Conexões ativas',
             data: activeConnections,
-            columns: columns,
+            columns: activeColumns,
+            action: {
+                label: 'Adicionar',
+                onClick: () => handleNavigation('/nodeConnections/add'),
+                icon: <PlusIcon className="w-5 h-5" />,
+            },
         },
         {
             value: 'requests',
             label: 'Solicitações',
             title: 'Solicitações',
             data: requests,
-            columns: columns,
+            columns: requestColumns,
         },
-    ], [requests, activeConnections, columns]);
+    ], [requests, activeConnections, activeColumns, requestColumns, handleNavigation]);
 
     return (
         <AppLayout

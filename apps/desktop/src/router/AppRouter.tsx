@@ -14,6 +14,8 @@ import CreateResearchForm from "@/screens/Research/CreateResearchForm";
 import ResearchDetailsScreen from "@/screens/Research/ResearchDetailsScreen";
 import VolunteersScreen from "@/screens/Volunteers/VolunteersScreen";
 import CreateVolunteerForm from "@/screens/Volunteers/CreateVolunteerForm";
+import NodeConnectionsScreen from "@/screens/NodeConnections/NodeConnectionsScreen";
+import AddConnectionForm from "@/screens/NodeConnections/AddConnectionForm";
 import { useState, useEffect } from "react";
 
 function AppRouter() {
@@ -60,6 +62,9 @@ function AppRouter() {
         switch (path) {
             case '/nodeConnections':
                 setCurrentPage('node-connections');
+                break;
+            case '/nodeConnections/add':
+                setCurrentPage('add-connection');
                 break;
             case '/research':
                 setCurrentPage('research');
@@ -108,7 +113,15 @@ function AppRouter() {
         switch (currentPage) {
             case 'node-connections':
                 return (
-                    <div>Node Connections Screen - To be implemented</div>
+                    <NodeConnectionsScreen
+                        handleNavigation={handleNavigation}
+                    />
+                );
+            case 'add-connection':
+                return (
+                    <AddConnectionForm
+                        handleNavigation={handleNavigation}
+                    />
                 );
             case 'research':
                 return (
@@ -206,6 +219,7 @@ function AppRouter() {
 type Pages =
     | 'home'
     | 'node-connections'
+    | 'add-connection'
     | 'research'
     | 'add-research'
     | 'view-research'

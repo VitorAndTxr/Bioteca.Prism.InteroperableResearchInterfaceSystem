@@ -8,7 +8,13 @@
       "Bash(mcp__playwright__browser_navigate:*)",
       "Bash(node navigate.js:*)",
       "Bash(node test-google-search.js)",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "Skill(playwright)",
+      "Bash(set:*)",
+      "Bash(node:*)",
+      "Bash(move:*)",
+      "Bash(npm run desktop:*)",
+      "Bash(npm run build:*)"
     ],
     "deny": [],
     "ask": []

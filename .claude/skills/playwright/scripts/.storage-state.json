@@ -81,71 +81,11 @@
       "sameSite": "Lax"
     },
     {
-      "name": "__utma",
-      "value": "61317162.1115813350.1763657792.1763657792.1763657792.1",
-      "domain": ".workspace.google.com",
-      "path": "/",
-      "expires": 1763661392,
-      "httpOnly": false,
-      "secure": false,
-      "sameSite": "Lax"
-    },
-    {
-      "name": "__utmc",
-      "value": "61317162",
-      "domain": ".workspace.google.com",
-      "path": "/",
-      "expires": 1763661392,
-      "httpOnly": false,
-      "secure": false,
-      "sameSite": "Lax"
-    },
-    {
       "name": "_ga_FWCBRW1RY8",
       "value": "GS2.1.s1763657792$o1$g0$t1763657792$j60$l0$h0",
       "domain": ".workspace.google.com",
       "path": "/",
       "expires": 1798217792.094969,
-      "httpOnly": false,
-      "secure": false,
-      "sameSite": "Lax"
-    },
-    {
-      "name": "_ga",
-      "value": "GA1.1.199542670.1763657792",
-      "domain": ".workspace.google.com",
-      "path": "/",
-      "expires": 1763661392,
-      "httpOnly": false,
-      "secure": false,
-      "sameSite": "Lax"
-    },
-    {
-      "name": "APPS_MARKETING_SIGNALS",
-      "value": "source=&lastExperiment=&allExperiments=",
-      "domain": ".workspace.google.com",
-      "path": "/",
-      "expires": 1763661392,
-      "httpOnly": false,
-      "secure": false,
-      "sameSite": "Lax"
-    },
-    {
-      "name": "__utmb",
-      "value": "61317162.0.10.1763657792",
-      "domain": ".workspace.google.com",
-      "path": "/",
-      "expires": 1763661392,
-      "httpOnly": false,
-      "secure": false,
-      "sameSite": "Lax"
-    },
-    {
-      "name": "__utmz",
-      "value": "61317162.1763657792.1.1.utmcsr=google|utmccn=(organic)|utmcmd=organic|utmctr=(not provided)",
-      "domain": ".workspace.google.com",
-      "path": "/",
-      "expires": 1763661392,
       "httpOnly": false,
       "secure": false,
       "sameSite": "Lax"
@@ -172,6 +112,19 @@
     }
   ],
   "origins": [
+    {
+      "origin": "http://localhost:5173",
+      "localStorage": [
+        {
+          "name": "iris-desktop:channel",
+          "value": "{\"channelId\":\"a833d3f3-fbf5-4487-b1b6-cc43ec69214a\",\"symmetricKey\":\"uxztfKhwJ1d3Mi7pyVCFOZoQybo1GPxdyNU3rW/1EU4=\",\"expiresAt\":\"2025-11-20T21:13:47.398Z\",\"metadata\":{\"serverPublicKey\":\"MHYwEAYHKoZIzj0CAQYFK4EEACIDYgAEpx1aYg6CIgaodMdJ14IAaAlNTkxGQFzzqy/SrCtIhxI9dt1l4B+DDn57Ejww3q3Z2+6nf/6IpyqX8/1vHhIPxp6KJ8ubqWrxARZPgQyGS7Ns0RW/CHRD5KxbaklBTNsd\"}}"
+        },
+        {
+          "name": "iris-desktop:session",
+          "value": "{\"sessionToken\":\"58796ecd-c0e1-41d9-8cec-ea2b45f76556\",\"expiresAt\":\"2025-11-20T21:43:47.597Z\",\"nodeId\":\"7f3df77f-5a39-4279-9753-34ba5a148e06\",\"requestWindowCount\":1}"
+        }
+      ]
+    },
     {
       "origin": "http://localhost:5175",
       "localStorage": [

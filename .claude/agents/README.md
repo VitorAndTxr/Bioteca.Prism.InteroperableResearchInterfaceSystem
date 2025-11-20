@@ -22,6 +22,16 @@ This directory contains custom agent definitions for the PRISM/IRIS project. Age
 - Investigating best practices
 - Verifying facts from authoritative sources
 
+### 3. Screen Design Validator (`screen-design-validator.md`)
+**Purpose**: Validates screen implementation against Figma designs, fixes discrepancies, and ensures design fidelity using Playwright and Figma REST API scripts.
+
+**Use when**:
+- Validating UI implementation matches Figma design
+- Fixing visual discrepancies (colors, spacing, typography)
+- Ensuring design fidelity before release
+- Comparing multiple screen states with design frames
+- Automated design-to-code validation workflows
+
 ## How to Use Agents
 
 ### Basic Invocation
@@ -81,6 +91,39 @@ Task({
     - Should validate response schemas
 
     Design agent with appropriate tools and workflow
+  `
+})
+```
+
+### Example: Screen Design Validator
+
+```typescript
+// Validate screen implementation against Figma design
+Task({
+  subagent_type: "screen-design-validator",
+  model: "sonnet",
+  description: "Validate Connections screen design",
+  prompt: `
+    Validate the Node Connections screen implementation against Figma designs.
+
+    Figma frames to validate:
+    - 6804-13512 (Main connections list)
+    - 6804-13591 (Connection details)
+    - 6910-3543 (Add connection form)
+    - 6998-800 (Connection states)
+
+    Screen path: /node-connections
+    Target files: apps/desktop/src/screens/NodeConnections/
+
+    Workflow:
+    1. Create temp folder for screenshots
+    2. Extract Figma frame screenshots
+    3. Navigate to Connections menu using Playwright
+    4. Compare implementation with design
+    5. Fix all discrepancies
+    6. Clean up temp files
+
+    Ensure design fidelity >= 95%.
   `
 })
 ```
