@@ -11,16 +11,33 @@ Skills are organized to minimize token usage by loading documentation on-demand 
 ```
 .claude/skills/
 ├── README.md                    # This file
-└── mcp-servers/
+├── MCP_SUBAGENT_PATTERN.md      # Zero-memory loading pattern
+│
+├── figma-desktop/               # Figma Desktop Skill
+│   ├── SKILL.md                 # Skill metadata (required)
+│   └── scripts/                 # REST API scripts
+│       ├── README.md            # Scripts documentation
+│       ├── extract-frames.js    # Extract all frames from page
+│       ├── get-metadata.js      # Get node structure
+│       ├── get-screenshot.js    # Capture screenshots
+│       ├── get-variable-defs.js # Extract design tokens
+│       └── compare-frames.js    # Compare frames
+│
+└── mcp-servers/                 # MCP Tool Documentation
     ├── INDEX.md                 # Global MCP servers index
     │
     ├── playwright/              # Browser automation
-    │   ├── INDEX.md            # Server overview + setup
-    │   └── *.md                # Individual tool docs (21 tools)
+    │   └── INDEX.md             # Server overview (21 tools)
     │
     └── figma-desktop/           # Figma design extraction
-        ├── INDEX.md            # Server overview + setup
-        └── *.md                # Individual tool docs (7 tools)
+        ├── INDEX.md             # Server overview
+        ├── get_design_context.md
+        ├── get_metadata.md
+        ├── get_screenshot.md
+        ├── get_variable_defs.md
+        ├── get_code_connect_map.md
+        ├── get_figjam.md
+        └── get_annotations.md
 ```
 
 ## Usage Pattern

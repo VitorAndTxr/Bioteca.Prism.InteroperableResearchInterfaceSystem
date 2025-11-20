@@ -40,7 +40,9 @@
       "WebFetch(domain:help.figma.com)",
       "SlashCommand(/map-new-page:*)",
       "Bash(tee:*)",
-      "WebFetch(domain:www.anthropic.com)"
+      "WebFetch(domain:www.anthropic.com)",
+      "Bash(nul)",
+      "Skill(figma-desktop)"
     ],
     "deny": [],
     "ask": []

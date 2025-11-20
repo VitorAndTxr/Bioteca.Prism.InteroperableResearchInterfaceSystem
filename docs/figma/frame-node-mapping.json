@@ -2,10 +2,10 @@
   "fileKey": "xFC8eCJcSwB9EyicTmDJ7w",
   "fileName": "I.R.I.S.-Prototype",
   "baseUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype",
-  "mappingDate": "2025-10-17",
-  "lastUpdated": "2025-11-01",
-  "updateNotes": "Project reorganized in Figma. Added 13 previously unmapped frames discovered during verification audit. Some frame node IDs have changed due to structural reorganization.",
-  "totalFrames": 31,
+  "mappingDate": "2025-11-20",
+  "lastUpdated": "2025-11-20",
+  "updateNotes": "Revalidation: Updated frame name 'Usuários e Pesquisadores' to 'Usuários'. Added 9 new frames: Pesquisadores (038), Voluntários (039), Pesquisa específica - Aplicações (040), Pesquisa específica - Dispositivos list (041), Pesquisa específica - Sensores list (042), Aceite Solicitações (043), Adicionar voluntário existente (044), Confirmar remoção de voluntário (045), Condições clínicas open (046). Note: Frames 036/041 and 037/042 share names but are different screens (form vs list).",
+  "totalFrames": 44,
   "frames": [
     {
       "id": "001",
@@ -27,18 +27,18 @@
       "priority": "High",
       "dimensions": "1280x720",
       "status": "verified",
+      "notes": "Renamed from 'Usuários e Pesquisadores'",
       "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6804-13670"
     },
     {
       "id": "003",
-      "name": "Pesquisadores",
+      "name": "Pesquisas",
       "nodeId": "6910-3378",
-      "module": "User Management",
+      "module": "Research Management",
       "type": "Screen",
       "priority": "High",
       "dimensions": "1280x720",
-      "status": "updated",
-      "previousNodeId": "6804-12845",
+      "status": "verified",
       "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6910-3378"
     },
     {
@@ -49,7 +49,7 @@
       "type": "Screen",
       "priority": "Medium",
       "dimensions": "1280x720",
-      "status": "pending",
+      "status": "verified",
       "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6804-12778"
     },
     {
@@ -60,7 +60,7 @@
       "type": "Screen",
       "priority": "Medium",
       "dimensions": "1280x720",
-      "status": "pending",
+      "status": "verified",
       "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6804-12812"
     },
     {
@@ -71,7 +71,7 @@
       "type": "Modal",
       "priority": "Medium",
       "dimensions": "617x350",
-      "status": "pending",
+      "status": "verified",
       "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6835-991"
     },
     {
@@ -90,7 +90,7 @@
       "name": "Novo usuário adicionado com sucesso!",
       "nodeId": "6816-2701",
       "module": "User Management",
-      "type": "Modal",
+      "type": "Toast",
       "priority": "Low",
       "dimensions": "353x42",
       "status": "pending",
@@ -101,7 +101,7 @@
       "name": "Novo pesquisador adicionado com sucesso!",
       "nodeId": "6816-2702",
       "module": "User Management",
-      "type": "Modal",
+      "type": "Toast",
       "priority": "Low",
       "dimensions": "391x42",
       "status": "pending",
@@ -109,9 +109,9 @@
     },
     {
       "id": "010",
-      "name": "NPIs e aplicações - Solicitações",
+      "name": "Conexões - Solicitações",
       "nodeId": "6804-13591",
-      "module": "NPI Management",
+      "module": "Connection Management",
       "type": "Screen",
       "priority": "High",
       "dimensions": "1280x720",
@@ -120,13 +120,13 @@
     },
     {
       "id": "011",
-      "name": "NPIs e aplicações - Conexões ativas",
+      "name": "Conexões - Conexões ativas",
       "nodeId": "6804-13512",
-      "module": "NPI Management",
+      "module": "Connection Management",
       "type": "Screen",
       "priority": "High",
       "dimensions": "1280x720",
-      "status": "pending",
+      "status": "verified",
       "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6804-13512"
     },
     {
@@ -148,7 +148,7 @@
       "type": "Screen",
       "priority": "Medium",
       "dimensions": "1280x720",
-      "status": "pending",
+      "status": "verified",
       "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6804-13008"
     },
     {
@@ -207,18 +207,6 @@
       "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6804-13428"
     },
     {
-      "id": "019",
-      "name": "Pesquisas",
-      "nodeId": "6910-4277",
-      "module": "Research Management",
-      "type": "Screen",
-      "priority": "High",
-      "dimensions": "1280x720",
-      "status": "verified",
-      "discoveredIn": "2025-11-01",
-      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6910-4277"
-    },
-    {
       "id": "020",
       "name": "Pesquisa específica - Voluntários",
       "nodeId": "6910-4190",
@@ -227,7 +215,6 @@
       "priority": "Medium",
       "dimensions": "1280x720",
       "status": "verified",
-      "discoveredIn": "2025-11-01",
       "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6910-4190"
     },
     {
@@ -239,20 +226,7 @@
       "priority": "Medium",
       "dimensions": "1280x720",
       "status": "verified",
-      "discoveredIn": "2025-11-01",
       "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6910-3745"
-    },
-    {
-      "id": "022",
-      "name": "Voluntários",
-      "nodeId": "6910-4277",
-      "module": "User Management",
-      "type": "Screen",
-      "priority": "High",
-      "dimensions": "1280x720",
-      "status": "verified",
-      "discoveredIn": "2025-11-01",
-      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6910-4277"
     },
     {
       "id": "023",
@@ -263,7 +237,6 @@
       "priority": "Medium",
       "dimensions": "1280x720",
       "status": "verified",
-      "discoveredIn": "2025-11-01",
       "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6910-2905"
     },
     {
@@ -275,7 +248,6 @@
       "priority": "Medium",
       "dimensions": "1280x720",
       "status": "verified",
-      "discoveredIn": "2025-11-01",
       "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6910-2825"
     },
     {
@@ -287,7 +259,6 @@
       "priority": "Medium",
       "dimensions": "1280x720",
       "status": "verified",
-      "discoveredIn": "2025-11-01",
       "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6910-4029"
     },
     {
@@ -299,7 +270,6 @@
       "priority": "Medium",
       "dimensions": "1280x720",
       "status": "verified",
-      "discoveredIn": "2025-11-01",
       "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6910-2719"
     },
     {
@@ -311,7 +281,6 @@
       "priority": "Medium",
       "dimensions": "1280x720",
       "status": "verified",
-      "discoveredIn": "2025-11-01",
       "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6910-3177"
     },
     {
@@ -323,7 +292,6 @@
       "priority": "Medium",
       "dimensions": "1280x720",
       "status": "verified",
-      "discoveredIn": "2025-11-01",
       "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6910-3052"
     },
     {
@@ -335,19 +303,17 @@
       "priority": "Medium",
       "dimensions": "1280x720",
       "status": "verified",
-      "discoveredIn": "2025-11-01",
       "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6910-2612"
     },
     {
       "id": "030",
       "name": "Nova conexão",
       "nodeId": "6910-3543",
-      "module": "NPI Management",
+      "module": "Connection Management",
       "type": "Screen",
       "priority": "Medium",
       "dimensions": "1280x720",
       "status": "verified",
-      "discoveredIn": "2025-11-01",
       "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6910-3543"
     },
     {
@@ -359,8 +325,183 @@
       "priority": "Medium",
       "dimensions": "1280x720",
       "status": "verified",
-      "discoveredIn": "2025-11-01",
       "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6910-2488"
+    },
+    {
+      "id": "032",
+      "name": "Pesquisas do voluntário open",
+      "nodeId": "6998-3774",
+      "module": "Research Management",
+      "type": "Component",
+      "priority": "Medium",
+      "dimensions": "672x146",
+      "status": "verified",
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6998-3774"
+    },
+    {
+      "id": "033",
+      "name": "Novo voluntário",
+      "nodeId": "6998-918",
+      "module": "Volunteer Management",
+      "type": "Screen",
+      "priority": "Medium",
+      "dimensions": "1280x765",
+      "status": "verified",
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6998-918"
+    },
+    {
+      "id": "034",
+      "name": "Pesquisa específica - Nova Aplicação",
+      "nodeId": "6998-4356",
+      "module": "Research Management",
+      "type": "Screen",
+      "priority": "Medium",
+      "dimensions": "1280x720",
+      "status": "verified",
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6998-4356"
+    },
+    {
+      "id": "035",
+      "name": "Pesquisa específica - Novo voluntário",
+      "nodeId": "6998-4751",
+      "module": "Research Management",
+      "type": "Screen",
+      "priority": "Medium",
+      "dimensions": "1280x720",
+      "status": "verified",
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6998-4751"
+    },
+    {
+      "id": "036",
+      "name": "Pesquisa específica - Dispositivos",
+      "nodeId": "6998-4555",
+      "module": "Research Management",
+      "type": "Screen",
+      "priority": "Medium",
+      "dimensions": "1280x720",
+      "status": "verified",
+      "notes": "Add device form. See also frame 041 for device list",
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6998-4555"
+    },
+    {
+      "id": "037",
+      "name": "Pesquisa específica - Sensores",
+      "nodeId": "6998-4642",
+      "module": "Research Management",
+      "type": "Screen",
+      "priority": "Medium",
+      "dimensions": "1280x720",
+      "status": "verified",
+      "notes": "Add sensor form. See also frame 042 for sensor list",
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6998-4642"
+    },
+    {
+      "id": "038",
+      "name": "Pesquisadores",
+      "nodeId": "6804-12845",
+      "module": "User Management",
+      "type": "Screen",
+      "priority": "High",
+      "dimensions": "1280x720",
+      "status": "pending",
+      "notes": "New frame - Researcher list screen",
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6804-12845"
+    },
+    {
+      "id": "039",
+      "name": "Voluntários",
+      "nodeId": "6998-847",
+      "module": "Volunteer Management",
+      "type": "Screen",
+      "priority": "High",
+      "dimensions": "1280x720",
+      "status": "pending",
+      "notes": "New frame - Volunteer list screen",
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6998-847"
+    },
+    {
+      "id": "040",
+      "name": "Pesquisa específica - Aplicações",
+      "nodeId": "6998-4090",
+      "module": "Research Management",
+      "type": "Screen",
+      "priority": "Medium",
+      "dimensions": "1280x720",
+      "status": "pending",
+      "notes": "New frame - Applications list for specific research",
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6998-4090"
+    },
+    {
+      "id": "041",
+      "name": "Pesquisa específica - Dispositivos",
+      "nodeId": "6998-4179",
+      "module": "Research Management",
+      "type": "Screen",
+      "priority": "Medium",
+      "dimensions": "1280x720",
+      "status": "pending",
+      "notes": "New frame - Device list for specific research. See also frame 036 for add device form",
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6998-4179"
+    },
+    {
+      "id": "042",
+      "name": "Pesquisa específica - Sensores",
+      "nodeId": "6998-4266",
+      "module": "Research Management",
+      "type": "Screen",
+      "priority": "Medium",
+      "dimensions": "1280x720",
+      "status": "pending",
+      "notes": "New frame - Sensor list for specific research. See also frame 037 for add sensor form",
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6998-4266"
+    },
+    {
+      "id": "043",
+      "name": "Aceite Solicitações",
+      "nodeId": "6998-800",
+      "module": "Connection Management",
+      "type": "Modal",
+      "priority": "Medium",
+      "dimensions": "405x230",
+      "status": "pending",
+      "notes": "New frame - Accept connection request modal",
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6998-800"
+    },
+    {
+      "id": "044",
+      "name": "Adicionar voluntário existente",
+      "nodeId": "6998-5170",
+      "module": "Volunteer Management",
+      "type": "Modal",
+      "priority": "Medium",
+      "dimensions": "405x302",
+      "status": "pending",
+      "notes": "New frame - Add existing volunteer to research modal",
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6998-5170"
+    },
+    {
+      "id": "045",
+      "name": "Confirmar remoção de voluntário",
+      "nodeId": "6998-3929",
+      "module": "Volunteer Management",
+      "type": "Modal",
+      "priority": "Medium",
+      "dimensions": "482x230",
+      "status": "pending",
+      "notes": "New frame - Confirm volunteer removal modal",
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6998-3929"
+    },
+    {
+      "id": "046",
+      "name": "Condições clínicas open",
+      "nodeId": "6998-3586",
+      "module": "Volunteer Management",
+      "type": "Component",
+      "priority": "Medium",
+      "dimensions": "672x266",
+      "status": "pending",
+      "notes": "New frame - Expanded clinical conditions accordion component",
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6998-3586"
     }
   ]
 }

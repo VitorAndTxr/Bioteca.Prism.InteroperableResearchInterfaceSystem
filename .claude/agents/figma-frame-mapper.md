@@ -29,11 +29,7 @@ Maps Figma page frames to structured data with screenshots, design tokens, and c
 **Reason**: Cost-efficient for structured MCP operations
 
 **Tools**:
-- `mcp__figma-desktop__get_metadata` - Frame hierarchy
-- `mcp__figma-desktop__get_screenshot` - Visual references
-- `mcp__figma-desktop__get_variable_defs` - Design tokens
-- `mcp__figma-desktop__get_design_context` - Implementation code
-- `mcp__figma-desktop__get_code_connect_map` - Component mappings
+- `skills/figma-desktop` - Figma Desktop Clade Skill
 - `Write`, `Read` - Save/load mappings
 
 ---
