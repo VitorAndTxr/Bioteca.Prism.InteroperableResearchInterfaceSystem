@@ -4,23 +4,25 @@ description: Figma page URL or node ID to map
 
 # 🗺️ Map New Figma Page
 
-I will map a new Figma page and extract all frame links using progressive skill discovery.
+I will map a new Figma page and extract all frame links using REST API scripts.
 
 ## Process
 
 ### Step 1: Load Skills Documentation 📚
 
 ```
-1. Read: .claude/skills/mcp-servers/figma-desktop/INDEX.md
-2. Read individual tool docs as needed:
-   - get_metadata.md (extract frames)
-   - get_screenshot.md (visual reference)
+1. Read: .claude/skills/figma-desktop/SKILL.md
+2. Read: .claude/skills/figma-desktop/scripts/README.md
+3. Available scripts:
+   - extract-frames.js (discover all frames)
+   - get-metadata.js (frame structure)
+   - get-screenshot.js (visual reference)
 ```
 
-**Fallback** (if Figma MCP unavailable):
+**Fallback** (if scripts fail):
 ```
 1. Read: .claude/skills/mcp-servers/playwright/INDEX.md
-2. Read: browser_navigate.md, browser_snapshot.md
+2. Use: browser_navigate, browser_snapshot
 ```
 
 ### Step 2: Parse Input 🔍
@@ -29,12 +31,18 @@ Extract node ID from URL: `{{pageUrl}}`
 - Format: `https://figma.com/design/[fileKey]?node-id=[nodeId]`
 - Or direct node ID: `[nodeId]`
 
-### Step 3: Execute MCP Tools 🔧
+### Step 3: Execute REST API Scripts 🔧
 
-**Primary Method - Figma MCP**:
-```
-mcp__figma-desktop__get_metadata({ nodeId: "{{nodeId}}" })
-mcp__figma-desktop__get_screenshot({ nodeId: "{{nodeId}}" })
+**Primary Method - Figma Scripts**:
+```bash
+# Extract all frames from page
+node .claude/skills/figma-desktop/scripts/extract-frames.js xFC8eCJcSwB9EyicTmDJ7w {{nodeId}}
+
+# Get metadata
+node .claude/skills/figma-desktop/scripts/get-metadata.js xFC8eCJcSwB9EyicTmDJ7w {{nodeId}}
+
+# Get screenshot
+node .claude/skills/figma-desktop/scripts/get-screenshot.js xFC8eCJcSwB9EyicTmDJ7w {{nodeId}}
 ```
 
 **Fallback Method - Playwright MCP**:
@@ -104,4 +112,4 @@ Frames Mapped:
 ═══════════════════════════════════════
 ```
 
-Starting progressive skill discovery and page mapping...
+Starting page mapping with REST API scripts...

@@ -4,34 +4,33 @@ description: Name of the component to implement (e.g., Button, Input, Dropdown)
 
 # 🔨 Implement Component: {{componentName}}
 
-I will implement the {{componentName}} component using progressive skill discovery.
+I will implement the {{componentName}} component using Figma REST API scripts.
 
 ## Process
 
 ### Step 1: Load Skills Documentation 📚
 
 ```
-1. Read: .claude/skills/mcp-servers/figma-desktop/INDEX.md
-2. Load individual tool docs as needed:
-   - get_design_context.md (primary - generates code)
-   - get_metadata.md (component structure)
-   - get_variable_defs.md (design tokens)
-   - get_screenshot.md (visual reference)
+1. Read: .claude/skills/figma-desktop/SKILL.md
+2. Read: .claude/skills/figma-desktop/scripts/README.md
+3. Available scripts:
+   - get-metadata.js (component structure)
+   - get-screenshot.js (visual reference)
+   - get-variable-defs.js (design tokens)
 ```
 
 ### Step 2: Extract Figma Design 🎨
 
-**MCP Tools**:
-```
-mcp__figma-desktop__get_design_context({
-  nodeId: "{{componentNode}}",
-  artifactType: "REUSABLE_COMPONENT",
-  clientFrameworks: "react,typescript",
-  clientLanguages: "typescript,jsx"
-})
-mcp__figma-desktop__get_metadata({ nodeId: "{{componentNode}}" })
-mcp__figma-desktop__get_variable_defs()
-mcp__figma-desktop__get_screenshot({ nodeId: "{{componentNode}}" })
+**REST API Scripts**:
+```bash
+# Get component metadata
+node .claude/skills/figma-desktop/scripts/get-metadata.js xFC8eCJcSwB9EyicTmDJ7w {{componentNode}}
+
+# Get screenshot
+node .claude/skills/figma-desktop/scripts/get-screenshot.js xFC8eCJcSwB9EyicTmDJ7w {{componentNode}}
+
+# Extract design tokens
+node .claude/skills/figma-desktop/scripts/get-variable-defs.js xFC8eCJcSwB9EyicTmDJ7w
 ```
 
 **Extract**:

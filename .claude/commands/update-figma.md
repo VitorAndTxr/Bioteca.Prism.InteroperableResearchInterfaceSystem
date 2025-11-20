@@ -4,32 +4,34 @@ description: Update all Figma mappings and extract latest designs
 
 # 🎨 Update Figma Mappings
 
-I will sync all Figma designs and update the project mappings using the **progressive skill discovery pattern**.
+I will sync all Figma designs and update the project mappings using **REST API scripts**.
 
 ## Process
 
 ### Step 1: Load Skills Documentation 📚
 
-Following the progressive discovery pattern from `.claude/skills/README.md`:
+Following the skill documentation from `.claude/skills/figma-desktop/SKILL.md`:
 
 ```
-1. Read: .claude/skills/mcp-servers/INDEX.md (global overview)
-2. Read: .claude/skills/mcp-servers/figma-desktop/INDEX.md (7 Figma tools)
-3. Read individual tool docs as needed:
-   - get_metadata.md (component structure)
-   - get_design_context.md (code generation)
-   - get_variable_defs.md (design tokens)
-   - get_screenshot.md (visual reference)
+1. Read: .claude/skills/figma-desktop/SKILL.md (overview)
+2. Read: .claude/skills/figma-desktop/scripts/README.md (8 scripts)
+3. Available scripts:
+   - get-metadata.js (component structure)
+   - get-screenshot.js (visual reference)
+   - get-variable-defs.js (design tokens)
+   - extract-frames.js (frame discovery)
+   - get-annotations.js (dev mode notes)
 ```
 
-**Why Progressive Discovery?**
-- Zero tokens until accessed
-- ~85% token savings vs. upfront loading
-- Load only what you need when you need it
+**Why Scripts?**
+- Works without Figma Desktop app running
+- Batch processing and automation
+- CI/CD pipeline integration
+- Cross-platform compatibility
 
 ### Step 2: Extract Figma Resources 🎨
 
-Using the loaded MCP tools:
+Using the REST API scripts:
 
 **Figma File**: I.R.I.S.-Prototype (xFC8eCJcSwB9EyicTmDJ7w)
 - Design System: 33 components (node 801-23931)
@@ -38,24 +40,26 @@ Using the loaded MCP tools:
 **Target Documentation**:
 - `docs/figma/design-system-mapping.json`
 - `docs/figma/frame-node-mapping.json`
-- `docs/figma/MCP_SERVER_CONNECTION_MAP.md`
 
-**Primary Method - Figma MCP**:
-```
-mcp__figma-desktop__get_metadata({ nodeId: "801-23931" })  // Design system
-mcp__figma-desktop__get_metadata({ nodeId: "6804-13742" }) // App screens
-mcp__figma-desktop__get_design_context({ nodeId: "...", artifactType: "REUSABLE_COMPONENT" })
-mcp__figma-desktop__get_variable_defs() // Design tokens
+**Primary Method - REST API Scripts**:
+```bash
+# Extract frames from page
+node .claude/skills/figma-desktop/scripts/extract-frames.js xFC8eCJcSwB9EyicTmDJ7w 2501:2715
+
+# Get metadata for design system
+node .claude/skills/figma-desktop/scripts/get-metadata.js xFC8eCJcSwB9EyicTmDJ7w 801:23931
+
+# Get metadata for app screens
+node .claude/skills/figma-desktop/scripts/get-metadata.js xFC8eCJcSwB9EyicTmDJ7w 6804:13742
+
+# Extract design tokens
+node .claude/skills/figma-desktop/scripts/get-variable-defs.js xFC8eCJcSwB9EyicTmDJ7w
+
+# Get screenshots
+node .claude/skills/figma-desktop/scripts/get-screenshot.js xFC8eCJcSwB9EyicTmDJ7w 6804:13742
 ```
 
-**Fallback Method - Playwright MCP** (if Figma unavailable):
-```
-mcp__playwright__browser_navigate({ url: "https://figma.com/design/..." })
-mcp__playwright__browser_snapshot() // Extract structure
-mcp__playwright__browser_take_screenshot({ fullPage: true })
-```
-
-### Step 4: Update Documentation 📝
+### Step 3: Update Documentation 📝
 
 Actions performed:
 1. Extract component specs with frame links
@@ -68,7 +72,6 @@ Actions performed:
 **Files Updated**:
 - `docs/figma/design-system-mapping.json` (33 components)
 - `docs/figma/frame-node-mapping.json` (31 screens)
-- `docs/figma/MCP_SERVER_CONNECTION_MAP.md` (MCP mapping)
 - `docs/figma/FIGMA_MAPPING_UPDATE.md` (update notes)
 
 ## Output Report
@@ -78,10 +81,11 @@ Actions performed:
     FIGMA UPDATE COMPLETE
 ═══════════════════════════════════════
 
-📚 Skills Documentation:
-✅ Progressive discovery pattern applied
-✅ Loaded: INDEX → figma-desktop → individual tools
-✅ Token efficiency: ~85% savings
+📚 Scripts Used:
+✅ extract-frames.js - Frame discovery
+✅ get-metadata.js - Structure extraction
+✅ get-variable-defs.js - Design tokens
+✅ get-screenshot.js - Visual reference
 
 🎨 Design System:
 ✅ Components: {{updatedCount}}/33 updated
@@ -94,11 +98,10 @@ Actions performed:
 📁 Files Updated:
 ✅ design-system-mapping.json
 ✅ frame-node-mapping.json
-✅ MCP_SERVER_CONNECTION_MAP.md
 ✅ FIGMA_MAPPING_UPDATE.md
 
 ✨ All Figma resources synchronized!
 ═══════════════════════════════════════
 ```
 
-Starting Figma sync with progressive skill discovery...
+Starting Figma sync with REST API scripts...

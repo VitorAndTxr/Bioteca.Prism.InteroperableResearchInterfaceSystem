@@ -331,7 +331,7 @@ IRIS/
 │       └── mcp-servers/     # MCP server documentation
 │           ├── INDEX.md     # Global MCP index
 │           ├── playwright/  # 21 browser automation tools
-│           └── figma-desktop/ # 7 design extraction tools
+│           └── figma-desktop/ # 8 design extraction scripts
 │
 ├── apps/
 │   ├── mobile/              # React Native + Expo (Device control)
@@ -431,17 +431,18 @@ Browser automation and testing for automated workflows, visual debugging, and we
 
 **Documentation**: `.claude/skills/mcp-servers/playwright/INDEX.md`
 
-#### Figma Desktop (7 tools)
-Design-to-code implementation with AI-powered code generation from Figma designs.
+#### Figma Desktop (8 scripts)
+Design data extraction using REST API scripts for design-to-code workflows.
 
-**Key Tools**:
-- `mcp__figma-desktop__get_design_context` - Generate code from designs (primary)
-- `mcp__figma-desktop__get_variable_defs` - Extract design tokens
-- `mcp__figma-desktop__get_code_connect_map` - Map designs to codebase
-- `mcp__figma-desktop__get_screenshot` - Capture design visuals
-- `mcp__figma-desktop__get_metadata` - Get structure overview
+**Key Scripts**:
+- `extract-frames.js` - Extract all frames from a page
+- `get-metadata.js` - Get node structure and hierarchy
+- `get-screenshot.js` - Capture node screenshots
+- `get-variable-defs.js` - Extract design tokens
+- `get-annotations.js` - Get dev mode annotations
+- `get-code-connect-map.js` - Get component metadata
 
-**Documentation**: `.claude/skills/mcp-servers/figma-desktop/INDEX.md`
+**Documentation**: `.claude/skills/figma-desktop/SKILL.md`
 
 ### Usage Pattern
 
@@ -452,16 +453,16 @@ Design-to-code implementation with AI-powered code generation from Figma designs
    Read: .claude/skills/mcp-servers/INDEX.md
    ```
 
-2. **Navigate to specific server**:
+2. **Navigate to specific skill**:
    ```
    Read: .claude/skills/mcp-servers/playwright/INDEX.md
-   Read: .claude/skills/mcp-servers/figma-desktop/INDEX.md
+   Read: .claude/skills/figma-desktop/SKILL.md
    ```
 
-3. **Load individual tools as needed**:
+3. **Load individual tools/scripts as needed**:
    ```
    Read: .claude/skills/mcp-servers/playwright/browser_navigate.md
-   Read: .claude/skills/mcp-servers/figma-desktop/get_design_context.md
+   Read: .claude/skills/figma-desktop/scripts/README.md
    ```
 
 ### Token Efficiency Benefits
@@ -482,14 +483,11 @@ mcp__playwright__browser_click({ element: "Login Button", ref: "btn123" })
 ```
 
 **Design System Implementation**:
-```typescript
-// Extract component from Figma
-mcp__figma-desktop__get_design_context({
-  nodeId: "123:456",
-  artifactType: "REUSABLE_COMPONENT",
-  clientFrameworks: "react,typescript",
-  clientLanguages: "typescript,jsx"
-})
+```bash
+# Extract design data from Figma
+node .claude/skills/figma-desktop/scripts/get-metadata.js xFC8eCJcSwB9EyicTmDJ7w 123:456
+node .claude/skills/figma-desktop/scripts/get-screenshot.js xFC8eCJcSwB9EyicTmDJ7w 123:456
+node .claude/skills/figma-desktop/scripts/get-variable-defs.js xFC8eCJcSwB9EyicTmDJ7w
 ```
 
 **Visual Debugging**:
@@ -542,7 +540,7 @@ This application is part of the larger PRISM federated research framework:
 - `.claude/skills/README.md` - MCP Skills overview and usage guide
 - `.claude/skills/mcp-servers/INDEX.md` - Global index of all MCP servers
 - `.claude/skills/mcp-servers/playwright/INDEX.md` - Playwright automation tools (21)
-- `.claude/skills/mcp-servers/figma-desktop/INDEX.md` - Figma design extraction tools (7)
+- `.claude/skills/figma-desktop/SKILL.md` - Figma design extraction scripts (8)
 
 **Setup & Getting Started**:
 - `docs/setup/QUICK_START.md` - Get up and running fast

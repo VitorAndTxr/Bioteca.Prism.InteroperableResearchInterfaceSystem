@@ -2,7 +2,6 @@
 
 /**
  * Get Code Connect mapping between Figma components and codebase using REST API
- * Equivalent to mcp__figma-desktop__get_code_connect_map
  *
  * Usage: node get-code-connect-map.js <file-key> [figma-token]
  */

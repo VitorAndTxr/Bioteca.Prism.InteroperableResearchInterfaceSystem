@@ -2,7 +2,6 @@
 
 /**
  * Get screenshot for a Figma node using REST API
- * Equivalent to mcp__figma-desktop__get_screenshot
  *
  * Usage: node get-screenshot.js <file-key> <node-id> [figma-token] [output-file]
  */

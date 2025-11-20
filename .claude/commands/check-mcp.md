@@ -4,14 +4,14 @@ description: Debug skills documentation and MCP tool availability
 
 # 🔬 Skills System Debug
 
-I will debug the skills documentation system and verify MCP tool availability.
+I will debug the skills documentation system and verify tool availability.
 
 ## What This Command Does
 
 This command validates the **progressive skill discovery pattern** implemented in `.claude/skills/`:
 
 1. **Documentation Structure**: Verifies skills documentation exists and is accessible
-2. **MCP Tool Availability**: Tests that MCP tools are available for use
+2. **Tool Availability**: Tests that MCP tools and Figma scripts are available
 3. **Progressive Discovery**: Validates the token-efficient pattern works correctly
 
 ## Debug Process
@@ -21,24 +21,24 @@ This command validates the **progressive skill discovery pattern** implemented i
 **Step 1 - Verify Global Index**:
 ```
 Read: .claude/skills/README.md
-Read: .claude/skills/mcp-servers/INDEX.md
 ```
 
 Expected:
 - ✅ README explains progressive discovery pattern
-- ✅ INDEX lists all available MCP servers
+- ✅ Lists all available skills
 - ✅ Documentation is in English
 
 **Step 2 - Verify Figma Skills Documentation**:
 ```
-Read: .claude/skills/mcp-servers/figma-desktop/INDEX.md
+Read: .claude/skills/figma-desktop/SKILL.md
+Read: .claude/skills/figma-desktop/scripts/README.md
 ```
 
 Expected:
-- ✅ Lists all 7 Figma tools
-- ✅ Each tool has concise description (<50 chars)
-- ✅ Links to individual tool documentation
-- ✅ Tool documentation exists and is <200 tokens
+- ✅ Lists all 8 Figma scripts
+- ✅ Each script has clear description
+- ✅ Usage examples provided
+- ✅ Setup instructions included
 
 **Step 3 - Verify Playwright Skills Documentation**:
 ```
@@ -51,24 +51,18 @@ Expected:
 - ✅ Links to individual tool documentation
 - ✅ Tool documentation exists and is <200 tokens
 
-**Step 4 - Validate Documentation Quality**:
-For each tool file:
-- Consistent structure (parameters, returns, errors, examples)
-- Token count <200 per file
-- Real-world usage examples
-- Matches actual MCP tool implementation
+### Phase 2: Tool Availability Testing 🔧
 
-### Phase 2: MCP Tool Availability Testing 🔧
-
-**Test 1 - Figma Desktop MCP**:
-```
-Try: mcp__figma-desktop__get_metadata({ nodeId: "0:0" })
+**Test 1 - Figma Scripts**:
+```bash
+# Test script execution
+node .claude/skills/figma-desktop/scripts/get-metadata.js xFC8eCJcSwB9EyicTmDJ7w 0:0
 ```
 
 Possible outcomes:
-- ✅ **Success**: Tool responds (even if node doesn't exist)
-- ❌ **Tool not found**: MCP server not installed
-- ❌ **Auth error**: Figma Desktop not logged in
+- ✅ **Success**: Script responds (even if node doesn't exist)
+- ❌ **Missing token**: FIGMA_TOKEN not set
+- ❌ **Script error**: Script file not found
 
 **Test 2 - Playwright MCP**:
 ```
@@ -83,10 +77,12 @@ Possible outcomes:
 **Test 3 - Pre-approved Tool Access**:
 Verify these tools can be called without user approval:
 ```
-- mcp__figma-desktop__get_metadata
-- mcp__figma-desktop__get_screenshot
-- mcp__figma-desktop__get_design_context
-- mcp__figma-desktop__get_variable_defs
+Figma Scripts (via Bash):
+- get-metadata.js
+- get-screenshot.js
+- get-variable-defs.js
+
+Playwright MCP:
 - mcp__playwright__browser_navigate
 - mcp__playwright__browser_snapshot
 - mcp__playwright__browser_take_screenshot
@@ -100,30 +96,30 @@ Verify these tools can be called without user approval:
 **Simulate Real Usage**:
 ```
 1. Start with zero context
-2. Read global INDEX.md
-3. Navigate to figma-desktop/INDEX.md
-4. Load specific tool: get_design_context.md
-5. Use tool: mcp__figma-desktop__get_design_context
+2. Read global skills README
+3. Navigate to figma-desktop/SKILL.md
+4. Load scripts README for details
+5. Execute script via Bash
 6. Measure token efficiency
 ```
 
 **Token Budget Analysis**:
-- Global INDEX: ~150 tokens
-- Server INDEX (Figma): ~300 tokens
-- Individual tool doc: ~150 tokens
-- **Total**: ~600 tokens (vs. loading all 28 tools upfront = ~4200 tokens)
-- **Savings**: 85% token reduction
+- Global README: ~200 tokens
+- SKILL.md: ~300 tokens
+- Scripts README: ~400 tokens
+- **Total**: ~900 tokens (efficient on-demand loading)
 
 ### Phase 4: Documentation Coverage Audit 📊
 
-**Figma Desktop Tools** (Expected: 7):
-1. `get_design_context` - Primary tool for code generation
-2. `get_metadata` - Component structure
-3. `get_variable_defs` - Design tokens
-4. `get_code_connect_map` - Design-to-code mapping
-5. `get_screenshot` - Visual reference
-6. `get_component_info` - Component details
-7. `list_available_files` - File browser
+**Figma Desktop Scripts** (Expected: 8):
+1. `extract-frames.js` - Frame discovery
+2. `get-metadata.js` - Node structure
+3. `get-screenshot.js` - Visual capture
+4. `get-variable-defs.js` - Design tokens
+5. `get-annotations.js` - Dev mode notes
+6. `get-code-connect-map.js` - Component mapping
+7. `get-figjam.js` - FigJam content
+8. `compare-frames.js` - Frame comparison
 
 **Playwright Tools** (Expected: 21):
 - **Navigation** (3): navigate, wait_for, close
@@ -136,18 +132,18 @@ Verify these tools can be called without user approval:
 
 **Commands Using Skills**:
 ```
-/update-figma       → Uses Figma + Playwright skills
-/map-new-page       → Uses Figma + Playwright skills
-/validate-component → Uses Figma + Playwright skills
-/validate-screen    → Uses Figma + Playwright skills
-/implement-component→ Uses Figma skills
+/update-figma       → Uses Figma scripts
+/map-new-page       → Uses Figma scripts + Playwright MCP
+/validate-component → Uses Figma scripts + Playwright MCP
+/validate-screen    → Uses Figma scripts + Playwright MCP
+/implement-component→ Uses Figma scripts
 ```
 
 **Validate Each Command**:
 - ✅ Follows progressive discovery pattern
-- ✅ Reads INDEX before using tools
-- ✅ Loads only needed tool documentation
-- ✅ Uses MCP tools correctly
+- ✅ Reads SKILL.md before using tools
+- ✅ Loads only needed documentation
+- ✅ Uses tools correctly
 
 ## Output Report
 
@@ -160,29 +156,26 @@ Verify these tools can be called without user approval:
 ═══════════════════════════════════════════════════════
 ✅ Global Skills Documentation
    - README.md: {{status}}
-   - INDEX.md: {{status}}
 
-✅ Figma Desktop Skills (7 tools)
-   - INDEX.md: {{status}}
-   - Tool docs: {{foundCount}}/7
-   - Token budget: {{tokenCount}} tokens
+✅ Figma Desktop Skills (8 scripts)
+   - SKILL.md: {{status}}
+   - Scripts README: {{status}}
+   - Scripts found: {{foundCount}}/8
 
 ✅ Playwright Skills (21 tools)
    - INDEX.md: {{status}}
    - Tool docs: {{foundCount}}/21
-   - Token budget: {{tokenCount}} tokens
 
 📊 Documentation Quality:
    - Structure consistency: {{score}}/100
-   - Token efficiency: {{savings}}% savings
    - Example quality: {{score}}/100
 
 ═══════════════════════════════════════════════════════
-🔧 PHASE 2: MCP TOOL AVAILABILITY
+🔧 PHASE 2: TOOL AVAILABILITY
 ═══════════════════════════════════════════════════════
-{{figmaStatus}} Figma Desktop MCP
-   - Server installed: {{installed}}
-   - Auth status: {{authStatus}}
+{{figmaStatus}} Figma Scripts
+   - FIGMA_TOKEN: {{tokenStatus}}
+   - Scripts accessible: {{accessible}}
    - Test result: {{testResult}}
 
 {{playwrightStatus}} Playwright MCP
@@ -191,7 +184,7 @@ Verify these tools can be called without user approval:
    - Test result: {{testResult}}
 
 🔑 Pre-approved Tools:
-   - Figma tools: {{approvedCount}}/7
+   - Figma scripts: {{approvedCount}}/8
    - Playwright tools: {{approvedCount}}/21
 
 ═══════════════════════════════════════════════════════
@@ -199,15 +192,14 @@ Verify these tools can be called without user approval:
 ═══════════════════════════════════════════════════════
 ✅ Workflow simulation completed
    - Token usage (progressive): {{progressiveTokens}}
-   - Token usage (upfront load): {{upfrontTokens}}
-   - Efficiency gain: {{savings}}%
+   - Efficiency: Token-efficient on-demand loading
 
 ═══════════════════════════════════════════════════════
 📊 PHASE 4: COVERAGE AUDIT
 ═══════════════════════════════════════════════════════
-Figma Desktop: {{foundCount}}/7 tools documented
+Figma Desktop: {{foundCount}}/8 scripts documented
 Playwright: {{foundCount}}/21 tools documented
-Total: {{totalFound}}/28 tools documented
+Total coverage: {{percentage}}%
 
 Missing documentation: {{missingTools}}
 
@@ -228,43 +220,23 @@ Missing documentation: {{missingTools}}
 ### Issue: Documentation files missing
 **Solution**: Verify `.claude/skills/` directory structure exists
 
-### Issue: MCP tools not found
-**Solution**: Install MCP servers via Claude Desktop settings
+### Issue: Figma scripts not working
+**Solution**: Set FIGMA_TOKEN environment variable
 
-### Issue: Token budget exceeds expectations
-**Solution**: Review individual tool documentation for verbosity
-
-### Issue: Pre-approved tools requiring approval
-**Solution**: Check Claude Code configuration for tool permissions
+### Issue: Playwright MCP not found
+**Solution**: Install MCP server via Claude Desktop settings
 
 ### Issue: Commands not following progressive pattern
-**Solution**: Update command files to read INDEX before tool use
+**Solution**: Update command files to read SKILL.md before using tools
 
 ## Success Criteria
 
 Skills system is healthy when:
-- ✅ All 28 tools documented (<200 tokens each)
-- ✅ Progressive discovery saves >80% tokens
-- ✅ All MCP servers respond to test calls
-- ✅ Pre-approved tools work without prompts
+- ✅ All 8 Figma scripts documented
+- ✅ All 21 Playwright tools documented
+- ✅ FIGMA_TOKEN configured
+- ✅ Playwright MCP server responds
 - ✅ All commands follow progressive pattern
 - ✅ Documentation is accurate and current
-
-## Next Steps Based on Results
-
-**All Green ✅**:
-- Skills system working perfectly
-- Ready for production use
-- Monitor token usage in real workflows
-
-**Partial Success ⚠️**:
-- Review missing documentation
-- Fix broken tool references
-- Update command patterns
-
-**Critical Issues ❌**:
-- Install missing MCP servers
-- Rebuild skills documentation structure
-- Review command implementations
 
 Starting skills system debug...

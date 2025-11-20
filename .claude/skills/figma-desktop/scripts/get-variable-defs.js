@@ -2,7 +2,6 @@
 
 /**
  * Get variable definitions (design tokens) from Figma file using REST API
- * Equivalent to mcp__figma-desktop__get_variable_defs
  *
  * Usage: node get-variable-defs.js <file-key> [figma-token]
  */

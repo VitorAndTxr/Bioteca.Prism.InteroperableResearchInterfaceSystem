@@ -13,17 +13,9 @@ Skills are organized to minimize token usage by loading documentation on-demand 
 ├── README.md                    # This file
 ├── MCP_SUBAGENT_PATTERN.md      # Zero-memory loading pattern
 │
-├── figma-desktop/               # Figma Desktop Skill (7 tools)
+├── figma-desktop/               # Figma Desktop Skill (8 scripts)
 │   ├── SKILL.md                 # Skill metadata and overview
-│   ├── tools/                   # Individual tool documentation
-│   │   ├── get_design_context.md
-│   │   ├── get_metadata.md
-│   │   ├── get_screenshot.md
-│   │   ├── get_variable_defs.md
-│   │   ├── get_code_connect_map.md
-│   │   ├── get_figjam.md
-│   │   └── get_annotations.md
-│   └── scripts/                 # REST API scripts (alternative to MCP)
+│   └── scripts/                 # REST API scripts
 │       ├── README.md
 │       ├── extract-frames.js
 │       ├── get-metadata.js
@@ -62,7 +54,7 @@ Read: .claude/skills/figma-desktop/SKILL.md
 **Load individual tools as needed:**
 ```
 Read: .claude/skills/playwright/tools/browser_snapshot.md
-Read: .claude/skills/figma-desktop/tools/get_design_context.md
+Read: .claude/skills/figma-desktop/scripts/README.md
 ```
 
 ### 2. Token Efficiency Benefits
@@ -74,22 +66,18 @@ Read: .claude/skills/figma-desktop/tools/get_design_context.md
 
 ### 3. Integration with Claude Code
 
-All MCP tools are already integrated and accessible via the `mcp__` prefix:
-
-**Playwright:**
+**Playwright (MCP):**
 ```typescript
 mcp__playwright__browser_navigate({ url: "https://example.com" })
 mcp__playwright__browser_snapshot({})
 mcp__playwright__browser_click({ element: "Button", ref: "btn123" })
 ```
 
-**Figma Desktop:**
-```typescript
-mcp__figma-desktop__get_design_context({
-  nodeId: "123:456",
-  artifactType: "REUSABLE_COMPONENT",
-  clientFrameworks: "react,typescript"
-})
+**Figma Desktop (Scripts):**
+```bash
+node .claude/skills/figma-desktop/scripts/get-metadata.js xFC8eCJcSwB9EyicTmDJ7w 6804:13742
+node .claude/skills/figma-desktop/scripts/get-screenshot.js xFC8eCJcSwB9EyicTmDJ7w 6804:13742
+node .claude/skills/figma-desktop/scripts/get-variable-defs.js xFC8eCJcSwB9EyicTmDJ7w
 ```
 
 ## Available MCP Servers
@@ -113,22 +101,24 @@ Browser automation for testing, screenshots, and web interaction.
 - Visual debugging
 - User flow testing
 
-### Figma Desktop (7 tools)
-Design-to-code implementation with AI-powered code generation.
+### Figma Desktop (8 scripts)
+Design data extraction using REST API scripts.
 
-**Key Tools:**
-- `get_design_context` - Generate code from designs (primary)
-- `get_variable_defs` - Extract design tokens
-- `get_code_connect_map` - Map designs to codebase
-- `get_screenshot` - Capture design visuals
-- `get_metadata` - Get structure overview
-- `get_figjam` - Extract FigJam content
+**Key Scripts:**
+- `extract-frames.js` - Extract all frames from a page
+- `get-metadata.js` - Get node structure and hierarchy
+- `get-screenshot.js` - Capture node screenshots
+- `get-variable-defs.js` - Extract design tokens
+- `get-annotations.js` - Get dev mode annotations
+- `get-code-connect-map.js` - Get component metadata
+- `get-figjam.js` - Extract FigJam content
+- `compare-frames.js` - Compare current vs documented frames
 
 **Use Cases:**
-- Design-to-code implementation
+- Design data extraction
 - Design token extraction
-- Component mapping
-- Design system documentation
+- Batch operations and automation
+- CI/CD pipeline integration
 
 ## Best Practices
 

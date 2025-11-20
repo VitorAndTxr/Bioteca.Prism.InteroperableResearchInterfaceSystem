@@ -11,9 +11,11 @@ I will execute comprehensive "ultrathink" validation: ultra-thorough analysis, t
 ### Step 0: Load Skills Documentation 📚
 
 ```
-1. Read: .claude/skills/mcp-servers/figma-desktop/INDEX.md
+1. Read: .claude/skills/figma-desktop/SKILL.md
 2. Read: .claude/skills/mcp-servers/playwright/INDEX.md
-3. Load individual tool docs as needed
+3. Available tools:
+   - Figma scripts (get-metadata.js, get-screenshot.js)
+   - Playwright MCP (browser_navigate, browser_snapshot, etc.)
 ```
 
 ## 5-Phase Validation
@@ -22,11 +24,16 @@ I will execute comprehensive "ultrathink" validation: ultra-thorough analysis, t
 
 **Goal**: Extract screen design from Figma
 
-**MCP Tools**:
-```
-mcp__figma-desktop__get_design_context({ nodeId: "{{screenNode}}" })
-mcp__figma-desktop__get_screenshot({ nodeId: "{{screenNode}}" })
-mcp__figma-desktop__get_metadata({ nodeId: "{{screenNode}}" })
+**REST API Scripts**:
+```bash
+# Get screen metadata
+node .claude/skills/figma-desktop/scripts/get-metadata.js xFC8eCJcSwB9EyicTmDJ7w {{screenNode}}
+
+# Get screenshot
+node .claude/skills/figma-desktop/scripts/get-screenshot.js xFC8eCJcSwB9EyicTmDJ7w {{screenNode}}
+
+# Extract design tokens
+node .claude/skills/figma-desktop/scripts/get-variable-defs.js xFC8eCJcSwB9EyicTmDJ7w
 ```
 
 **Extract**:

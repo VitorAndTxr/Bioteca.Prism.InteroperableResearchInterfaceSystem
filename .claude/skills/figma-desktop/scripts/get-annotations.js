@@ -2,7 +2,6 @@
 
 /**
  * Get annotations and dev mode handoff notes from Figma node using REST API
- * Equivalent to mcp__figma-desktop__get_annotations
  *
  * Usage: node get-annotations.js <file-key> <node-id> [figma-token]
  */

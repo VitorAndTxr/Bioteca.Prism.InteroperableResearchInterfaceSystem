@@ -2,7 +2,6 @@
 
 /**
  * Extract content from FigJam boards using REST API
- * Equivalent to mcp__figma-desktop__get_figjam
  *
  * Usage: node get-figjam.js <file-key> <node-id> [figma-token]
  */

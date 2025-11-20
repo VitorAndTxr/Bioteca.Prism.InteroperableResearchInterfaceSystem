@@ -2,7 +2,6 @@
 
 /**
  * Get metadata for a Figma node using REST API
- * Equivalent to mcp__figma-desktop__get_metadata
  *
  * Usage: node get-metadata.js <file-key> <node-id> [figma-token]
  */
@@ -62,7 +61,7 @@ https.get(url, options, (res) => {
 
       console.log('✅ Metadata retrieved successfully\n');
 
-      // Convert to simplified XML-like structure (similar to MCP output)
+      // Convert to simplified XML-like structure
       function nodeToXML(node, depth = 0) {
         const indent = '  '.repeat(depth);
         let xml = `${indent}<${node.type} id="${node.id}" name="${node.name}"`;

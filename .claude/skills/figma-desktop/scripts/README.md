@@ -1,10 +1,10 @@
 # Figma REST API Scripts
 
-Node.js scripts that replicate Figma Desktop MCP functionality using Figma REST API.
+Node.js scripts for extracting Figma design data using the Figma REST API.
 
 ## Overview
 
-These scripts provide the same functionality as MCP Figma Desktop tools, but using the Figma REST API directly. This allows automated extraction of design data without requiring the Figma Desktop app to be running.
+These scripts provide automated extraction of design data from Figma files using the REST API. They allow batch processing, CI/CD integration, and don't require any desktop applications.
 
 ## Setup
 
@@ -52,7 +52,7 @@ node extract-frames.js xFC8eCJcSwB9EyicTmDJ7w 2501:2715
 
 ### 2. get-metadata.js
 
-Get metadata and structure for a Figma node (equivalent to `mcp__figma-desktop__get_metadata`).
+Get metadata and structure for a Figma node.
 
 **Usage**:
 ```bash
@@ -72,7 +72,7 @@ node get-metadata.js xFC8eCJcSwB9EyicTmDJ7w 6804:13742
 
 ### 3. get-screenshot.js
 
-Get a screenshot of a Figma node (equivalent to `mcp__figma-desktop__get_screenshot`).
+Get a screenshot of a Figma node.
 
 **Usage**:
 ```bash
@@ -91,7 +91,7 @@ node get-screenshot.js xFC8eCJcSwB9EyicTmDJ7w 6804:13742 token login-screen.png
 
 ### 4. get-variable-defs.js
 
-Get design tokens and variables from Figma file (equivalent to `mcp__figma-desktop__get_variable_defs`).
+Get design tokens and variables from Figma file.
 
 **Usage**:
 ```bash
@@ -226,9 +226,9 @@ These scripts are designed to work with the IRIS documentation structure:
 
 ---
 
-## Advantages Over MCP
+## Advantages
 
-1. **No Figma Desktop Required**: Works anywhere with Node.js
+1. **No Desktop App Required**: Works anywhere with Node.js
 2. **Automation**: Can be scripted and run in CI/CD
 3. **Batch Processing**: Easy to loop through multiple nodes
 4. **Cross-platform**: Works on Windows, Mac, Linux
@@ -237,14 +237,13 @@ These scripts are designed to work with the IRIS documentation structure:
 
 ## Limitations
 
-1. **No Design Context Generation**: Figma REST API doesn't provide AI-powered code generation like MCP's `get_design_context`
-2. **No Code Connect**: Can't access Figma Code Connect mappings via REST API
-3. **Rate Limits**: Figma API has rate limits (use responsibly)
+1. **Rate Limits**: Figma API has rate limits (use responsibly)
+2. **Token Required**: Requires Figma Personal Access Token
 
 ---
 
 ## Created
 
 - **Date**: November 14, 2025
-- **Purpose**: Replace Figma Desktop MCP dependency with REST API
+- **Purpose**: Figma design data extraction via REST API
 - **Project**: IRIS (Interoperable Research Interface System)

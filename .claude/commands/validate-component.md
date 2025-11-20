@@ -1,32 +1,34 @@
 ---
-description: Validate component implementation against Figma design using MCP tools
+description: Validate component implementation against Figma design
 ---
 
 # 🔍 Component Validation Workflow
 
-I will validate a component's implementation against Figma design using progressive skill discovery and MCP tools.
+I will validate a component's implementation against Figma design using REST API scripts and Playwright.
 
 ## Process
 
 ### Step 0: Load Skills Documentation 📚
 
 ```
-1. Read: .claude/skills/mcp-servers/figma-desktop/INDEX.md
+1. Read: .claude/skills/figma-desktop/SKILL.md
 2. Read: .claude/skills/mcp-servers/playwright/INDEX.md
-3. Load individual tool docs as needed:
-   - get_design_context.md, get_metadata.md, get_screenshot.md
-   - browser_navigate.md, browser_hover.md, browser_take_screenshot.md
+3. Available tools:
+   - Figma scripts (get-metadata.js, get-screenshot.js)
+   - Playwright MCP (browser_navigate, browser_hover, browser_take_screenshot)
 ```
 
 ### Phase 1: Figma Design Extraction 🎨
 
 **Goal**: Extract source of truth from Figma
 
-**MCP Tools**:
-```
-mcp__figma-desktop__get_design_context({ nodeId: "{{componentNode}}" })
-mcp__figma-desktop__get_screenshot({ nodeId: "{{componentNode}}" })
-mcp__figma-desktop__get_metadata({ nodeId: "{{componentNode}}" })
+**REST API Scripts**:
+```bash
+# Get component metadata
+node .claude/skills/figma-desktop/scripts/get-metadata.js xFC8eCJcSwB9EyicTmDJ7w {{componentNode}}
+
+# Get screenshot
+node .claude/skills/figma-desktop/scripts/get-screenshot.js xFC8eCJcSwB9EyicTmDJ7w {{componentNode}}
 ```
 
 **Extract per variant/state**:
@@ -84,7 +86,7 @@ Button Node 2803-1366:
 
 **Goal**: Confirm corrections match Figma visually
 
-**MCP Tools**:
+**Playwright MCP Tools**:
 ```
 mcp__playwright__browser_navigate({ url: "http://localhost:5173" })
 mcp__playwright__browser_hover({ element: "Primary button" })
@@ -110,7 +112,7 @@ mcp__playwright__browser_take_screenshot({ filename: "primary-active.png" })
 🔗 DEMO PAGE: http://localhost:5173
 
 PHASE 1: FIGMA EXTRACTION ✅
-  ✅ Design context extracted ({{variantCount}} variants)
+  ✅ Metadata extracted via scripts
   ✅ Colors extracted for all states
 
 PHASE 2: CODE ANALYSIS
