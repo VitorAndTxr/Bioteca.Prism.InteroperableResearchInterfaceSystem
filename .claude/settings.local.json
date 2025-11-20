@@ -2,11 +2,13 @@
   "permissions": {
     "allow": [
       "Skill(figma-desktop)",
-      "Skill(playwright)",
-      "Bash(set:*)",
-      "Bash(node:*)",
-      "Bash(del /f \"\\?\\d:\\Repos\\Faculdade\\PRISM\\IRIS\\nul\")",
-      "Bash(npm run desktop:*)"
+      "Bash(claude config set:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npx:*)",
+      "Bash(mcp__playwright__browser_navigate:*)",
+      "Bash(node navigate.js:*)",
+      "Bash(node test-google-search.js)",
+      "Bash(rm:*)"
     ],
     "deny": [],
     "ask": []
