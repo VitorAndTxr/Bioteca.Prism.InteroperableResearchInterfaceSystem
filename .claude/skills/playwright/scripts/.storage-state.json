@@ -11,16 +11,6 @@
       "sameSite": "Lax"
     },
     {
-      "name": "__utmb",
-      "value": "61317162.0.10.1763657792",
-      "domain": ".workspace.google.com",
-      "path": "/intl/en-US/gmail/",
-      "expires": 1763659591,
-      "httpOnly": false,
-      "secure": false,
-      "sameSite": "Lax"
-    },
-    {
       "name": "__utmc",
       "value": "61317162",
       "domain": ".workspace.google.com",
@@ -111,16 +101,6 @@
       "sameSite": "Lax"
     },
     {
-      "name": "__utmt_UA-18073-1",
-      "value": "1",
-      "domain": ".workspace.google.com",
-      "path": "/",
-      "expires": 1763658391,
-      "httpOnly": false,
-      "secure": false,
-      "sameSite": "Lax"
-    },
-    {
       "name": "_ga_FWCBRW1RY8",
       "value": "GS2.1.s1763657792$o1$g0$t1763657792$j60$l0$h0",
       "domain": ".workspace.google.com",
@@ -192,6 +172,27 @@
     }
   ],
   "origins": [
+    {
+      "origin": "http://localhost:5175",
+      "localStorage": [
+        {
+          "name": "iris-desktop:channel",
+          "value": "{\"channelId\":\"b490139d-bf8e-43ac-9142-b6c72d8b1742\",\"symmetricKey\":\"gaYGhoUQ5nMRJ78qQo9Gh5W9s4aL0plyI4H33CLfR2A=\",\"expiresAt\":\"2025-11-20T18:13:44.921Z\",\"metadata\":{\"serverPublicKey\":\"MHYwEAYHKoZIzj0CAQYFK4EEACIDYgAE6D6StWhIlmHbfx4zKdoFdal2RkzEKxNfI8EQmFhzzLvMPqf1wTutiIT34zuTtMaNdYdbNnxX51otnSepSCTDEZswyJbvGXE6cKhPUjLPYyvtfj5+WqukeWiM7F1dsEwo\"}}"
+        },
+        {
+          "name": "iris-desktop:userauth:state",
+          "value": "{\"token\":\"eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIwNzY1OThmMy01N2I3LTQ4MTAtOWIyOS0zNmE5MmFjN2NiZTMiLCJsb2dpbiI6ImFkbWluQGFkbWluLmNvbSIsIm5hbWUiOiJhZG1pbiIsImVtYWlsIjoiYWRtaW4iLCJvcmNpZCI6IiIsImp0aSI6IjM1ZWRiOTYzLTA2M2UtNDdiNy1iOTA3LTBiMDMyY2JiMzVhMSIsImlhdCI6IjE3NjM2NjA2MjUiLCJleHAiOiIxNzYzNjg5NDI1IiwiYXVkIjoiSnd0UHJpc21BdXRoZW50aWNhdGlvblByZCIsImlzcyI6Ikp3dFByaXNtQXV0aGVudGljYXRpb25QcmQifQ.PG1UQhTcvc5oTzVLXA1d7UAEd5piec1ygKEPoH2O7Ip-KQbaGgLA6z8K3NX-le96DS6xSKJ05BjlUXo_O5aPWYw3012ltvqS1jRRvrS8hCUz5L_c_4bXFsm3dBcqLyqHHyOCZnUiIl7jjz5__1Byw7y80k50oWEQVQMIDqBnT4ah2J3xpKV3mvAA-7s4GhVFYMAUHj425rNkT9egotMk-56d9HXQpovFdAZZLC7XAGlg7VqmeIGmcMn_lPwGeQneBzgZSrOyBTe6TOYW6_qjJ6L6S7GN5h9U5sFac1WL6yaorz9MYdgFH5xjWxgtzWn6IOMZnaYAYjToUwPP8X34bttQrDJaRZxJEOrWCnN0S7qZc0BFHyjHUFuqeCD8B13W8Qvug9Gkr9iVXylUyasUvf01B6IN-imsDOM3yILGq4zngZ3spfJalDBBaU5a1oRT9AG_fYoMZufmJ020Y5SQNymkH7HgXaNzuda8aZcBmAz5YL7H28DUPbKPVflIGR_KG-l-b-DFOIYUsiLurx2rIbV0JkyLxN-BUp_H6_l4Yep4Ag6voSy5olb5jslnykNziTa3zDZXIbXZfdBC0Dk7ExWVMr5Y6DzHkUBV6Zx-MTVVb17xqYlWhbtl3mvEZrVdCuIbZBJVJzwVPwQcsYwYE7-mK_3bMan8JOUGW2qn6KM\",\"expiresAt\":\"2025-11-21T01:43:45.148236Z\",\"user\":{\"id\":\"076598f3-57b7-4810-9b29-36a92ac7cbe3\",\"username\":\"admin@admin.com\",\"email\":\"admin\",\"name\":\"admin\",\"roles\":[]}}"
+        },
+        {
+          "name": "iris-desktop:session",
+          "value": "{\"sessionToken\":\"ed28fd79-9ac5-42d7-89ff-a5c7bd1ea7b7\",\"expiresAt\":\"2025-11-20T18:43:45.079Z\",\"nodeId\":\"7f3df77f-5a39-4279-9753-34ba5a148e06\",\"requestWindowCount\":1}"
+        },
+        {
+          "name": "iris_session_info",
+          "value": "{\"token\":\"eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIwNzY1OThmMy01N2I3LTQ4MTAtOWIyOS0zNmE5MmFjN2NiZTMiLCJsb2dpbiI6ImFkbWluQGFkbWluLmNvbSIsIm5hbWUiOiJhZG1pbiIsImVtYWlsIjoiYWRtaW4iLCJvcmNpZCI6IiIsImp0aSI6IjM1ZWRiOTYzLTA2M2UtNDdiNy1iOTA3LTBiMDMyY2JiMzVhMSIsImlhdCI6IjE3NjM2NjA2MjUiLCJleHAiOiIxNzYzNjg5NDI1IiwiYXVkIjoiSnd0UHJpc21BdXRoZW50aWNhdGlvblByZCIsImlzcyI6Ikp3dFByaXNtQXV0aGVudGljYXRpb25QcmQifQ.PG1UQhTcvc5oTzVLXA1d7UAEd5piec1ygKEPoH2O7Ip-KQbaGgLA6z8K3NX-le96DS6xSKJ05BjlUXo_O5aPWYw3012ltvqS1jRRvrS8hCUz5L_c_4bXFsm3dBcqLyqHHyOCZnUiIl7jjz5__1Byw7y80k50oWEQVQMIDqBnT4ah2J3xpKV3mvAA-7s4GhVFYMAUHj425rNkT9egotMk-56d9HXQpovFdAZZLC7XAGlg7VqmeIGmcMn_lPwGeQneBzgZSrOyBTe6TOYW6_qjJ6L6S7GN5h9U5sFac1WL6yaorz9MYdgFH5xjWxgtzWn6IOMZnaYAYjToUwPP8X34bttQrDJaRZxJEOrWCnN0S7qZc0BFHyjHUFuqeCD8B13W8Qvug9Gkr9iVXylUyasUvf01B6IN-imsDOM3yILGq4zngZ3spfJalDBBaU5a1oRT9AG_fYoMZufmJ020Y5SQNymkH7HgXaNzuda8aZcBmAz5YL7H28DUPbKPVflIGR_KG-l-b-DFOIYUsiLurx2rIbV0JkyLxN-BUp_H6_l4Yep4Ag6voSy5olb5jslnykNziTa3zDZXIbXZfdBC0Dk7ExWVMr5Y6DzHkUBV6Zx-MTVVb17xqYlWhbtl3mvEZrVdCuIbZBJVJzwVPwQcsYwYE7-mK_3bMan8JOUGW2qn6KM\",\"expiresAt\":\"2025-11-21T01:43:45.148Z\",\"issuedAt\":\"2025-11-20T17:43:45.151Z\",\"rememberMe\":false}"
+        }
+      ]
+    },
     {
       "origin": "https://www.google.com",
       "localStorage": [

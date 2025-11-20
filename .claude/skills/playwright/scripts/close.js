@@ -1,11 +1,10 @@
 #!/usr/bin/env node
-const { getController } = require('./browser-controller');
+const PlaywrightClient = require('./utils/client');
 const OutputFormatter = require('./utils/output-formatter');
 
 async function main() {
   try {
-    const controller = await getController();
-    const result = await controller.close();
+    const result = await PlaywrightClient.sendCommand('close');
     OutputFormatter.success(result);
     process.exit(0);
   } catch (error) {

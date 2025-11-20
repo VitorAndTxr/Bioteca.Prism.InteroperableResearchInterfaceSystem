@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-const { getController } = require('./browser-controller');
+const PlaywrightClient = require('./utils/client');
 const OutputFormatter = require('./utils/output-formatter');
 
 async function main() {
@@ -8,12 +8,12 @@ async function main() {
 
   if (!jsonArg) {
     OutputFormatter.error('Usage: node fill-form.js \'{"fields": [{"ref": "ref1", "value": "text"}]}\'');
+    return;
   }
 
   try {
     const { fields } = JSON.parse(jsonArg);
-    const controller = await getController();
-    const result = await controller.fillForm(fields);
+    const result = await PlaywrightClient.sendCommand('fillForm', { fields });
     OutputFormatter.success(result);
   } catch (error) {
     OutputFormatter.error(error.message);

@@ -1,0 +1,17 @@
+{
+  "ref1": {
+    "role": "textbox",
+    "name": "Login required",
+    "path": "0/3"
+  },
+  "ref2": {
+    "role": "textbox",
+    "name": "Senha required",
+    "path": "0/6"
+  },
+  "ref3": {
+    "role": "button",
+    "name": "Entrar",
+    "path": "0/7"
+  }
+}

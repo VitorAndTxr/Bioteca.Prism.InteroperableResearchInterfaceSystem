@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-const { getController } = require('./browser-controller');
+const PlaywrightClient = require('./utils/client');
 const OutputFormatter = require('./utils/output-formatter');
 
 async function main() {
@@ -7,8 +7,7 @@ async function main() {
   const fullPage = process.argv[3] === '--full';
 
   try {
-    const controller = await getController();
-    const result = await controller.screenshot({ filename, fullPage });
+    const result = await PlaywrightClient.sendCommand('screenshot', { filename, fullPage });
     OutputFormatter.success(result);
   } catch (error) {
     OutputFormatter.error(error.message);

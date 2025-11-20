@@ -10,18 +10,61 @@ class BrowserController {
 
   async initialize() {
     const storageStatePath = StateManager.getStorageStatePath();
+    const fs = require('fs');
 
+    // Try to connect to existing browser first
+    const endpointData = StateManager.loadEndpoint();
+    if (endpointData && endpointData.wsEndpoint) {
+      try {
+        this.browser = await chromium.connectOverCDP(endpointData.wsEndpoint);
+        const contexts = this.browser.contexts();
+
+        if (contexts.length > 0) {
+          this.context = contexts[0];
+          const pages = this.context.pages();
+
+          if (pages.length > 0) {
+            this.page = pages[0];
+            // Successfully reconnected
+            return this;
+          }
+        }
+
+        // If we connected but no context/page, create them
+        if (!this.context) {
+          const contextOptions = { viewport: null };
+          if (fs.existsSync(storageStatePath)) {
+            contextOptions.storageState = storageStatePath;
+          }
+          this.context = await this.browser.newContext(contextOptions);
+        }
+
+        if (!this.page) {
+          this.page = await this.context.newPage();
+        }
+
+        return this;
+      } catch (error) {
+        // Connection failed, will create new browser
+        StateManager.clearState();
+      }
+    }
+
+    // Launch new browser
     this.browser = await chromium.launch({
       headless: false,
-      args: ['--start-maximized']
+      args: ['--start-maximized', '--remote-debugging-port=9222']
     });
+
+    // Save the endpoint for reconnection
+    const wsEndpoint = `http://localhost:9222`;
+    StateManager.saveEndpoint(wsEndpoint);
 
     // Try to restore previous session
     const contextOptions = {
       viewport: null // Use full window
     };
 
-    const fs = require('fs');
     if (fs.existsSync(storageStatePath)) {
       contextOptions.storageState = storageStatePath;
     }

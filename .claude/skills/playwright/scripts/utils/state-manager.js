@@ -3,6 +3,7 @@ const path = require('path');
 
 const STATE_FILE = path.join(__dirname, '..', '.browser-state.json');
 const REFS_FILE = path.join(__dirname, '..', '.element-refs.json');
+const ENDPOINT_FILE = path.join(__dirname, '..', '.browser-endpoint.json');
 
 class StateManager {
   static saveState(state) {
@@ -27,9 +28,21 @@ class StateManager {
     return {};
   }
 
+  static saveEndpoint(wsEndpoint) {
+    fs.writeFileSync(ENDPOINT_FILE, JSON.stringify({ wsEndpoint, timestamp: Date.now() }, null, 2));
+  }
+
+  static loadEndpoint() {
+    if (fs.existsSync(ENDPOINT_FILE)) {
+      return JSON.parse(fs.readFileSync(ENDPOINT_FILE, 'utf8'));
+    }
+    return null;
+  }
+
   static clearState() {
     if (fs.existsSync(STATE_FILE)) fs.unlinkSync(STATE_FILE);
     if (fs.existsSync(REFS_FILE)) fs.unlinkSync(REFS_FILE);
+    if (fs.existsSync(ENDPOINT_FILE)) fs.unlinkSync(ENDPOINT_FILE);
   }
 
   static getStorageStatePath() {

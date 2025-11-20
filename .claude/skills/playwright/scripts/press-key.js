@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-const { getController } = require('./browser-controller');
+const PlaywrightClient = require('./utils/client');
 const OutputFormatter = require('./utils/output-formatter');
 
 async function main() {
@@ -7,11 +7,11 @@ async function main() {
 
   if (!key) {
     OutputFormatter.error('Usage: node press-key.js <key>');
+    return;
   }
 
   try {
-    const controller = await getController();
-    const result = await controller.pressKey(key);
+    const result = await PlaywrightClient.sendCommand('pressKey', { key });
     OutputFormatter.success(result);
   } catch (error) {
     OutputFormatter.error(error.message);

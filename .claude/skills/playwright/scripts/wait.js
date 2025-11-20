@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-const { getController } = require('./browser-controller');
+const PlaywrightClient = require('./utils/client');
 const OutputFormatter = require('./utils/output-formatter');
 
 async function main() {
@@ -7,11 +7,11 @@ async function main() {
 
   if (!ms || isNaN(ms)) {
     OutputFormatter.error('Usage: node wait.js <milliseconds>');
+    return;
   }
 
   try {
-    const controller = await getController();
-    const result = await controller.wait(ms);
+    const result = await PlaywrightClient.sendCommand('wait', { ms });
     OutputFormatter.success(result);
   } catch (error) {
     OutputFormatter.error(error.message);

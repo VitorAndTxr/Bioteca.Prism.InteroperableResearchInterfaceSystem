@@ -10,11 +10,6 @@ import type { SidebarMenuItem } from '../design-system/components/sidebar/Sideba
  */
 export const mainMenuItems: SidebarMenuItem[] = [
     {
-        id: 'dashboard',
-        label: 'Consultar dados',
-        path: '/dashboard',
-    },
-    {
         id: 'npi',
         label: 'Conexões',
         path: '/nodeConnections',

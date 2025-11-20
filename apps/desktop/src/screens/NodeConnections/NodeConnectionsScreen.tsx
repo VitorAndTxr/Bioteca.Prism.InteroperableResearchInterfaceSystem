@@ -12,10 +12,10 @@ type NodeConnectionsScreenProps = {
     handleNavigation: (path: string) => void;
 };
 
-type ConnectionTabs = 'requests' | 'active';
+type ConnectionTabs = 'active' | 'requests';
 
 const NodeConnectionsScreen: React.FC<NodeConnectionsScreenProps> = ({ handleNavigation }) => {
-    const [activeTab, setActiveTab] = useState<ConnectionTabs>('requests');
+    const [activeTab, setActiveTab] = useState<ConnectionTabs>('active');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     
@@ -172,17 +172,17 @@ const NodeConnectionsScreen: React.FC<NodeConnectionsScreenProps> = ({ handleNav
 
     const tabs: TabbedTableTab[] = useMemo(() => [
         {
-            value: 'requests',
-            label: 'Solicitações',
-            title: 'Solicitações de Conexão',
-            data: requests,
+            value: 'active',
+            label: 'Todas as conexões',
+            title: 'Todas as conexões',
+            data: activeConnections,
             columns: columns,
         },
         {
-            value: 'active',
-            label: 'Conexões Ativas',
-            title: 'Conexões Ativas',
-            data: activeConnections,
+            value: 'requests',
+            label: 'Solicitações',
+            title: 'Solicitações',
+            data: requests,
             columns: columns,
         },
     ], [requests, activeConnections, columns]);

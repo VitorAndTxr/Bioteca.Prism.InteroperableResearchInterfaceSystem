@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-const { getController } = require('./browser-controller');
+const PlaywrightClient = require('./utils/client');
 const OutputFormatter = require('./utils/output-formatter');
 
 async function main() {
@@ -8,11 +8,11 @@ async function main() {
 
   if (!text) {
     OutputFormatter.error('Usage: node type.js <text> [ref]');
+    return;
   }
 
   try {
-    const controller = await getController();
-    const result = await controller.type(text, ref);
+    const result = await PlaywrightClient.sendCommand('type', { text, ref });
     OutputFormatter.success(result);
   } catch (error) {
     OutputFormatter.error(error.message);

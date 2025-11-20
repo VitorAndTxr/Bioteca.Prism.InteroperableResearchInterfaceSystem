@@ -53,7 +53,9 @@ https.get(url, options, (res) => {
         process.exit(1);
       }
 
-      const imageUrl = response.images[nodeId];
+      // Figma API returns node IDs with colons, but we may have passed dashes
+      const nodeIdWithColons = nodeId.replace('-', ':');
+      const imageUrl = response.images[nodeIdWithColons] || response.images[nodeId];
 
       if (!imageUrl) {
         console.error(`❌ No image URL returned for node ${nodeId}`);
