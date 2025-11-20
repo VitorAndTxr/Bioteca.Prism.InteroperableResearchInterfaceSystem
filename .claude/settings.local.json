@@ -43,7 +43,13 @@
       "WebFetch(domain:www.anthropic.com)",
       "Bash(nul)",
       "Skill(figma-desktop)",
-      "Bash(claude config set:*)"
+      "Bash(claude config set:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npx:*)",
+      "Bash(mcp__playwright__browser_navigate:*)",
+      "Bash(node navigate.js:*)",
+      "Bash(node test-google-search.js)",
+      "Bash(rm:*)"
     ],
     "deny": [],
     "ask": []

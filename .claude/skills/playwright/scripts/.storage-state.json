@@ -1,0 +1,234 @@
+{
+  "cookies": [
+    {
+      "name": "__utma",
+      "value": "61317162.1115813350.1763657792.1763657792.1763657792.1",
+      "domain": ".workspace.google.com",
+      "path": "/intl/en-US/gmail/",
+      "expires": 1798217791.703651,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "__utmb",
+      "value": "61317162.0.10.1763657792",
+      "domain": ".workspace.google.com",
+      "path": "/intl/en-US/gmail/",
+      "expires": 1763659591,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "__utmc",
+      "value": "61317162",
+      "domain": ".workspace.google.com",
+      "path": "/intl/en-US/gmail/",
+      "expires": -1,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "__utmz",
+      "value": "61317162.1763657792.1.1.utmcsr=google|utmccn=(organic)|utmcmd=organic|utmctr=(not%20provided)",
+      "domain": ".workspace.google.com",
+      "path": "/intl/en-US/gmail/",
+      "expires": 1779425791,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "APPS_MARKETING_SIGNALS",
+      "value": "source%3D%26lastExperiment%3D%26allExperiments%3D",
+      "domain": "workspace.google.com",
+      "path": "/intl/en-US/gmail",
+      "expires": -1,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "SNID",
+      "value": "AICKk4yi57HK_GfjKlHxjByeRhdQMEGotd68O1wO9bbHFURNGB-1rDIH5e5Krni6VDp1lZQaTfAJ49OYGf7I8Ag5ylK0mb1RAa4",
+      "domain": ".google.com",
+      "path": "/verify",
+      "expires": 1779468901.412001,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "AEC",
+      "value": "AaJma5tmrYllGHFH7hTGY_Asp28Oa8McemVCLDWXt5OFzWiEOOgPDZ88pw",
+      "domain": ".google.com",
+      "path": "/",
+      "expires": 1779209701.058079,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "__Host-GAPS",
+      "value": "1:Dqugtma9qgtJcJ0LML5T-UIqjxnAWg:JlZTRcU5kltyPa--",
+      "domain": "accounts.google.com",
+      "path": "/",
+      "expires": 1798217790.965972,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "_gcl_au",
+      "value": "1.1.399018322.1763657792",
+      "domain": ".workspace.google.com",
+      "path": "/",
+      "expires": 1771433792,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "__utma",
+      "value": "61317162.1115813350.1763657792.1763657792.1763657792.1",
+      "domain": ".workspace.google.com",
+      "path": "/",
+      "expires": 1763661392,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "__utmc",
+      "value": "61317162",
+      "domain": ".workspace.google.com",
+      "path": "/",
+      "expires": 1763661392,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "__utmt_UA-18073-1",
+      "value": "1",
+      "domain": ".workspace.google.com",
+      "path": "/",
+      "expires": 1763658391,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "_ga_FWCBRW1RY8",
+      "value": "GS2.1.s1763657792$o1$g0$t1763657792$j60$l0$h0",
+      "domain": ".workspace.google.com",
+      "path": "/",
+      "expires": 1798217792.094969,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "_ga",
+      "value": "GA1.1.199542670.1763657792",
+      "domain": ".workspace.google.com",
+      "path": "/",
+      "expires": 1763661392,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "APPS_MARKETING_SIGNALS",
+      "value": "source=&lastExperiment=&allExperiments=",
+      "domain": ".workspace.google.com",
+      "path": "/",
+      "expires": 1763661392,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "__utmb",
+      "value": "61317162.0.10.1763657792",
+      "domain": ".workspace.google.com",
+      "path": "/",
+      "expires": 1763661392,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "__utmz",
+      "value": "61317162.1763657792.1.1.utmcsr=google|utmccn=(organic)|utmcmd=organic|utmctr=(not provided)",
+      "domain": ".workspace.google.com",
+      "path": "/",
+      "expires": 1763661392,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "IDE",
+      "value": "AHWqTUnLd1mWhlTnqR0XaX29Bt-4nuu1cyyazfVU1URdYIKzhseCkBLQd1GAW9Ii",
+      "domain": ".doubleclick.net",
+      "path": "/",
+      "expires": 1798217792.669461,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "None"
+    },
+    {
+      "name": "NID",
+      "value": "526=EmVAH_Y87o2Y7OZemIP4_hWvwoRasolM-jmLam7vrtX_1AGDo1eUC1n3B84f_8h4WMj7QXtHh-jJVKT4o_IX-YgwSdAiIu1am35IOvRECoIa0yDuG6dLlbzfv3NdJ1kIOGdxN8H-kIIQrbJJlgal1PdF0-2nm5h9VXGTE0gKFfi5gEx4rXC-W1pYXSoo7Nx5w8HC9dJMmNuIpWiDW20307xKLf6MiB4sA-ap4vyEt2kuVuShiyRmDnhSmzU4QMF3w4MzZBmObZaQQ0PIWRc",
+      "domain": ".google.com",
+      "path": "/",
+      "expires": 1779468900.689883,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "None"
+    }
+  ],
+  "origins": [
+    {
+      "origin": "https://www.google.com",
+      "localStorage": [
+        {
+          "name": "sb_wiz.zpc.gws-wiz.",
+          "value": "{\"0\":[[\"cloudflare internet\",0,[3,362,143],{\"zf\":33,\"zl\":8,\"zp\":{\"gs_ss\":\"1\"}}],[\"programação natal em natal 2025\",0,[3,362,143],{\"zf\":33,\"zl\":8,\"zp\":{\"gs_ss\":\"1\"}}],[\"black friday playstation plus\",0,[3,362,143],{\"zf\":33,\"zl\":8,\"zp\":{\"gs_ss\":\"1\"}}],[\"greve ônibus são luís\",0,[3,362,143],{\"zf\":33,\"zl\":8,\"zp\":{\"gs_ss\":\"1\"}}],[\"asus rog xbox ally x\",0,[3,362,143],{\"zf\":33,\"zl\":8,\"zp\":{\"gs_ss\":\"1\"}}],[\"idoso cai do 15 andar praia grande\",0,[3,362,143],{\"zf\":33,\"zl\":8,\"zp\":{\"gs_ss\":\"1\"}}],[\"queda criptomoedas\",0,[3,362,143],{\"zf\":33,\"zl\":8,\"zp\":{\"gs_ss\":\"1\"}}],[\"ligação entre cabelos grisalhos e câncer\",0,[3,362,143],{\"zf\":33,\"zl\":8,\"zp\":{\"gs_ss\":\"1\"}}],[\"cometa 3i atlas nasa\",0,[3,362,143],{\"zf\":33,\"zl\":8,\"zp\":{\"gs_ss\":\"1\"}}],[\"energia elétrica\",0,[3,362,143],{\"zf\":33,\"zl\":8,\"zp\":{\"gs_ss\":\"1\"}}]],\"1\":{\"ag\":{\"a\":{\"8\":[\"Pesquisas em alta\"]}},\"av\":\"7835067752206134178\",\"q\":\"ly1kCIaxGk2DKMNzXpjxgY-IpDE\"}}"
+        },
+        {
+          "name": "rc::a",
+          "value": "NWVwamY2MXhjYnpmcg=="
+        },
+        {
+          "name": "sb_wiz.pq_tm_hp",
+          "value": "1763657841958"
+        },
+        {
+          "name": "sb_wiz.qc",
+          "value": "1"
+        },
+        {
+          "name": "sb_wiz.pq",
+          "value": "PRISM biomedical research"
+        }
+      ]
+    },
+    {
+      "origin": "https://workspace.google.com",
+      "localStorage": [
+        {
+          "name": "isEeaCountry",
+          "value": "undefined"
+        },
+        {
+          "name": "_gcl_ls",
+          "value": "{\"schema\":\"gcl\",\"version\":1,\"gcl_ctr\":{\"value\":{\"value\":0,\"timeouts\":0,\"creationTimeMs\":1763657791775},\"expires\":1771433791775}}"
+        }
+      ]
+    }
+  ]
+}

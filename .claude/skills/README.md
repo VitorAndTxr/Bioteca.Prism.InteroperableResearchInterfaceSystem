@@ -13,50 +13,56 @@ Skills are organized to minimize token usage by loading documentation on-demand 
 ├── README.md                    # This file
 ├── MCP_SUBAGENT_PATTERN.md      # Zero-memory loading pattern
 │
-├── figma-desktop/               # Figma Desktop Skill
-│   ├── SKILL.md                 # Skill metadata (required)
-│   └── scripts/                 # REST API scripts
-│       ├── README.md            # Scripts documentation
-│       ├── extract-frames.js    # Extract all frames from page
-│       ├── get-metadata.js      # Get node structure
-│       ├── get-screenshot.js    # Capture screenshots
-│       ├── get-variable-defs.js # Extract design tokens
-│       └── compare-frames.js    # Compare frames
+├── figma-desktop/               # Figma Desktop Skill (7 tools)
+│   ├── SKILL.md                 # Skill metadata and overview
+│   ├── tools/                   # Individual tool documentation
+│   │   ├── get_design_context.md
+│   │   ├── get_metadata.md
+│   │   ├── get_screenshot.md
+│   │   ├── get_variable_defs.md
+│   │   ├── get_code_connect_map.md
+│   │   ├── get_figjam.md
+│   │   └── get_annotations.md
+│   └── scripts/                 # REST API scripts (alternative to MCP)
+│       ├── README.md
+│       ├── extract-frames.js
+│       ├── get-metadata.js
+│       ├── get-screenshot.js
+│       ├── get-variable-defs.js
+│       ├── get-annotations.js
+│       ├── get-code-connect-map.js
+│       ├── get-figjam.js
+│       └── compare-frames.js
 │
-└── mcp-servers/                 # MCP Tool Documentation
-    ├── INDEX.md                 # Global MCP servers index
-    │
-    ├── playwright/              # Browser automation
-    │   └── INDEX.md             # Server overview (21 tools)
-    │
-    └── figma-desktop/           # Figma design extraction
-        ├── INDEX.md             # Server overview
-        ├── get_design_context.md
-        ├── get_metadata.md
-        ├── get_screenshot.md
-        ├── get_variable_defs.md
-        ├── get_code_connect_map.md
-        ├── get_figjam.md
-        └── get_annotations.md
+└── playwright/                  # Playwright Skill (21 tools)
+    ├── SKILL.md                 # Skill metadata and overview
+    └── tools/                   # Individual tool documentation
+        ├── browser_navigate.md
+        ├── browser_snapshot.md  # PRIMARY - element discovery
+        ├── browser_click.md
+        ├── browser_type.md
+        ├── browser_fill_form.md
+        ├── browser_take_screenshot.md
+        ├── browser_evaluate.md
+        ├── browser_console_messages.md
+        ├── browser_network_requests.md
+        └── ...                  # 12 more tools
 ```
 
 ## Usage Pattern
 
 ### 1. Progressive Discovery
 
-**Start with the global index:**
+**Start with skill overview:**
 ```
-Read: .claude/skills/mcp-servers/INDEX.md
-```
-
-**Navigate to specific server:**
-```
-Read: .claude/skills/mcp-servers/playwright/INDEX.md
+Read: .claude/skills/playwright/SKILL.md
+Read: .claude/skills/figma-desktop/SKILL.md
 ```
 
 **Load individual tools as needed:**
 ```
-Read: .claude/skills/mcp-servers/playwright/browser_navigate.md
+Read: .claude/skills/playwright/tools/browser_snapshot.md
+Read: .claude/skills/figma-desktop/tools/get_design_context.md
 ```
 
 ### 2. Token Efficiency Benefits

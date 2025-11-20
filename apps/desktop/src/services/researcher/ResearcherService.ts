@@ -55,6 +55,8 @@ interface AddResearcherPayload extends Record<string, unknown> {
  * Researcher Service Implementation
  */
 export class ResearcherService extends BaseService {
+    private readonly USE_MOCK = true;
+
     constructor(services: MiddlewareServices) {
         super(services, {
             serviceName: 'ResearcherService',
@@ -87,6 +89,28 @@ export class ResearcherService extends BaseService {
         page: number = 1,
         pageSize: number = 10
     ): Promise<PaginatedResponse<Researcher>> {
+        if (this.USE_MOCK) {
+            return new Promise(resolve => {
+                setTimeout(() => {
+                    const mockResearchers: Researcher[] = Array(pageSize).fill(null).map((_, i) => ({
+                        researcherId: `mock-researcher-${page}-${i}`,
+                        researchNodeId: `mock-node-${page}-${i}`,
+                        name: `Mock Researcher ${page}-${i}`,
+                        email: `researcher${page}${i}@example.com`,
+                        institution: 'Mock Institution',
+                        role: 'researcher' as any,
+                        orcid: '0000-0000-0000-0000'
+                    }));
+                    resolve({
+                        data: mockResearchers,
+                        currentPage: page,
+                        pageSize: pageSize,
+                        totalRecords: 100
+                    });
+                }, 500);
+            });
+        }
+
         return this.handleMiddlewareError(async () => {
             this.log(`Fetching researchers (page: ${page}, pageSize: ${pageSize})`);
 
@@ -116,7 +140,7 @@ export class ResearcherService extends BaseService {
 
             return {
                 data: researchers,
-                currentRecord: response.currentPage || 0,
+                currentPage: response.currentPage || 0,
                 pageSize: response.pageSize || researchers.length,
                 totalRecords: response.totalRecords || researchers.length
             };
@@ -130,6 +154,22 @@ export class ResearcherService extends BaseService {
      * @returns Created researcher
      */
     async createResearcher(researcherData: NewResearcherData): Promise<Researcher> {
+        if (this.USE_MOCK) {
+            return new Promise(resolve => {
+                setTimeout(() => {
+                    resolve({
+                        researcherId: `mock-researcher-new-${Date.now()}`,
+                        researchNodeId: researcherData.researchNodeId,
+                        name: researcherData.name,
+                        email: researcherData.email,
+                        institution: researcherData.institution,
+                        role: researcherData.role as any,
+                        orcid: researcherData.orcid
+                    });
+                }, 500);
+            });
+        }
+
         return this.handleMiddlewareError(async () => {
             this.log('Creating new researcher:', researcherData.name);
 
@@ -164,6 +204,33 @@ export class ResearcherService extends BaseService {
 
 
     async getByNodeId(): Promise<Researcher[]> {
+        if (this.USE_MOCK) {
+            return new Promise(resolve => {
+                setTimeout(() => {
+                    resolve([
+                        {
+                            researcherId: 'mock-researcher-1',
+                            researchNodeId: 'mock-node-1',
+                            name: 'Mock Researcher 1',
+                            email: 'mock1@example.com',
+                            institution: 'Mock Institution',
+                            role: 'researcher' as any,
+                            orcid: '0000-0000-0000-0000'
+                        },
+                        {
+                            researcherId: 'mock-researcher-2',
+                            researchNodeId: 'mock-node-1',
+                            name: 'Mock Researcher 2',
+                            email: 'mock2@example.com',
+                            institution: 'Mock Institution',
+                            role: 'researcher' as any,
+                            orcid: '0000-0000-0000-0001'
+                        }
+                    ]);
+                }, 500);
+            });
+        }
+
         return this.handleMiddlewareError(async () => {
             await this.ensureSession();
             const researchNodeId = import.meta.env.VITE_IRN_MIDDLEWARE_RESEARCH_NODE_ID || '';

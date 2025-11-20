@@ -61,6 +61,8 @@ interface AddResearchPayload extends Record<string, unknown> {
  * Research Service Implementation
  */
 export class ResearchService extends BaseService {
+    private readonly USE_MOCK = true;
+
     constructor(services: MiddlewareServices) {
         super(services, {
             serviceName: 'ResearchService',
@@ -93,6 +95,35 @@ export class ResearchService extends BaseService {
         page: number = 1,
         pageSize: number = 10
     ): Promise<PaginatedResponse<Research>> {
+        if (this.USE_MOCK) {
+            return new Promise(resolve => {
+                setTimeout(() => {
+                    const mockResearch: Research[] = Array(pageSize).fill(null).map((_, i) => ({
+                        id: `mock-research-${page}-${i}`,
+                        title: `Mock Research Project ${page}-${i}`,
+                        description: `Description for Mock Research Project ${page}-${i}`,
+                        endDate: null,
+                        status: ResearchStatus.ACTIVE,
+                        researchNode: {
+                            id: `mock-node-${page}-${i}`,
+                            nodeName: `Mock Node ${page}-${i}`,
+                            nodeUrl: `https://mock-node-${page}-${i}.com`,
+                            status: AuthorizationStatus.AUTHORIZED,
+                            nodeAccessLevel: NodeAccessLevel.PUBLIC,
+                            registeredAt: new Date(),
+                            updatedAt: new Date()
+                        }
+                    }));
+                    resolve({
+                        data: mockResearch,
+                        currentPage: page,
+                        pageSize: pageSize,
+                        totalRecords: 100
+                    });
+                }, 500);
+            });
+        }
+
         return this.handleMiddlewareError(async () => {
             this.log(`Fetching research projects (page: ${page}, pageSize: ${pageSize})`);
 
@@ -122,7 +153,7 @@ export class ResearchService extends BaseService {
 
             return {
                 data: researchProjects,
-                currentRecord: response.currentPage || 0,
+                currentPage: response.currentPage || 0,
                 pageSize: response.pageSize || researchProjects.length,
                 totalRecords: response.totalRecords || researchProjects.length
             };
@@ -136,6 +167,29 @@ export class ResearchService extends BaseService {
      * @returns Created research project
      */
     async createResearch(researchData: NewResearchData): Promise<Research> {
+        if (this.USE_MOCK) {
+            return new Promise(resolve => {
+                setTimeout(() => {
+                    resolve({
+                        id: `mock-research-new-${Date.now()}`,
+                        title: researchData.title,
+                        description: researchData.description,
+                        endDate: null,
+                        status: ResearchStatus.ACTIVE,
+                        researchNode: {
+                            id: researchData.researchNodeId,
+                            nodeName: 'Mock Node',
+                            nodeUrl: 'https://mock-node.com',
+                            status: AuthorizationStatus.AUTHORIZED,
+                            nodeAccessLevel: NodeAccessLevel.PUBLIC,
+                            registeredAt: new Date(),
+                            updatedAt: new Date()
+                        }
+                    });
+                }, 500);
+            });
+        }
+
         return this.handleMiddlewareError(async () => {
             this.log('Creating new research project:', researchData.title);
 

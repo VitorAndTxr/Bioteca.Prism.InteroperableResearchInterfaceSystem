@@ -117,3 +117,45 @@ export interface ClinicalCondition extends Record<string, unknown>{
   /** Detailed description of the clinical condition */
   description: string;
 }
+
+/**
+ * Represents a SNOMED CT clinical event code
+ */
+export interface SnomedClinicalEvent extends Record<string, unknown> {
+  /** SNOMED code (primary key) */
+  snomedCode: string;
+
+  /** Display name */
+  displayName: string;
+
+  /** Description */
+  description: string;
+}
+
+/**
+ * Represents a SNOMED CT medication code
+ */
+export interface SnomedMedication extends Record<string, unknown> {
+  /** SNOMED code (primary key) */
+  snomedCode: string;
+
+  /** Display name */
+  displayName: string;
+
+  /** Description */
+  description: string;
+}
+
+/**
+ * Represents a SNOMED CT allergy/intolerance code
+ */
+export interface SnomedAllergyIntolerance extends Record<string, unknown> {
+  /** SNOMED code (primary key) */
+  snomedCode: string;
+
+  /** Display name */
+  displayName: string;
+
+  /** Description */
+  description: string;
+}

@@ -29,3 +29,5 @@ export * from './models/Researcher';
 export * from './models/Research';
 
 export * from './models/Pagination';
+
+export * from './models/Volunteer';

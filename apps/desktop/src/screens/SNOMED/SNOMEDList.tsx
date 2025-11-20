@@ -17,6 +17,9 @@ import {
   SnomedBodyStructure,
   SnomedTopographicalModifier,
   ClinicalCondition,
+  SnomedClinicalEvent,
+  SnomedMedication,
+  SnomedAllergyIntolerance,
 } from '@iris/domain';
 import { TabbedTable } from '../../design-system/components/tabbed-table';
 import type { TabbedTableTab } from '../../design-system/components/tabbed-table';
@@ -46,13 +49,31 @@ export interface SNOMEDListProps {
   onClinicalConditionAdd?: () => void;
   onClinicalConditionEdit?: (condition: ClinicalCondition) => void;
   onClinicalConditionView?: (condition: ClinicalCondition) => void;
+
+  // Clinical Event handlers
+  onClinicalEventAdd?: () => void;
+  onClinicalEventEdit?: (event: SnomedClinicalEvent) => void;
+  onClinicalEventView?: (event: SnomedClinicalEvent) => void;
+
+  // Medication handlers
+  onMedicationAdd?: () => void;
+  onMedicationEdit?: (medication: SnomedMedication) => void;
+  onMedicationView?: (medication: SnomedMedication) => void;
+
+  // Allergy/Intolerance handlers
+  onAllergyIntoleranceAdd?: () => void;
+  onAllergyIntoleranceEdit?: (allergy: SnomedAllergyIntolerance) => void;
+  onAllergyIntoleranceView?: (allergy: SnomedAllergyIntolerance) => void;
 }
 
 type SnomedTabs =
   | 'body-region'
   | 'body-structure'
   | 'topographic-modifier'
-  | 'clinical-condition';
+  | 'clinical-condition'
+  | 'clinical-event'
+  | 'medication'
+  | 'allergy-intolerance';
 
 export function SNOMEDList({
   onBodyRegionAdd,
@@ -67,6 +88,15 @@ export function SNOMEDList({
   onClinicalConditionAdd,
   onClinicalConditionEdit,
   onClinicalConditionView,
+  onClinicalEventAdd,
+  onClinicalEventEdit,
+  onClinicalEventView,
+  onMedicationAdd,
+  onMedicationEdit,
+  onMedicationView,
+  onAllergyIntoleranceAdd,
+  onAllergyIntoleranceEdit,
+  onAllergyIntoleranceView,
 }: SNOMEDListProps) {
 
   const [activeTab, setActiveTab] = useState<SnomedTabs>('body-region');
@@ -82,6 +112,9 @@ export function SNOMEDList({
   const [bodyStructures, setBodyStructures] = useState<SnomedBodyStructure[]>([]);
   const [topographicModifiers, setTopographicModifiers] = useState<SnomedTopographicalModifier[]>([]);
   const [clinicalConditions, setClinicalConditions] = useState<ClinicalCondition[]>([]);
+  const [clinicalEvents, setClinicalEvents] = useState<SnomedClinicalEvent[]>([]);
+  const [medications, setMedications] = useState<SnomedMedication[]>([]);
+  const [allergyIntolerances, setAllergyIntolerances] = useState<SnomedAllergyIntolerance[]>([]);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -99,6 +132,15 @@ export function SNOMEDList({
         break;
       case 'clinical-condition':
         loadClinicalConditions();
+        break;
+      case 'clinical-event':
+        loadClinicalEvents();
+        break;
+      case 'medication':
+        loadMedications();
+        break;
+      case 'allergy-intolerance':
+        loadAllergyIntolerances();
         break;
       default:
         break;
@@ -185,6 +227,63 @@ export function SNOMEDList({
     } catch (err) {
       console.error('Failed to load clinical conditions:', err);
       setError(err instanceof Error ? err.message : 'Failed to load clinical conditions');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const loadClinicalEvents = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await snomedService.getClinicalEventsPaginated(pagination.currentPage, pageSize);
+      console.log('Fetched clinical events:', response);
+      setClinicalEvents(response.data || []);
+      setPagination(prev => ({
+          ...prev,
+          totalRecords: response.totalRecords || 0
+      }));
+    } catch (err) {
+      console.error('Failed to load clinical events:', err);
+      setError(err instanceof Error ? err.message : 'Failed to load clinical events');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const loadMedications = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await snomedService.getMedicationsPaginated(pagination.currentPage, pageSize);
+      console.log('Fetched medications:', response);
+      setMedications(response.data || []);
+      setPagination(prev => ({
+          ...prev,
+          totalRecords: response.totalRecords || 0
+      }));
+    } catch (err) {
+      console.error('Failed to load medications:', err);
+      setError(err instanceof Error ? err.message : 'Failed to load medications');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const loadAllergyIntolerances = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await snomedService.getAllergyIntolerancesPaginated(pagination.currentPage, pageSize);
+      console.log('Fetched allergy/intolerances:', response);
+      setAllergyIntolerances(response.data || []);
+      setPagination(prev => ({
+          ...prev,
+          totalRecords: response.totalRecords || 0
+      }));
+    } catch (err) {
+      console.error('Failed to load allergy/intolerances:', err);
+      setError(err instanceof Error ? err.message : 'Failed to load allergy/intolerances');
     } finally {
       setLoading(false);
     }
@@ -471,6 +570,189 @@ export function SNOMEDList({
     [onClinicalConditionEdit, onClinicalConditionView]
   );
 
+  // Column definitions for Clinical Event
+  const clinicalEventColumns: DataTableColumn<SnomedClinicalEvent>[] = useMemo(
+    () => [
+      {
+        id: 'snomedCode',
+        label: 'Código SNOMED',
+        accessor: 'snomedCode',
+        sortable: true,
+        width: '20%',
+      },
+      {
+        id: 'displayName',
+        label: 'Nome',
+        accessor: 'displayName',
+        sortable: true,
+        width: '30%',
+      },
+      {
+        id: 'description',
+        label: 'Descrição',
+        accessor: 'description',
+        sortable: true,
+        width: '40%',
+      },
+      {
+        id: 'actions',
+        label: 'Ações',
+        accessor: 'snomedCode',
+        width: '10%',
+        align: 'center',
+        render: (_, event) => (
+          <div className="list-actions">
+            <button
+              className="action-button view"
+              onClick={(e) => {
+                e.stopPropagation();
+                onClinicalEventView?.(event);
+              }}
+              aria-label="Visualizar evento clínico"
+              title="Visualizar"
+            >
+              <EyeIcon />
+            </button>
+            <button
+              className="action-button edit"
+              onClick={(e) => {
+                e.stopPropagation();
+                onClinicalEventEdit?.(event);
+              }}
+              aria-label="Editar evento clínico"
+              title="Editar"
+            >
+              <EditIcon />
+            </button>
+          </div>
+        ),
+      },
+    ],
+    [onClinicalEventEdit, onClinicalEventView]
+  );
+
+  // Column definitions for Medication
+  const medicationColumns: DataTableColumn<SnomedMedication>[] = useMemo(
+    () => [
+      {
+        id: 'snomedCode',
+        label: 'Código SNOMED',
+        accessor: 'snomedCode',
+        sortable: true,
+        width: '20%',
+      },
+      {
+        id: 'displayName',
+        label: 'Nome',
+        accessor: 'displayName',
+        sortable: true,
+        width: '30%',
+      },
+      {
+        id: 'description',
+        label: 'Descrição',
+        accessor: 'description',
+        sortable: true,
+        width: '40%',
+      },
+      {
+        id: 'actions',
+        label: 'Ações',
+        accessor: 'snomedCode',
+        width: '10%',
+        align: 'center',
+        render: (_, medication) => (
+          <div className="list-actions">
+            <button
+              className="action-button view"
+              onClick={(e) => {
+                e.stopPropagation();
+                onMedicationView?.(medication);
+              }}
+              aria-label="Visualizar medicação"
+              title="Visualizar"
+            >
+              <EyeIcon />
+            </button>
+            <button
+              className="action-button edit"
+              onClick={(e) => {
+                e.stopPropagation();
+                onMedicationEdit?.(medication);
+              }}
+              aria-label="Editar medicação"
+              title="Editar"
+            >
+              <EditIcon />
+            </button>
+          </div>
+        ),
+      },
+    ],
+    [onMedicationEdit, onMedicationView]
+  );
+
+  // Column definitions for Allergy/Intolerance
+  const allergyIntoleranceColumns: DataTableColumn<SnomedAllergyIntolerance>[] = useMemo(
+    () => [
+      {
+        id: 'snomedCode',
+        label: 'Código SNOMED',
+        accessor: 'snomedCode',
+        sortable: true,
+        width: '20%',
+      },
+      {
+        id: 'displayName',
+        label: 'Nome',
+        accessor: 'displayName',
+        sortable: true,
+        width: '30%',
+      },
+      {
+        id: 'description',
+        label: 'Descrição',
+        accessor: 'description',
+        sortable: true,
+        width: '40%',
+      },
+      {
+        id: 'actions',
+        label: 'Ações',
+        accessor: 'snomedCode',
+        width: '10%',
+        align: 'center',
+        render: (_, allergy) => (
+          <div className="list-actions">
+            <button
+              className="action-button view"
+              onClick={(e) => {
+                e.stopPropagation();
+                onAllergyIntoleranceView?.(allergy);
+              }}
+              aria-label="Visualizar alergia/intolerância"
+              title="Visualizar"
+            >
+              <EyeIcon />
+            </button>
+            <button
+              className="action-button edit"
+              onClick={(e) => {
+                e.stopPropagation();
+                onAllergyIntoleranceEdit?.(allergy);
+              }}
+              aria-label="Editar alergia/intolerância"
+              title="Editar"
+            >
+              <EditIcon />
+            </button>
+          </div>
+        ),
+      },
+    ],
+    [onAllergyIntoleranceEdit, onAllergyIntoleranceView]
+  );
+
   // Tab configurations
   const tabs: TabbedTableTab[] = useMemo(
     () => [
@@ -526,20 +808,68 @@ export function SNOMEDList({
           variant: 'primary',
         },
       },
+      {
+        value: 'clinical-event',
+        label: 'Evento clínico',
+        title: 'Evento clínico',
+        data: clinicalEvents,
+        columns: clinicalEventColumns,
+        action: {
+          label: 'Adicionar',
+          icon: <PlusIcon />,
+          onClick: onClinicalEventAdd || (() => console.log('Add clinical event clicked')),
+          variant: 'primary',
+        },
+      },
+      {
+        value: 'medication',
+        label: 'Medicação',
+        title: 'Medicação',
+        data: medications,
+        columns: medicationColumns,
+        action: {
+          label: 'Adicionar',
+          icon: <PlusIcon />,
+          onClick: onMedicationAdd || (() => console.log('Add medication clicked')),
+          variant: 'primary',
+        },
+      },
+      {
+        value: 'allergy-intolerance',
+        label: 'Alergia/Intolerância',
+        title: 'Alergia/Intolerância',
+        data: allergyIntolerances,
+        columns: allergyIntoleranceColumns,
+        action: {
+          label: 'Adicionar',
+          icon: <PlusIcon />,
+          onClick: onAllergyIntoleranceAdd || (() => console.log('Add allergy/intolerance clicked')),
+          variant: 'primary',
+        },
+      },
     ],
     [
       bodyRegionColumns,
       bodyStructureColumns,
       topographicModifierColumns,
       clinicalConditionColumns,
+      clinicalEventColumns,
+      medicationColumns,
+      allergyIntoleranceColumns,
       bodyRegions,
       bodyStructures,
       topographicModifiers,
       clinicalConditions,
+      clinicalEvents,
+      medications,
+      allergyIntolerances,
       onBodyRegionAdd,
       onBodyStructureAdd,
       onTopographicModifierAdd,
       onClinicalConditionAdd,
+      onClinicalEventAdd,
+      onMedicationAdd,
+      onAllergyIntoleranceAdd,
     ]
   );
 

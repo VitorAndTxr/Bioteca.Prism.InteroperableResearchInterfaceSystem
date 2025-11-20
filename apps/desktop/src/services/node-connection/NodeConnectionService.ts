@@ -48,6 +48,8 @@ interface AddNodeConnectionPayload extends Record<string, unknown> {
  * Node Connection Service Implementation
  */
 export class NodeConnectionService extends BaseService {
+    private readonly USE_MOCK = true;
+
     constructor(services: MiddlewareServices) {
         super(services, {
             serviceName: 'NodeConnectionService',
@@ -80,6 +82,39 @@ export class NodeConnectionService extends BaseService {
         page: number = 1,
         pageSize: number = 10
     ): Promise<PaginatedResponse<ResearchNodeConnection>> {
+        if (this.USE_MOCK) {
+            this.log(`[MOCK] Fetching active node connections (page: ${page}, pageSize: ${pageSize})`);
+            await new Promise(resolve => setTimeout(resolve, 500)); // Simulate delay
+            
+            const mockData: ResearchNodeConnection[] = [
+                {
+                    id: 'conn-1',
+                    nodeName: 'Hospital das Clínicas',
+                    nodeUrl: 'https://hc.fm.usp.br/api/node',
+                    status: AuthorizationStatus.AUTHORIZED,
+                    nodeAccessLevel: NodeAccessLevel.PUBLIC,
+                    registeredAt: new Date('2025-01-15T10:00:00Z'),
+                    updatedAt: new Date('2025-01-15T10:00:00Z')
+                },
+                {
+                    id: 'conn-2',
+                    nodeName: 'Instituto do Coração',
+                    nodeUrl: 'https://incor.usp.br/api/node',
+                    status: AuthorizationStatus.AUTHORIZED,
+                    nodeAccessLevel: NodeAccessLevel.RESTRICTED,
+                    registeredAt: new Date('2025-02-01T14:30:00Z'),
+                    updatedAt: new Date('2025-02-01T14:30:00Z')
+                }
+            ];
+
+            return {
+                data: mockData,
+                currentRecord: 1,
+                pageSize: pageSize,
+                totalRecords: mockData.length
+            };
+        }
+
         return this.handleMiddlewareError(async () => {
             this.log(`Fetching active node connections (page: ${page}, pageSize: ${pageSize})`);
 
@@ -127,6 +162,39 @@ export class NodeConnectionService extends BaseService {
         page: number = 1,
         pageSize: number = 10
     ): Promise<PaginatedResponse<ResearchNodeConnection>> {
+        if (this.USE_MOCK) {
+            this.log(`[MOCK] Fetching unapproved node connections (page: ${page}, pageSize: ${pageSize})`);
+            await new Promise(resolve => setTimeout(resolve, 500)); // Simulate delay
+            
+            const mockData: ResearchNodeConnection[] = [
+                {
+                    id: 'req-1',
+                    nodeName: 'Universidade Federal de São Paulo',
+                    nodeUrl: 'https://unifesp.br/api/node',
+                    status: AuthorizationStatus.PENDING,
+                    nodeAccessLevel: NodeAccessLevel.PUBLIC,
+                    registeredAt: new Date('2025-10-18T09:15:00Z'),
+                    updatedAt: new Date('2025-10-18T09:15:00Z')
+                },
+                {
+                    id: 'req-2',
+                    nodeName: 'Laboratório de Neurociência',
+                    nodeUrl: 'https://neuro.lab.org/api/node',
+                    status: AuthorizationStatus.PENDING,
+                    nodeAccessLevel: NodeAccessLevel.PRIVATE,
+                    registeredAt: new Date('2025-10-19T11:45:00Z'),
+                    updatedAt: new Date('2025-10-19T11:45:00Z')
+                }
+            ];
+
+            return {
+                data: mockData,
+                currentRecord: 1,
+                pageSize: pageSize,
+                totalRecords: mockData.length
+            };
+        }
+
         return this.handleMiddlewareError(async () => {
             this.log(`Fetching unapproved node connections (page: ${page}, pageSize: ${pageSize})`);
 
@@ -170,6 +238,21 @@ export class NodeConnectionService extends BaseService {
      * @returns Created node connection
      */
     async createNodeConnection(connectionData: NewNodeConnectionData): Promise<ResearchNodeConnection> {
+        if (this.USE_MOCK) {
+            this.log('[MOCK] Creating new node connection:', connectionData.nodeName);
+            await new Promise(resolve => setTimeout(resolve, 800)); // Simulate delay
+            
+            return {
+                id: `mock-conn-${Date.now()}`,
+                nodeName: connectionData.nodeName,
+                nodeUrl: connectionData.nodeUrl,
+                status: AuthorizationStatus.PENDING,
+                nodeAccessLevel: connectionData.nodeAccessLevel,
+                registeredAt: new Date(),
+                updatedAt: new Date()
+            };
+        }
+
         return this.handleMiddlewareError(async () => {
             this.log('Creating new node connection:', connectionData.nodeName);
 

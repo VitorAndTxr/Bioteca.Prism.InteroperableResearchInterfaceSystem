@@ -2,7 +2,7 @@
 
 **Project**: IRIS (Interoperable Research Interface System)
 **Version**: 0.1.0
-**Last Updated**: 2025-01-17T19:30:00Z
+**Last Updated**: 2025-11-20T06:15:00Z
 
 This document provides a comprehensive overview of all implementation activities in the IRIS project, tracking completed features, in-progress work, and pending tasks.
 
@@ -416,6 +416,120 @@ const newUser = await userService.createUser({
 3. Mock middleware for isolated testing
 4. E2E tests for user management flows
 
+### 4. Mocked Screens & Services Implementation ✅
+
+**Implementation ID**: impl-004
+**Type**: Feature + Service
+**Platform**: Desktop
+**Status**: ✅ **Completed**
+**Started**: 2025-11-20
+**Completed**: 2025-11-20
+**Duration**: ~2 hours
+
+#### Description
+
+Implemented mapped but undeveloped screens (`NodeConnections`, `SNOMED`) and integrated a mock data pattern across key services to enable full application demonstration without a running backend. This ensures that the application UI can be fully explored and tested in a standalone environment.
+
+#### Files Created/Modified
+
+**Screens:**
+- `apps/desktop/src/screens/NodeConnections/NodeConnectionsScreen.tsx` - New implementation
+- `apps/desktop/src/screens/SNOMED/SnomedScreen.tsx` - Expanded functionality
+- `apps/desktop/src/screens/SNOMED/SNOMEDList.tsx` - Dynamic column rendering
+
+**Services (Mock Injection):**
+- `apps/desktop/src/services/node-connection/NodeConnectionService.ts`
+- `apps/desktop/src/services/snomed/SnomedService.ts`
+- `apps/desktop/src/services/user/UserService.ts`
+- `apps/desktop/src/services/researcher/ResearcherService.ts`
+- `apps/desktop/src/services/research/ResearchService.ts`
+
+#### Features Implemented
+
+- ✅ **Node Connections Screen**: Tabbed interface displaying "Connection Requests" and "Active Connections" with status badges and action buttons.
+- ✅ **SNOMED Screen**: Comprehensive management interface for 7 SNOMED entity types:
+  - Body Regions
+  - Body Structures
+  - Topographical Modifiers
+  - Clinical Conditions
+  - Clinical Events
+  - Medications
+  - Allergies/Intolerances
+- ✅ **Service Mocking**: Implemented a `USE_MOCK` flag pattern in 5 core services. When enabled, services return static mock data with simulated network delays instead of hitting the backend API.
+
+#### Technical Highlights
+
+- **Mock Pattern**: A private `USE_MOCK` flag in service classes allows seamless toggling between real API calls and mock data, facilitating development and demos.
+- **Dynamic UI**: `SNOMEDList` component uses dynamic column definitions to render different entity types within the same reusable table structure.
+- **Pagination Support**: Mock data implementations support pagination parameters to accurately simulate backend behavior.
+
+---
+
+### 5. Research Management Module ✅
+
+**Implementation ID**: impl-005
+**Type**: Feature + Service + Screens
+**Platform**: Desktop
+**Status**: ✅ **Completed**
+**Started**: 2025-11-20
+**Completed**: 2025-11-20
+**Duration**: ~3 hours
+
+#### Description
+
+Implemented complete Research Management module for the desktop application, including research project listing, creation, and details viewing.
+
+#### Files Created/Modified
+
+- `apps/desktop/src/screens/Research/ResearchScreen.tsx` - Main research screen
+- `apps/desktop/src/screens/Research/ResearchList.tsx` - Paginated list
+- `apps/desktop/src/screens/Research/CreateResearchForm.tsx` - Creation form
+- `apps/desktop/src/screens/Research/ResearchDetailsScreen.tsx` - Detail view
+- `apps/desktop/src/router/AppRouter.tsx` - Routes for `/research`, `/research/add`, `/research/view/:id`
+- `apps/desktop/src/styles/shared/List.css` - Status badge styles
+
+#### Features Implemented
+
+- ✅ Paginated research list with DataTable
+- ✅ Status badges (Active=green, Completed=blue, Suspended=yellow, Archived=gray)
+- ✅ Create research form with validation
+- ✅ Research details view screen
+- ✅ Navigation between list, create, and details views
+
+---
+
+### 6. Volunteer Management Module ✅
+
+**Implementation ID**: impl-006
+**Type**: Feature + Service + Screens
+**Platform**: Desktop
+**Status**: ✅ **Completed**
+**Started**: 2025-11-20
+**Completed**: 2025-11-20
+**Duration**: ~2 hours
+
+#### Description
+
+Implemented complete Volunteer Management module for managing research participants.
+
+#### Files Created/Modified
+
+- `apps/desktop/src/services/volunteer/VolunteerService.ts` - Volunteer service
+- `packages/domain/src/models/Volunteer.ts` - Volunteer domain types
+- `apps/desktop/src/screens/Volunteers/VolunteersScreen.tsx` - Main screen
+- `apps/desktop/src/screens/Volunteers/VolunteersList.tsx` - Paginated list
+- `apps/desktop/src/screens/Volunteers/CreateVolunteerForm.tsx` - Registration form
+- `apps/desktop/src/router/AppRouter.tsx` - Routes for `/volunteers`, `/volunteers/add`
+- `apps/desktop/src/services/middleware.ts` - Service registration
+
+#### Features Implemented
+
+- ✅ VolunteerService with mock data (follows BaseService pattern)
+- ✅ Volunteer domain model (id, name, email, birthDate, gender, phone, status)
+- ✅ Paginated volunteer list with age calculation
+- ✅ Create volunteer form with validation
+- ✅ Status badges (Active, Inactive, Withdrawn)
+
 ---
 
 ## In Progress
@@ -516,15 +630,15 @@ The following tasks are queued for implementation, ordered by priority:
 
 | Metric | Value |
 |--------|-------|
-| **Total Implementations** | 3 |
-| **Completed** | 3 (100%) |
+| **Total Implementations** | 6 |
+| **Completed** | 6 (100%) |
 | **In Progress** | 0 |
-| **Pending** | 9 tasks queued |
+| **Pending** | 7 tasks queued |
 | **Desktop Components** | 16/30 (53%) ✅ |
-| **Desktop Services** | 2 (BaseService, UserService) ✅ |
-| **Domain Models** | 8 (Auth, User, Researcher, Pagination, etc.) ✅ |
+| **Desktop Services** | 7 (Base, User, Researcher, Research, Snomed, NodeConnection, Volunteer) ✅ |
+| **Domain Models** | 14+ (Auth, User, Researcher, Pagination, Snomed, Research, Volunteer, etc.) ✅ |
 | **Mobile Screens** | 3/18 (17%) |
-| **Desktop Screens** | 3/18 (17%) |
+| **Desktop Screens** | 9/18 (50%) ✅ |
 | **Tests Written** | 0 |
 | **Storybook Stories** | 8 ✅ |
 
@@ -533,18 +647,18 @@ The following tasks are queued for implementation, ordered by priority:
 | Metric | Value |
 |--------|-------|
 | **Total Queued Tasks** | 12 |
-| **Pending** | 9 |
+| **Pending** | 7 |
 | **In Progress** | 0 |
-| **Completed** | 3 |
-| **Estimated Hours Remaining** | 51 hours |
-| **Average Completion Time** | 4.5 hours |
+| **Completed** | 6 |
+| **Estimated Hours Remaining** | 35 hours |
+| **Average Completion Time** | 3.5 hours |
 
 ### Platform Breakdown
 
 | Platform | Components | Screens | Features | Storybook |
 |----------|------------|---------|----------|-----------|
 | **Mobile** | 1 (SEMGChart) | 3 (Home, Streaming, Config) | 1 (sEMG Streaming) | 0 stories |
-| **Desktop** | 16 (Design System) ✅ | 3 (Login, Home, Users) | 1 (Auth) | 8 stories ✅ |
+| **Desktop** | 16 (Design System) ✅ | 9 (Login, Home, Users, NodeConn, SNOMED, Research, Volunteers) ✅ | 4 (Auth, Mocking, Research, Volunteers) | 8 stories ✅ |
 | **Shared** | 0 (future: packages/ui-components) | - | - | - |
 
 ### Desktop Components (16/30 Complete)

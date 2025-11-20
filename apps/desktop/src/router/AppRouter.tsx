@@ -9,6 +9,11 @@ import SNOMEDScreen from "@/screens/SNOMED/SnomedScreen";
 import AddResearcherForm from "@/screens/UsersAndResearcheres/AddResearcherForm";
 import AddUserForm from "@/screens/UsersAndResearcheres/AddUserForm";
 import UsersAndResearchesersScreen from "@/screens/UsersAndResearcheres/UsersAndResearchesersScreen";
+import ResearchScreen from "@/screens/Research/ResearchScreen";
+import CreateResearchForm from "@/screens/Research/CreateResearchForm";
+import ResearchDetailsScreen from "@/screens/Research/ResearchDetailsScreen";
+import VolunteersScreen from "@/screens/Volunteers/VolunteersScreen";
+import CreateVolunteerForm from "@/screens/Volunteers/CreateVolunteerForm";
 import { useState, useEffect } from "react";
 
 function AppRouter() {
@@ -16,6 +21,7 @@ function AppRouter() {
     const [version, setVersion] = useState<string>('');
     const [currentPage, setCurrentPage] = useState<Pages>('home');
     const [activePath, setActivePath] = useState<string>('/dashboard');
+    const [selectedResearchId, setSelectedResearchId] = useState<string>('');
 
     useEffect(() => {
         // Get app version from Electron
@@ -42,6 +48,14 @@ function AppRouter() {
     const handleNavigation = (path: string) => {
         setActivePath(path);
 
+        // Handle dynamic routes with parameters first
+        if (path.startsWith('/research/view/')) {
+            const id = path.replace('/research/view/', '');
+            setSelectedResearchId(id);
+            setCurrentPage('view-research');
+            return;
+        }
+
         // Navigate to appropriate page based on path
         switch (path) {
             case '/nodeConnections':
@@ -50,8 +64,14 @@ function AppRouter() {
             case '/research':
                 setCurrentPage('research');
                 break;
+            case '/research/add':
+                setCurrentPage('add-research');
+                break;
             case '/volunteers':
                 setCurrentPage('volunteers');
+                break;
+            case '/volunteers/add':
+                setCurrentPage('add-volunteer');
                 break;
             case '/snomed':
                 setCurrentPage('snomed');
@@ -89,6 +109,37 @@ function AppRouter() {
             case 'node-connections':
                 return (
                     <div>Node Connections Screen - To be implemented</div>
+                );
+            case 'research':
+                return (
+                    <ResearchScreen
+                        handleNavigation={handleNavigation}
+                    />
+                );
+            case 'add-research':
+                return (
+                    <CreateResearchForm
+                        handleNavigation={handleNavigation}
+                    />
+                );
+            case 'view-research':
+                return (
+                    <ResearchDetailsScreen
+                        handleNavigation={handleNavigation}
+                        researchId={selectedResearchId}
+                    />
+                );
+            case 'volunteers':
+                return (
+                    <VolunteersScreen
+                        handleNavigation={handleNavigation}
+                    />
+                );
+            case 'add-volunteer':
+                return (
+                    <CreateVolunteerForm
+                        handleNavigation={handleNavigation}
+                    />
                 );
             case 'snomed':
                 return (
@@ -156,7 +207,10 @@ type Pages =
     | 'home'
     | 'node-connections'
     | 'research'
+    | 'add-research'
+    | 'view-research'
     | 'volunteers'
+    | 'add-volunteer'
     | 'snomed'
     | 'users'
     | 'add-user'

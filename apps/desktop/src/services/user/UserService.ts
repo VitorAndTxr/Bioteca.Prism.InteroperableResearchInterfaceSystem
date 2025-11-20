@@ -56,6 +56,8 @@ interface AddUserPayload extends Record<string, unknown> {
  * User Service Implementation
  */
 export class UserService extends BaseService {
+    private readonly USE_MOCK = true;
+
     constructor(services: MiddlewareServices) {
         super(services, {
             serviceName: 'UserService',
@@ -88,6 +90,26 @@ export class UserService extends BaseService {
         page: number = 1,
         pageSize: number = 10
     ): Promise<PaginatedResponse<User>> {
+        if (this.USE_MOCK) {
+            return new Promise(resolve => {
+                setTimeout(() => {
+                    const mockUsers: User[] = Array(pageSize).fill(null).map((_, i) => ({
+                        id: `mock-user-${page}-${i}`,
+                        login: `mockuser${page}${i}`,
+                        role: 'researcher' as any,
+                        createdAt: new Date(),
+                        updatedAt: new Date()
+                    }));
+                    resolve({
+                        data: mockUsers,
+                        currentPage: page,
+                        pageSize: pageSize,
+                        totalRecords: 100
+                    });
+                }, 500);
+            });
+        }
+
         return this.handleMiddlewareError(async () => {
             this.log(`Fetching users (page: ${page}, pageSize: ${pageSize})`);
 
@@ -119,7 +141,7 @@ export class UserService extends BaseService {
 
             return {
                 data: users,
-                currentRecord: response.currentPage || 0,
+                currentPage: response.currentPage || 0,
                 pageSize: response.pageSize || users.length,
                 totalRecords: response.totalRecords || users.length
             };
@@ -133,6 +155,20 @@ export class UserService extends BaseService {
      * @returns Created user
      */
     async createUser(userData: NewUserData): Promise<User> {
+        if (this.USE_MOCK) {
+            return new Promise(resolve => {
+                setTimeout(() => {
+                    resolve({
+                        id: `mock-user-new-${Date.now()}`,
+                        login: userData.login,
+                        role: userData.role as any,
+                        createdAt: new Date(),
+                        updatedAt: new Date()
+                    });
+                }, 500);
+            });
+        }
+
         return this.handleMiddlewareError(async () => {
             this.log('Creating new user:', userData.login);
 
