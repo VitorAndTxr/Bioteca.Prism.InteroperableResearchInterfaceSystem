@@ -4,172 +4,101 @@ description: Update all Figma mappings and extract latest designs
 
 # 🎨 Update Figma Mappings
 
-I will sync all Figma designs and update the project mappings.
+I will sync all Figma designs and update the project mappings using the **progressive skill discovery pattern**.
 
-## Process:
+## Process
 
-### 1. Check MCP Installation
-First, I'll verify that required MCPs are available:
-- **Figma Desktop MCP**: For direct Figma access
-- **Playwright MCP**: For web fallback if needed
+### Step 1: Load Skills Documentation 📚
 
-If any MCP is missing, I'll provide installation instructions.
+Following the progressive discovery pattern from `.claude/skills/README.md`:
 
-### 2. Access Method Selection
-```javascript
-// Try Figma MCP first
-if (figmaMcpAvailable) {
-  // Use direct Figma MCP access
-  await useFigmaMCP()
-} else if (playwrightMcpAvailable) {
-  // Fallback to web access
-  await usePlaywrightWebAccess()
-} else {
-  // Request MCP installation
-  await requestMcpInstallation()
-}
+```
+1. Read: .claude/skills/mcp-servers/INDEX.md (global overview)
+2. Read: .claude/skills/mcp-servers/figma-desktop/INDEX.md (7 Figma tools)
+3. Read individual tool docs as needed:
+   - get_metadata.md (component structure)
+   - get_design_context.md (code generation)
+   - get_variable_defs.md (design tokens)
+   - get_screenshot.md (visual reference)
 ```
 
-### 3. Retrieve Page Information
-For each Figma resource (via MCP or web):
-- Extract frame links and IDs
-- Get component specifications
-- Capture design tokens
-- Download screenshots if needed
+**Why Progressive Discovery?**
+- Zero tokens until accessed
+- ~85% token savings vs. upfront loading
+- Load only what you need when you need it
 
-## Figma Resources to Update:
+### Step 2: Extract Figma Resources 🎨
 
-### Design System
-- **Page Node**: 801-23931
-- **Components**: 30 total
-- **Location**: `docs/figma/design-system-mapping.json`
+Using the loaded MCP tools:
 
-### Application Screens
-- **Main Node**: 6804-13742
-- **Screens**: 18 total
-- **Location**: `docs/figma/frame-node-mapping.json`
+**Figma File**: I.R.I.S.-Prototype (xFC8eCJcSwB9EyicTmDJ7w)
+- Design System: 33 components (node 801-23931)
+- Application Screens: 31 screens (node 6804-13742)
 
-## MCP Installation Check:
+**Target Documentation**:
+- `docs/figma/design-system-mapping.json`
+- `docs/figma/frame-node-mapping.json`
+- `docs/figma/MCP_SERVER_CONNECTION_MAP.md`
 
-### Check Figma Desktop MCP
-```bash
-# Test if Figma MCP is available
-try {
-  await mcp__figma-desktop__get_metadata({ nodeId: "test" })
-  echo "✅ Figma Desktop MCP is available"
-} catch {
-  echo "❌ Figma Desktop MCP not found"
-  echo "Please install: @claude/mcp-server-figma-desktop"
-}
+**Primary Method - Figma MCP**:
+```
+mcp__figma-desktop__get_metadata({ nodeId: "801-23931" })  // Design system
+mcp__figma-desktop__get_metadata({ nodeId: "6804-13742" }) // App screens
+mcp__figma-desktop__get_design_context({ nodeId: "...", artifactType: "REUSABLE_COMPONENT" })
+mcp__figma-desktop__get_variable_defs() // Design tokens
 ```
 
-### Check Playwright MCP
-```bash
-# Test if Playwright MCP is available
-try {
-  await mcp__playwright__browser_close()
-  echo "✅ Playwright MCP is available"
-} catch {
-  echo "❌ Playwright MCP not found"
-  echo "Please install: @claude/mcp-server-playwright"
-}
+**Fallback Method - Playwright MCP** (if Figma unavailable):
+```
+mcp__playwright__browser_navigate({ url: "https://figma.com/design/..." })
+mcp__playwright__browser_snapshot() // Extract structure
+mcp__playwright__browser_take_screenshot({ fullPage: true })
 ```
 
-## Update Process by Access Method:
+### Step 4: Update Documentation 📝
 
-### Method A: Direct Figma MCP Access
-```javascript
-// Get metadata for all pages
-const designSystem = await mcp__figma-desktop__get_metadata({
-  nodeId: "801-23931"
-})
+Actions performed:
+1. Extract component specs with frame links
+2. Update design tokens (colors, typography, spacing)
+3. Map frame URLs
+4. Check for component variants/states
+5. Update implementation queue
+6. Generate frame link documentation
 
-const screens = await mcp__figma-desktop__get_metadata({
-  nodeId: "6804-13742"
-})
+**Files Updated**:
+- `docs/figma/design-system-mapping.json` (33 components)
+- `docs/figma/frame-node-mapping.json` (31 screens)
+- `docs/figma/MCP_SERVER_CONNECTION_MAP.md` (MCP mapping)
+- `docs/figma/FIGMA_MAPPING_UPDATE.md` (update notes)
 
-// Extract frame links
-for (const frame of [...designSystem.frames, ...screens.frames]) {
-  frameLinks.push({
-    id: frame.id,
-    name: frame.name,
-    url: `https://figma.com/design/file/${frame.id}`
-  })
-}
-```
+## Output Report
 
-### Method B: Web Access via Playwright
-```javascript
-// Navigate to Figma page
-await mcp__playwright__browser_navigate({
-  url: "https://figma.com/design/..."
-})
-
-// Wait for page load
-await mcp__playwright__browser_wait_for({
-  text: "Pages"
-})
-
-// Take snapshot to analyze structure
-const snapshot = await mcp__playwright__browser_snapshot()
-
-// Extract frame information from DOM
-const frames = await extractFramesFromSnapshot(snapshot)
-```
-
-## Actions to Perform:
-1. **Extract latest component specs** with frame links
-2. **Update design tokens** (colors, typography, spacing)
-3. **Map all frame URLs** to documentation
-4. **Download any new assets** if needed
-5. **Check for component variants** and states
-6. **Update implementation queue** with new items
-7. **Generate frame link documentation**
-
-## Output Documentation:
-
-### Update existing files:
-- `docs/figma/design-system-mapping.json` - With frame URLs
-- `docs/figma/frame-node-mapping.json` - With frame URLs
-- `docs/figma/design-tokens.json` - Latest tokens
-
-### Create new files if needed:
-- `docs/figma/frame-links.md` - All frame URLs
-- `docs/figma/update-log.json` - Update history
-
-## Expected Output:
 ```
 ═══════════════════════════════════════
     FIGMA UPDATE COMPLETE
 ═══════════════════════════════════════
 
-📊 MCP Status:
-✅ Figma Desktop MCP: Available
-✅ Playwright MCP: Available
+📚 Skills Documentation:
+✅ Progressive discovery pattern applied
+✅ Loaded: INDEX → figma-desktop → individual tools
+✅ Token efficiency: ~85% savings
 
 🎨 Design System:
-- Components checked: 30
-- New components: 0
-- Updated components: 5
-- Frame URLs mapped: 30
+✅ Components: {{updatedCount}}/33 updated
+✅ Frame URLs: 33 mapped
 
 📱 Application Screens:
-- Screens checked: 18
-- New screens: 0
-- Updated screens: 3
-- Frame URLs mapped: 18
+✅ Screens: {{updatedCount}}/31 updated
+✅ Frame URLs: 31 mapped
 
-📁 Documentation Updated:
-- design-system-mapping.json ✅
-- frame-node-mapping.json ✅
-- design-tokens.json ✅
-- frame-links.md ✅
-
-🔗 Frame Links Extracted:
-Total: 48 frame URLs successfully mapped
+📁 Files Updated:
+✅ design-system-mapping.json
+✅ frame-node-mapping.json
+✅ MCP_SERVER_CONNECTION_MAP.md
+✅ FIGMA_MAPPING_UPDATE.md
 
 ✨ All Figma resources synchronized!
 ═══════════════════════════════════════
 ```
 
-Starting MCP verification and Figma sync...
+Starting Figma sync with progressive skill discovery...

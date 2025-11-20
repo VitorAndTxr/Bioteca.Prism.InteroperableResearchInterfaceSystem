@@ -1,0 +1,12 @@
+[
+  {
+    "type": "Duplicate Node IDs",
+    "severity": "high",
+    "items": [
+      {
+        "nodeId": "6910-4277",
+        "frames": "019 - Pesquisas, 022 - Voluntários"
+      }
+    ]
+  }
+]

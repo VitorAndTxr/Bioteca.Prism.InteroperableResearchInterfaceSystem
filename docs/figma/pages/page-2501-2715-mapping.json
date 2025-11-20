@@ -1,0 +1,231 @@
+{
+  "metadata": {
+    "fileKey": "xFC8eCJcSwB9EyicTmDJ7w",
+    "fileName": "I.R.I.S.-Prototype",
+    "pageName": "Research Management & Additional Screens",
+    "nodeId": "2501-2715",
+    "nodeIdFormatted": "2501:2715",
+    "url": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=2501-2715&m=dev",
+    "mappingDate": "2025-11-14",
+    "lastUpdated": "2025-11-14",
+    "extractionStatus": "in_progress",
+    "extractionMethod": "structured_analysis"
+  },
+  "frames": [
+    {
+      "id": "031",
+      "name": "Research Projects List",
+      "nodeId": "2501-XXXX",
+      "module": "Research Management",
+      "type": "Screen",
+      "priority": "High",
+      "dimensions": "1280x720",
+      "status": "pending_extraction",
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=2501-XXXX",
+      "description": "Main research projects management screen showing list of active research projects",
+      "expectedComponents": [
+        "Header with title",
+        "DataTable component",
+        "Action buttons (Add, Edit, Delete)",
+        "Search/Filter bar",
+        "Pagination"
+      ],
+      "notes": "Node ID to be verified during extraction"
+    },
+    {
+      "id": "032",
+      "name": "New Research Project",
+      "nodeId": "2501-XXXX",
+      "module": "Research Management",
+      "type": "Screen",
+      "priority": "Medium",
+      "dimensions": "1280x720",
+      "status": "pending_extraction",
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=2501-XXXX",
+      "description": "Form for creating a new research project",
+      "expectedComponents": [
+        "Form fields (Name, Description, Duration)",
+        "Submit button",
+        "Cancel button",
+        "Validation feedback"
+      ],
+      "notes": "Form structure follows pattern from User/Researcher creation screens"
+    },
+    {
+      "id": "033",
+      "name": "Research Project Details",
+      "nodeId": "2501-XXXX",
+      "module": "Research Management",
+      "type": "Modal",
+      "priority": "Medium",
+      "dimensions": "617x350",
+      "status": "pending_extraction",
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=2501-XXXX",
+      "description": "Modal showing research project details and metadata",
+      "expectedComponents": [
+        "Project title",
+        "Description",
+        "Metadata (dates, status)",
+        "Action buttons"
+      ],
+      "notes": "Similar structure to User Information modal"
+    },
+    {
+      "id": "034",
+      "name": "Research Sessions",
+      "nodeId": "2501-XXXX",
+      "module": "Research Management",
+      "type": "Screen",
+      "priority": "High",
+      "dimensions": "1280x720",
+      "status": "pending_extraction",
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=2501-XXXX",
+      "description": "List of research sessions with data collection status",
+      "expectedComponents": [
+        "Sessions DataTable",
+        "Session status indicators",
+        "Filter by project",
+        "Sort options"
+      ],
+      "notes": "Related to Phase 4 backend session management"
+    },
+    {
+      "id": "035",
+      "name": "Session Data Viewer",
+      "nodeId": "2501-XXXX",
+      "module": "Research Management",
+      "type": "Screen",
+      "priority": "Medium",
+      "dimensions": "1280x720",
+      "status": "pending_extraction",
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=2501-XXXX",
+      "description": "Detailed view of collected session data with visualizations",
+      "expectedComponents": [
+        "Charts/graphs",
+        "Data summary statistics",
+        "Timeline view",
+        "Export button"
+      ],
+      "notes": "High priority for data analysis features"
+    },
+    {
+      "id": "036",
+      "name": "Bluetooth Device Manager",
+      "nodeId": "2501-XXXX",
+      "module": "Device Management",
+      "type": "Screen",
+      "priority": "High",
+      "dimensions": "1280x720",
+      "status": "pending_extraction",
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=2501-XXXX",
+      "description": "Interface for managing Bluetooth-connected sEMG/FES devices",
+      "expectedComponents": [
+        "Device list",
+        "Connection status",
+        "Pair/Unpair buttons",
+        "Device settings"
+      ],
+      "notes": "Critical for mobile app integration"
+    },
+    {
+      "id": "037",
+      "name": "Device Configuration",
+      "nodeId": "2501-XXXX",
+      "module": "Device Management",
+      "type": "Modal",
+      "priority": "Medium",
+      "dimensions": "617x500",
+      "status": "pending_extraction",
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=2501-XXXX",
+      "description": "Modal for configuring sEMG/FES device parameters",
+      "expectedComponents": [
+        "Parameter sliders (Frequency, Amplitude, Pulse Width)",
+        "Preset selection",
+        "Save/Cancel buttons"
+      ],
+      "notes": "Maps to FES control commands in Bluetooth protocol"
+    },
+    {
+      "id": "038",
+      "name": "Data Sync Settings",
+      "nodeId": "2501-XXXX",
+      "module": "Settings",
+      "type": "Screen",
+      "priority": "Medium",
+      "dimensions": "1280x720",
+      "status": "pending_extraction",
+      "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=2501-XXXX",
+      "description": "Settings for configuring data synchronization with research node",
+      "expectedComponents": [
+        "Node URL input",
+        "Authentication settings",
+        "Sync frequency selector",
+        "Encryption options"
+      ],
+      "notes": "Critical for middleware integration"
+    }
+  ],
+  "statistics": {
+    "totalFramesExpected": 8,
+    "totalFramesExtracted": 0,
+    "byModule": {
+      "Research Management": 5,
+      "Device Management": 2,
+      "Settings": 1
+    },
+    "byType": {
+      "Screen": 6,
+      "Modal": 2
+    },
+    "byPriority": {
+      "High": 4,
+      "Medium": 4
+    },
+    "extractionProgress": 0,
+    "screenshotsCollected": 0,
+    "codeContextGenerated": 0
+  },
+  "designTokens": {
+    "status": "pending_extraction",
+    "colors": {
+      "primary": "pending",
+      "secondary": "pending",
+      "background": "pending",
+      "text": "pending"
+    },
+    "typography": {
+      "headings": "pending",
+      "body": "pending",
+      "captions": "pending"
+    },
+    "spacing": {
+      "scale": "pending"
+    },
+    "borderRadius": {
+      "values": "pending"
+    },
+    "shadows": {
+      "elevations": "pending"
+    }
+  },
+  "notes": [
+    "Node ID 2501-2715 appears to contain Research Management and Device Management screens",
+    "Frame node IDs marked as 2501-XXXX are placeholders pending actual extraction",
+    "Priority based on feature criticality and integration dependencies",
+    "Device Management screens are critical for mobile app development",
+    "Data visualization screens (Session Data Viewer) important for research analysis"
+  ],
+  "extractionMethods": {
+    "primary": "MCP Figma Desktop tools (mcp__figma-desktop__get_metadata, get_design_context)",
+    "fallback": "Figma REST API with personal access token",
+    "manual": "Direct Figma Desktop inspection if automated methods unavailable"
+  },
+  "nextSteps": [
+    "Extract actual frame node IDs using MCP tools or REST API",
+    "Capture screenshots for each frame",
+    "Extract design tokens and variables",
+    "Generate code context for implementation",
+    "Create component implementation plan",
+    "Update master frame-node-mapping.json"
+  ]
+}

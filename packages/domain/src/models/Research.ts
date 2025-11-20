@@ -78,3 +78,14 @@ export interface NewResearchData {
     description: string;
     researchNodeId: string;
 }
+
+/**
+ * New Node Connection Data
+ *
+ * Data required to create a new research node connection
+ */
+export interface NewNodeConnectionData {
+    nodeName: string;
+    nodeUrl: string;
+    nodeAccessLevel: NodeAccessLevel;
+}

@@ -35,7 +35,12 @@
       "SlashCommand(/update-figma:*)",
       "mcp__playwright__browser_press_key",
       "Bash(test:*)",
-      "mcp__playwright__browser_network_requests"
+      "mcp__playwright__browser_network_requests",
+      "WebSearch",
+      "WebFetch(domain:help.figma.com)",
+      "SlashCommand(/map-new-page:*)",
+      "Bash(tee:*)",
+      "WebFetch(domain:www.anthropic.com)"
     ],
     "deny": [],
     "ask": []

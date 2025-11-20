@@ -1,0 +1,21 @@
+{
+  "pageName": "PENDING_PAGE_NAME",
+  "nodeId": "2501-2715",
+  "nodeIdFormatted": "2501:2715",
+  "url": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=2501-2715&m=dev",
+  "fileKey": "xFC8eCJcSwB9EyicTmDJ7w",
+  "fileName": "I.R.I.S.-Prototype",
+  "mappingDate": "2025-11-14",
+  "status": "pending_extraction",
+  "extractionMethod": "manual",
+  "frames": [],
+  "notes": "This page needs to be mapped using Figma Desktop. Open the URL above in Figma Desktop and manually extract frame information.",
+  "instructions": [
+    "1. Open Figma Desktop application",
+    "2. Navigate to: https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=2501-2715&m=dev",
+    "3. Select the page node (2501:2715)",
+    "4. Use Figma Desktop plugins or manual inspection to list all child frames",
+    "5. For each frame, record: name, nodeId, type (Screen/Component/Modal), dimensions",
+    "6. Update this JSON file with the extracted frame information"
+  ]
+}
