@@ -172,3 +172,6 @@ Use this skill when:
 - Converting Figma components to React code (MCP only)
 - Extracting FigJam brainstorming content
 - Getting dev handoff notes and annotations
+
+
+## Figma Api key = claude.env.FIGMA_KEY
