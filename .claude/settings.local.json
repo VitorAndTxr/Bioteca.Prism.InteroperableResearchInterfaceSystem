@@ -42,7 +42,8 @@
       "Bash(tee:*)",
       "WebFetch(domain:www.anthropic.com)",
       "Bash(nul)",
-      "Skill(figma-desktop)"
+      "Skill(figma-desktop)",
+      "Bash(claude config set:*)"
     ],
     "deny": [],
     "ask": []
