@@ -51,12 +51,11 @@ node close.js             # Always close when done
 
 **Output**: All scripts return JSON: `{"success": true, "data": {...}}`
 
-## Documentation
+## References
 
-- [EXAMPLES.md](docs/EXAMPLES.md) - Complete workflow examples
-- [TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) - Common issues and fixes
-- [ARCHITECTURE.md](docs/ARCHITECTURE.md) - Technical details
-- [scripts/README.md](scripts/README.md) - Quick reference
+- [EXAMPLES.md](references/EXAMPLES.md) - Complete workflow examples
+- [TROUBLESHOOTING.md](references/TROUBLESHOOTING.md) - Common issues and fixes
+- [ARCHITECTURE.md](references/ARCHITECTURE.md) - Technical details
 
 ## Limitations
 

@@ -21,7 +21,8 @@
       "Bash(FIGMA_TOKEN:* node:*)",
       "Bash(mv:*)",
       "Bash(npm run type-check:all:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Skill(skill-creator)"
     ],
     "deny": [],
     "ask": []

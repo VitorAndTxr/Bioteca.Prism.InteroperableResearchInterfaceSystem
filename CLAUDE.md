@@ -114,7 +114,8 @@ When working on this codebase:
 - Storybook: `apps/desktop/src/stories/`
 
 **AI Assistant (Claude Code)** → Reference:
-- **MCP Skills**: `.claude/skills/mcp-servers/INDEX.md` - Progressive tool discovery
+- **Playwright Skill**: `.claude/skills/playwright/SKILL.md` - Browser automation
+- **Figma Skill**: `.claude/skills/figma-desktop/SKILL.md` - Design extraction
 - Documentation Standards: `docs/DOCUMENTATION_GUIDELINES.md`
 - Code Patterns: `docs/development/CODE_PATTERNS.md`
 - Architecture: `docs/architecture/`
@@ -324,14 +325,16 @@ import { Button } from '../../../design-system/components/button';
 ```
 IRIS/
 ├── .claude/                 # Claude Code configuration
-│   ├── agents/              # Custom agents (mcp-mapper)
+│   ├── agents/              # Custom agents (figma-frame-mapper, etc.)
 │   ├── commands/            # Slash commands
-│   └── skills/              # MCP skills documentation
-│       ├── README.md        # Skills usage guide
-│       └── mcp-servers/     # MCP server documentation
-│           ├── INDEX.md     # Global MCP index
-│           ├── playwright/  # 21 browser automation tools
-│           └── figma-desktop/ # 8 design extraction scripts
+│   └── skills/              # Skills documentation
+│       ├── playwright/      # Browser automation (16 scripts)
+│       │   ├── SKILL.md     # Skill definition
+│       │   ├── scripts/     # Automation scripts
+│       │   └── references/  # Examples, troubleshooting
+│       └── figma-desktop/   # Design extraction (8 scripts)
+│           ├── SKILL.md     # Skill definition
+│           └── scripts/     # Figma REST API scripts
 │
 ├── apps/
 │   ├── mobile/              # React Native + Expo (Device control)
@@ -408,31 +411,41 @@ JSON-based protocol with 14 message codes for ESP32 communication:
 
 ---
 
-## MCP Skills Documentation
+## Skills
 
-### Overview
+IRIS includes two skills for automation and design-to-code workflows.
 
-IRIS includes comprehensive MCP (Model Context Protocol) skills documentation following the **progressive tool discovery** pattern for token efficiency. Skills are organized so that tool documentation is loaded on-demand rather than upfront, minimizing token usage while maximizing utility.
+### Playwright (16 scripts)
 
-### Available MCP Servers
+Browser automation with persistent state for testing and visual debugging.
 
-#### Playwright (21 tools)
-Browser automation and testing for automated workflows, visual debugging, and web interaction.
+**Location**: `.claude/skills/playwright/SKILL.md`
 
-**Key Tools**:
-- `mcp__playwright__browser_navigate` - Navigate to URLs
-- `mcp__playwright__browser_snapshot` - Capture accessibility tree (preferred)
-- `mcp__playwright__browser_click` - Click elements with precision
-- `mcp__playwright__browser_type` - Type into input fields
-- `mcp__playwright__browser_fill_form` - Fill multiple form fields
-- `mcp__playwright__browser_take_screenshot` - Capture visual screenshots
-- `mcp__playwright__browser_evaluate` - Execute JavaScript in page context
-- `mcp__playwright__browser_network_requests` - Monitor network traffic
+**Key Scripts**:
+- `navigate.js` / `go-back.js` / `go-forward.js` - Navigation
+- `snapshot.js` - Get element refs (run first)
+- `click.js` / `hover.js` / `type.js` - Interaction
+- `fill-form.js` / `select-option.js` - Forms
+- `screenshot.js` / `pdf-save.js` - Capture
+- `evaluate.js` - JavaScript execution
 
-**Documentation**: `.claude/skills/mcp-servers/playwright/INDEX.md`
+**Basic Workflow**:
+```bash
+cd .claude/skills/playwright/scripts
+node navigate.js "http://localhost:5173"
+node snapshot.js          # Get refs: ref1, ref2...
+node click.js ref1        # Use refs from snapshot
+node screenshot.js "out.png"
+node close.js             # Always close when done
+```
 
-#### Figma Desktop (8 scripts)
-Design data extraction using REST API scripts for design-to-code workflows.
+**References**: See `references/EXAMPLES.md` for complete workflows.
+
+### Figma Desktop (8 scripts)
+
+Design data extraction using Figma REST API.
+
+**Location**: `.claude/skills/figma-desktop/SKILL.md`
 
 **Key Scripts**:
 - `extract-frames.js` - Extract all frames from a page
@@ -441,71 +454,14 @@ Design data extraction using REST API scripts for design-to-code workflows.
 - `get-variable-defs.js` - Extract design tokens
 - `get-annotations.js` - Get dev mode annotations
 - `get-code-connect-map.js` - Get component metadata
+- `compare-frames.js` - Compare current vs documented frames
 
-**Documentation**: `.claude/skills/figma-desktop/SKILL.md`
-
-### Usage Pattern
-
-**Progressive Discovery Workflow**:
-
-1. **Start with global index**:
-   ```
-   Read: .claude/skills/mcp-servers/INDEX.md
-   ```
-
-2. **Navigate to specific skill**:
-   ```
-   Read: .claude/skills/mcp-servers/playwright/INDEX.md
-   Read: .claude/skills/figma-desktop/SKILL.md
-   ```
-
-3. **Load individual tools/scripts as needed**:
-   ```
-   Read: .claude/skills/mcp-servers/playwright/browser_navigate.md
-   Read: .claude/skills/figma-desktop/scripts/README.md
-   ```
-
-### Token Efficiency Benefits
-
-- **Zero tokens until accessed**: Tool docs only loaded when needed
-- **Succinct documentation**: <200 tokens per tool file
-- **Searchable structure**: Easy to find relevant tools
-- **No redundancy**: Each tool documented once
-
-### Common Use Cases in IRIS
-
-**Desktop App Development**:
-```typescript
-// Automated testing with Playwright
-mcp__playwright__browser_navigate({ url: "http://localhost:5173" })
-mcp__playwright__browser_snapshot({})
-mcp__playwright__browser_click({ element: "Login Button", ref: "btn123" })
-```
-
-**Design System Implementation**:
+**Usage**:
 ```bash
-# Extract design data from Figma
+# Requires FIGMA_TOKEN environment variable
 node .claude/skills/figma-desktop/scripts/get-metadata.js xFC8eCJcSwB9EyicTmDJ7w 123:456
 node .claude/skills/figma-desktop/scripts/get-screenshot.js xFC8eCJcSwB9EyicTmDJ7w 123:456
-node .claude/skills/figma-desktop/scripts/get-variable-defs.js xFC8eCJcSwB9EyicTmDJ7w
 ```
-
-**Visual Debugging**:
-```typescript
-// Capture screenshots and console logs
-mcp__playwright__browser_take_screenshot({ fullPage: true })
-mcp__playwright__browser_console_messages({ onlyErrors: true })
-```
-
-### Documentation Standards
-
-All MCP skills documentation follows these standards:
-- **Concise**: Target <200 tokens per tool file
-- **Structured**: Consistent format (parameters, returns, errors, examples)
-- **Practical**: Real-world usage examples
-- **Current**: Matches actual MCP tool implementations
-
-**Complete Skills Guide**: `.claude/skills/README.md`
 
 ---
 
@@ -536,11 +492,9 @@ This application is part of the larger PRISM federated research framework:
 
 ### Quick Links by Category
 
-**MCP Skills** (AI Assistant Tools):
-- `.claude/skills/README.md` - MCP Skills overview and usage guide
-- `.claude/skills/mcp-servers/INDEX.md` - Global index of all MCP servers
-- `.claude/skills/mcp-servers/playwright/INDEX.md` - Playwright automation tools (21)
-- `.claude/skills/figma-desktop/SKILL.md` - Figma design extraction scripts (8)
+**Skills** (Automation):
+- `.claude/skills/playwright/SKILL.md` - Browser automation (16 scripts)
+- `.claude/skills/figma-desktop/SKILL.md` - Figma design extraction (8 scripts)
 
 **Setup & Getting Started**:
 - `docs/setup/QUICK_START.md` - Get up and running fast
@@ -596,12 +550,10 @@ This application is part of the larger PRISM federated research framework:
 ### Documentation Hub
 Start at `docs/README.md` for complete documentation navigation.
 
-### MCP Skills (AI Assistant)
+### Skills (Automation)
 For Claude Code automation and tooling:
-- Skills Overview: `.claude/skills/README.md`
-- Global Index: `.claude/skills/mcp-servers/INDEX.md`
-- Playwright Tools: `.claude/skills/mcp-servers/playwright/INDEX.md`
-- Figma Tools: `.claude/skills/mcp-servers/figma-desktop/INDEX.md`
+- Playwright: `.claude/skills/playwright/SKILL.md`
+- Figma: `.claude/skills/figma-desktop/SKILL.md`
 
 ### Common Issues
 See `docs/troubleshooting/COMMON_ISSUES.md` for troubleshooting guide.

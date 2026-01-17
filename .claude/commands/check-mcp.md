@@ -18,38 +18,28 @@ This command validates the **progressive skill discovery pattern** implemented i
 
 ### Phase 1: Skills Documentation Validation 📚
 
-**Step 1 - Verify Global Index**:
-```
-Read: .claude/skills/README.md
-```
-
-Expected:
-- ✅ README explains progressive discovery pattern
-- ✅ Lists all available skills
-- ✅ Documentation is in English
-
-**Step 2 - Verify Figma Skills Documentation**:
+**Step 1 - Verify Figma Skills Documentation**:
 ```
 Read: .claude/skills/figma-desktop/SKILL.md
-Read: .claude/skills/figma-desktop/scripts/README.md
 ```
 
 Expected:
+- ✅ Valid YAML frontmatter (name, description)
 - ✅ Lists all 8 Figma scripts
 - ✅ Each script has clear description
 - ✅ Usage examples provided
 - ✅ Setup instructions included
 
-**Step 3 - Verify Playwright Skills Documentation**:
+**Step 2 - Verify Playwright Skills Documentation**:
 ```
-Read: .claude/skills/mcp-servers/playwright/INDEX.md
+Read: .claude/skills/playwright/SKILL.md
 ```
 
 Expected:
-- ✅ Lists all 21 Playwright tools
+- ✅ Valid YAML frontmatter (name, description)
+- ✅ Lists all 16 Playwright scripts
 - ✅ Categorized by function (navigation, interaction, etc.)
-- ✅ Links to individual tool documentation
-- ✅ Tool documentation exists and is <200 tokens
+- ✅ Links to references documentation
 
 ### Phase 2: Tool Availability Testing 🔧
 
@@ -96,18 +86,15 @@ Playwright MCP:
 **Simulate Real Usage**:
 ```
 1. Start with zero context
-2. Read global skills README
-3. Navigate to figma-desktop/SKILL.md
-4. Load scripts README for details
-5. Execute script via Bash
-6. Measure token efficiency
+2. Read SKILL.md for desired skill
+3. Execute scripts via Bash
+4. Load references if needed
 ```
 
 **Token Budget Analysis**:
-- Global README: ~200 tokens
 - SKILL.md: ~300 tokens
-- Scripts README: ~400 tokens
-- **Total**: ~900 tokens (efficient on-demand loading)
+- References (if needed): ~200 tokens
+- **Total**: ~500 tokens (efficient on-demand loading)
 
 ### Phase 4: Documentation Coverage Audit 📊
 
@@ -121,12 +108,14 @@ Playwright MCP:
 7. `get-figjam.js` - FigJam content
 8. `compare-frames.js` - Frame comparison
 
-**Playwright Tools** (Expected: 21):
-- **Navigation** (3): navigate, wait_for, close
-- **Interaction** (6): click, hover, type, fill_form, press_key, select_option
-- **Information** (5): snapshot, take_screenshot, console_messages, network_requests, evaluate
-- **State** (4): cookies_get, cookies_set, storage_get, storage_set
-- **Advanced** (3): pdf, accessibility_tree, drag_and_drop
+**Playwright Scripts** (Expected: 16):
+- **Navigation** (3): navigate, go-back, go-forward
+- **Discovery** (1): snapshot
+- **Interaction** (5): click, hover, type, press-key, select-option
+- **Forms** (1): fill-form
+- **Wait** (2): wait, wait-for
+- **Capture** (2): screenshot, pdf-save
+- **Utility** (2): evaluate, close, generate-test
 
 ### Phase 5: Cross-Reference with Commands 🔗
 
@@ -154,17 +143,14 @@ Playwright MCP:
 
 📚 PHASE 1: DOCUMENTATION VALIDATION
 ═══════════════════════════════════════════════════════
-✅ Global Skills Documentation
-   - README.md: {{status}}
-
 ✅ Figma Desktop Skills (8 scripts)
    - SKILL.md: {{status}}
-   - Scripts README: {{status}}
    - Scripts found: {{foundCount}}/8
 
-✅ Playwright Skills (21 tools)
-   - INDEX.md: {{status}}
-   - Tool docs: {{foundCount}}/21
+✅ Playwright Skills (16 scripts)
+   - SKILL.md: {{status}}
+   - Scripts found: {{foundCount}}/16
+   - References: {{status}}
 
 📊 Documentation Quality:
    - Structure consistency: {{score}}/100
@@ -185,7 +171,7 @@ Playwright MCP:
 
 🔑 Pre-approved Tools:
    - Figma scripts: {{approvedCount}}/8
-   - Playwright tools: {{approvedCount}}/21
+   - Playwright scripts: {{approvedCount}}/16
 
 ═══════════════════════════════════════════════════════
 🔄 PHASE 3: PROGRESSIVE DISCOVERY TEST
@@ -198,7 +184,7 @@ Playwright MCP:
 📊 PHASE 4: COVERAGE AUDIT
 ═══════════════════════════════════════════════════════
 Figma Desktop: {{foundCount}}/8 scripts documented
-Playwright: {{foundCount}}/21 tools documented
+Playwright: {{foundCount}}/16 scripts documented
 Total coverage: {{percentage}}%
 
 Missing documentation: {{missingTools}}
@@ -232,11 +218,11 @@ Missing documentation: {{missingTools}}
 ## Success Criteria
 
 Skills system is healthy when:
-- ✅ All 8 Figma scripts documented
-- ✅ All 21 Playwright tools documented
+- ✅ All 8 Figma scripts accessible
+- ✅ All 16 Playwright scripts accessible
 - ✅ FIGMA_TOKEN configured
-- ✅ Playwright MCP server responds
-- ✅ All commands follow progressive pattern
+- ✅ Both SKILL.md files have valid frontmatter
+- ✅ All commands reference correct paths
 - ✅ Documentation is accurate and current
 
 Starting skills system debug...

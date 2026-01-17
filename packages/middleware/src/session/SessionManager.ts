@@ -177,6 +177,11 @@ export class SessionManager {
                 headers: await this.buildHeaders(channel, session)
             });
 
+            // Handle empty responses
+            if (!response.data || (typeof response.data === 'object' && Object.keys(response.data).length === 0)) {
+                return undefined as TResponse;
+            }
+
             return this.decrypt<TResponse>(channel, response.data);
         }
 
@@ -194,6 +199,11 @@ export class SessionManager {
             headers: await this.buildHeaders(channel, session),
             body: envelope
         });
+
+        // Handle empty responses (e.g., 204 No Content or empty 200 OK)
+        if (!response.data || (typeof response.data === 'object' && Object.keys(response.data).length === 0)) {
+            return undefined as TResponse;
+        }
 
         return this.decrypt<TResponse>(channel, response.data);
     }
