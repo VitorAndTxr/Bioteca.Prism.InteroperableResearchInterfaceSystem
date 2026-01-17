@@ -151,8 +151,8 @@ const Header: React.FC<HeaderProps> = ({
                 <div className="iris-header__actions">
                     {/* Primary Action Button */}
                     {primaryAction && (
-                        <Button 
-                            variant='primary'
+                        <Button
+                            variant={primaryAction.variant || 'primary'}
                             onClick={primaryAction.onClick}
                             icon={primaryAction.icon}
                         >

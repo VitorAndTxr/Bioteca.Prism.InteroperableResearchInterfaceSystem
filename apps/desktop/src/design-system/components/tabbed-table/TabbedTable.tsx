@@ -18,6 +18,7 @@ import { SearchBar } from '../search-bar';
 import { ButtonGroup } from '../button-group';
 import type { TabbedTableProps } from './TabbedTable.types';
 import './TabbedTable.css';
+import { c } from 'vite/dist/node/moduleRunnerTransport.d-DJ_mE5sf';
 
 export function TabbedTable({
     tabs,
@@ -26,12 +27,15 @@ export function TabbedTable({
     onTabChange,
     title,
     action,
+    secondaryAction,
     search,
     pageSize: initialPageSize = 10,
     pageSizeOptions = [5, 10, 20, 50],
     emptyMessage = 'No data available.',
     emptySearchMessage = 'No results found for your search.',
     striped = true,
+    loading = false,
+    loadingComponent,
     hoverable = true,
     className = '',
 }: TabbedTableProps) {
@@ -89,6 +93,11 @@ export function TabbedTable({
         return currentTab?.action || action;
     }, [currentTab, action]);
 
+    const secondaryActionButton = useMemo(() => {
+        return currentTab?.secondaryAction || secondaryAction;
+    }, [currentTab, secondaryAction]);
+
+
     // Handle tab change
     const handleTabChange = (value: string) => {
         if (!isControlled) {
@@ -129,16 +138,31 @@ export function TabbedTable({
                 {/* Card Header */}
                 <div className="tabbed-table__header">
                     <h2 className="tabbed-table__title">{cardTitle}</h2>
-                    {actionButton && (
-                        <Button
-                            variant={actionButton.variant || 'primary'}
-                            size="medium"
-                            onClick={actionButton.onClick}
-                            icon={actionButton.icon}
-                            iconPosition="left"
-                        >
-                            {actionButton.label}
-                        </Button>
+                    {(actionButton || secondaryActionButton) && (
+                        <div className="tabbed-table__actions">
+                            {secondaryActionButton && (
+                                <Button
+                                    variant={secondaryActionButton.variant || 'secondary'}
+                                    size="medium"
+                                    onClick={secondaryActionButton.onClick}
+                                    icon={secondaryActionButton.icon}
+                                    iconPosition="left"
+                                >
+                                    {secondaryActionButton.label}
+                                </Button>
+                            )}
+                            {actionButton && (
+                                <Button
+                                    variant={actionButton.variant || 'primary'}
+                                    size="medium"
+                                    onClick={actionButton.onClick}
+                                    icon={actionButton.icon}
+                                    iconPosition="left"
+                                >
+                                    {actionButton.label}
+                                </Button>
+                            )}
+                        </div>
                     )}
                 </div>
 
@@ -170,6 +194,8 @@ export function TabbedTable({
                         onPageSizeChange={handlePageSizeChange}
                         striped={striped}
                         hoverable={hoverable}
+                        loading={loading}
+                        loadingComponent={loadingComponent}
                         emptyMessage={
                             searchQuery ? emptySearchMessage : emptyMessage
                         }

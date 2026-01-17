@@ -16,7 +16,7 @@ import { AppLayout } from '../../design-system/components/app-layout';
 import { Input } from '../../design-system/components/input';
 import { Dropdown } from '../../design-system/components/dropdown';
 import { Button } from '../../design-system/components/button';
-import { ArrowLeftIcon } from '@heroicons/react/24/outline';
+import { ArrowUturnLeftIcon, DocumentArrowDownIcon } from '@heroicons/react/24/outline';
 import { mainMenuItems } from '../../config/menu';
 import { NodeAccessLevel, type NewNodeConnectionData } from '@iris/domain';
 import { nodeConnectionService } from '../../services/middleware';
@@ -157,117 +157,109 @@ export function AddConnectionForm({ handleNavigation, onSave }: AddConnectionFor
             }}
             header={{
                 title: 'Nova conexão',
-                showUserMenu: true,
+                showUserMenu: false,
+                primaryAction: {
+                    label: 'Voltar',
+                    icon: <ArrowUturnLeftIcon className="w-5 h-5" />,
+                    onClick: handleCancel,
+                    variant: 'outline',
+                },
             }}
         >
-            <div className="add-form-container">
-                <div className="add-form-header">
-                    <Button
-                        variant="outline"
-                        onClick={handleCancel}
-                        icon={<ArrowLeftIcon className="w-5 h-5" />}
-                    >
-                        Voltar
-                    </Button>
-                </div>
+            <div className="add-form">
+                <form className="add-form__container" onSubmit={handleSubmit}>
+                    {/* Error message */}
+                    {submitError && (
+                        <div style={{
+                            padding: '12px 16px',
+                            backgroundColor: '#fee',
+                            color: '#c33',
+                            borderRadius: '4px',
+                            marginBottom: '20px',
+                            border: '1px solid #fcc'
+                        }}>
+                            <strong>Erro:</strong> {submitError}
+                        </div>
+                    )}
 
-                {submitError && (
-                    <div className="add-form-error">
-                        {submitError}
-                    </div>
-                )}
-
-                <form onSubmit={handleSubmit} className="add-form">
-                    <div className="add-form-grid">
+                    <div className="add-form__fields">
                         {/* Row 1: Nome and URL */}
-                        <div className="add-form-field">
-                            <Input
-                                label="Nome"
-                                placeholder="Nome do nó"
-                                value={nodeName}
-                                onChange={(e) => setNodeName(e.target.value)}
-                                onBlur={() => handleBlur('nodeName')}
-                                error={touched.nodeName ? errors.nodeName : undefined}
-                                required
-                            />
-                        </div>
-                        <div className="add-form-field">
-                            <Input
-                                label="URL"
-                                placeholder="https://exemplo.com/api/node"
-                                value={nodeUrl}
-                                onChange={(e) => setNodeUrl(e.target.value)}
-                                onBlur={() => handleBlur('nodeUrl')}
-                                error={touched.nodeUrl ? errors.nodeUrl : undefined}
-                                required
-                            />
-                        </div>
+                        <Input
+                            label="Nome"
+                            placeholder="Input placeholder"
+                            value={nodeName}
+                            onChange={(e) => setNodeName(e.target.value)}
+                            onBlur={() => handleBlur('nodeName')}
+                            validationStatus={touched.nodeName && errors.nodeName ? 'error' : 'none'}
+                            errorMessage={touched.nodeName ? errors.nodeName : undefined}
+                            required
+                        />
+                        <Input
+                            label="URL"
+                            placeholder="Input placeholder"
+                            value={nodeUrl}
+                            onChange={(e) => setNodeUrl(e.target.value)}
+                            onBlur={() => handleBlur('nodeUrl')}
+                            validationStatus={touched.nodeUrl && errors.nodeUrl ? 'error' : 'none'}
+                            errorMessage={touched.nodeUrl ? errors.nodeUrl : undefined}
+                            required
+                        />
 
                         {/* Row 2: Status and Nível de acesso */}
-                        <div className="add-form-field">
-                            <Dropdown
-                                label="Status"
-                                placeholder="Selecione o status"
-                                options={statusOptions}
-                                value="pending"
-                                disabled
-                            />
-                        </div>
-                        <div className="add-form-field">
-                            <Dropdown
-                                label="Nível de acesso"
-                                placeholder="Selecione o nível"
-                                options={accessLevelOptions}
-                                value={nodeAccessLevel}
-                                onChange={setNodeAccessLevel}
-                                onBlur={() => handleBlur('nodeAccessLevel')}
-                                error={touched.nodeAccessLevel ? errors.nodeAccessLevel : undefined}
-                                required
-                            />
-                        </div>
+                        <Dropdown
+                            label="Status"
+                            placeholder="Input placeholder"
+                            options={statusOptions}
+                            value="pending"
+                            disabled
+                        />
+                        <Dropdown
+                            label="Nível de acesso"
+                            placeholder="Input placeholder"
+                            options={accessLevelOptions}
+                            value={nodeAccessLevel}
+                            onChange={setNodeAccessLevel}
+                            onBlur={() => handleBlur('nodeAccessLevel')}
+                            validation={touched.nodeAccessLevel && errors.nodeAccessLevel ? 'error' : 'none'}
+                            errorMessage={touched.nodeAccessLevel ? errors.nodeAccessLevel : undefined}
+                            required
+                        />
 
                         {/* Row 3: Informações de contato and Certificado */}
-                        <div className="add-form-field">
-                            <Input
-                                label="Informações de contato"
-                                placeholder="Email ou telefone de contato"
-                                value={contactInfo}
-                                onChange={(e) => setContactInfo(e.target.value)}
-                            />
-                        </div>
-                        <div className="add-form-field">
-                            <Input
-                                label="Certificado"
-                                placeholder="Certificado do nó"
-                                value={certificate}
-                                onChange={(e) => setCertificate(e.target.value)}
-                            />
-                        </div>
+                        <Input
+                            label="Informações de contato"
+                            placeholder="Input placeholder"
+                            value={contactInfo}
+                            onChange={(e) => setContactInfo(e.target.value)}
+                        />
+                        <Input
+                            label="Certificado"
+                            placeholder="Input placeholder"
+                            value={certificate}
+                            onChange={(e) => setCertificate(e.target.value)}
+                        />
 
                         {/* Row 4: Assinatura do certificado and Detalhes da instituição */}
-                        <div className="add-form-field">
-                            <Input
-                                label="Assinatura do certificado"
-                                placeholder="Assinatura digital"
-                                value={certificateSignature}
-                                onChange={(e) => setCertificateSignature(e.target.value)}
-                            />
-                        </div>
-                        <div className="add-form-field">
-                            <Input
-                                label="Detalhes da instituição"
-                                placeholder="Informações adicionais"
-                                value={institutionDetails}
-                                onChange={(e) => setInstitutionDetails(e.target.value)}
-                            />
-                        </div>
+                        <Input
+                            label="Assinatura do certificado"
+                            placeholder="Input placeholder"
+                            value={certificateSignature}
+                            onChange={(e) => setCertificateSignature(e.target.value)}
+                        />
+                        <Input
+                            label="Detalhes da instituição"
+                            placeholder="Input placeholder"
+                            value={institutionDetails}
+                            onChange={(e) => setInstitutionDetails(e.target.value)}
+                        />
                     </div>
 
-                    <div className="add-form-actions">
+                    <div className="add-form__actions">
                         <Button
                             type="submit"
                             variant="primary"
                             disabled={submitting}
+                            icon={<DocumentArrowDownIcon className="w-5 h-5" />}
                         >
                             {submitting ? 'Salvando...' : 'Salvar conexão'}
                         </Button>

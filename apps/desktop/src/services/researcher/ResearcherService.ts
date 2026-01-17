@@ -55,7 +55,7 @@ interface AddResearcherPayload extends Record<string, unknown> {
  * Researcher Service Implementation
  */
 export class ResearcherService extends BaseService {
-    private readonly USE_MOCK = true;
+    private readonly USE_MOCK = false;
 
     constructor(services: MiddlewareServices) {
         super(services, {

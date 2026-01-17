@@ -5,9 +5,10 @@ import { TabbedTable, TabbedTableTab } from "@/design-system/components/tabbed-t
 import { DataTableColumn } from "@/design-system/components/data-table/DataTable.types";
 import { ResearchNodeConnection, AuthorizationStatus, NodeAccessLevel } from "@iris/domain";
 import { nodeConnectionService } from "@/services/middleware";
-import { CheckCircleIcon, XCircleIcon, EyeIcon, PencilSquareIcon, ArrowPathIcon, PlusIcon } from "@heroicons/react/24/outline";
+import { CheckCircleIcon, XCircleIcon, EyeIcon, PencilSquareIcon, ArrowPathIcon, PlusCircleIcon } from "@heroicons/react/24/outline";
 import Button from "@/design-system/components/button/Button";
 import Pagination from '@/design-system/components/pagination/Pagination';
+import Modal from "@/design-system/components/modal/Modal";
 
 type NodeConnectionsScreenProps = {
     handleNavigation: (path: string) => void;
@@ -19,15 +20,53 @@ const NodeConnectionsScreen: React.FC<NodeConnectionsScreenProps> = ({ handleNav
     const [activeTab, setActiveTab] = useState<ConnectionTabs>('active');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    
+
     const [requests, setRequests] = useState<ResearchNodeConnection[]>([]);
     const [activeConnections, setActiveConnections] = useState<ResearchNodeConnection[]>([]);
-    
+
     const [pageSize] = useState(10);
     const [pagination, setPagination] = useState({
         currentPage: 1,
         totalRecords: 0
     });
+
+    // Modal state for connection request approval
+    const [showRequestModal, setShowRequestModal] = useState(false);
+    const [selectedConnection, setSelectedConnection] = useState<ResearchNodeConnection | null>(null);
+
+    const handleOpenRequestModal = (connection: ResearchNodeConnection) => {
+        setSelectedConnection(connection);
+        setShowRequestModal(true);
+    };
+
+    const handleCloseRequestModal = () => {
+        setShowRequestModal(false);
+        setSelectedConnection(null);
+    };
+
+    const handleAcceptConnection = async () => {
+        if (!selectedConnection) return;
+        try {
+            await nodeConnectionService.approveConnection(selectedConnection.id);
+            handleCloseRequestModal();
+            loadData();
+        } catch (err) {
+            console.error('Failed to accept connection:', err);
+            setError(err instanceof Error ? err.message : 'Failed to accept connection');
+        }
+    };
+
+    const handleRejectConnection = async () => {
+        if (!selectedConnection) return;
+        try {
+            await nodeConnectionService.rejectConnection(selectedConnection.id);
+            handleCloseRequestModal();
+            loadData();
+        } catch (err) {
+            console.error('Failed to reject connection:', err);
+            setError(err instanceof Error ? err.message : 'Failed to reject connection');
+        }
+    };
 
     useEffect(() => {
         loadData();
@@ -157,27 +196,27 @@ const NodeConnectionsScreen: React.FC<NodeConnectionsScreenProps> = ({ handleNav
             accessor: 'id',
             align: 'center',
             render: (_, connection) => (
-                <div className="flex justify-center gap-2">
+                <div className="flex justify-center gap-3">
                     <button
-                        className="p-1 text-gray-500 hover:text-blue-600 transition-colors"
+                        className="p-1 text-[#393939] hover:text-[#49A2A8] transition-colors"
                         title="Visualizar detalhes"
                         onClick={() => console.log('View details', connection)}
                     >
-                        <EyeIcon className="w-5 h-5" />
+                        <EyeIcon className="w-4 h-4" />
                     </button>
                     <button
-                        className="p-1 text-gray-500 hover:text-blue-600 transition-colors"
+                        className="p-1 text-[#393939] hover:text-[#49A2A8] transition-colors"
                         title="Editar"
                         onClick={() => console.log('Edit', connection)}
                     >
-                        <PencilSquareIcon className="w-5 h-5" />
+                        <PencilSquareIcon className="w-4 h-4" />
                     </button>
                     <button
-                        className="p-1 text-gray-500 hover:text-blue-600 transition-colors"
+                        className="p-1 text-[#393939] hover:text-[#49A2A8] transition-colors"
                         title="Sincronizar"
                         onClick={() => console.log('Sync', connection)}
                     >
-                        <ArrowPathIcon className="w-5 h-5" />
+                        <ArrowPathIcon className="w-4 h-4" />
                     </button>
                 </div>
             ),
@@ -231,25 +270,39 @@ const NodeConnectionsScreen: React.FC<NodeConnectionsScreenProps> = ({ handleNav
             accessor: 'id',
             align: 'center',
             render: (_, connection) => (
-                <div className="flex justify-center gap-2">
+                <div className="flex justify-center gap-3">
                     <button
-                        className="p-1 text-gray-500 hover:text-blue-600 transition-colors"
+                        className="p-1 text-[#393939] hover:text-[#49A2A8] transition-colors"
                         title="Visualizar detalhes"
                         onClick={() => console.log('View details', connection)}
                     >
-                        <EyeIcon className="w-5 h-5" />
+                        <EyeIcon className="w-4 h-4" />
                     </button>
                     <button
-                        className="p-1 text-gray-500 hover:text-blue-600 transition-colors"
+                        className="p-1 text-[#393939] hover:text-[#49A2A8] transition-colors"
                         title="Editar"
                         onClick={() => console.log('Edit', connection)}
                     >
-                        <PencilSquareIcon className="w-5 h-5" />
+                        <PencilSquareIcon className="w-4 h-4" />
+                    </button>
+                    <button
+                        className="p-1 text-green-600 hover:text-green-800 transition-colors"
+                        title="Aceitar solicitação"
+                        onClick={() => handleOpenRequestModal(connection)}
+                    >
+                        <CheckCircleIcon className="w-4 h-4" />
+                    </button>
+                    <button
+                        className="p-1 text-red-600 hover:text-red-800 transition-colors"
+                        title="Rejeitar solicitação"
+                        onClick={() => handleOpenRequestModal(connection)}
+                    >
+                        <XCircleIcon className="w-4 h-4" />
                     </button>
                 </div>
             ),
         },
-    ], []);
+    ], [handleOpenRequestModal]);
 
     const tabs: TabbedTableTab[] = useMemo(() => [
         {
@@ -261,7 +314,8 @@ const NodeConnectionsScreen: React.FC<NodeConnectionsScreenProps> = ({ handleNav
             action: {
                 label: 'Adicionar',
                 onClick: () => handleNavigation('/nodeConnections/add'),
-                icon: <PlusIcon className="w-5 h-5" />,
+                icon: <PlusCircleIcon className="w-5 h-5" />,
+                variant: 'outline',
             },
         },
         {
@@ -320,6 +374,51 @@ const NodeConnectionsScreen: React.FC<NodeConnectionsScreenProps> = ({ handleNav
                     />
                 )}
             </div>
+
+            {/* Connection Request Approval Modal */}
+            <Modal
+                isOpen={showRequestModal}
+                onClose={handleCloseRequestModal}
+                title="Solicitação de Conexão"
+                size="small"
+            >
+                {selectedConnection && (
+                    <div className="space-y-4">
+                        <p className="text-gray-700">
+                            Deseja aceitar ou rejeitar a solicitação de conexão de <strong>{selectedConnection.nodeName}</strong>?
+                        </p>
+                        <div className="flex flex-col gap-3">
+                            <div className="text-sm text-gray-600">
+                                <p><strong>URL:</strong> {selectedConnection.nodeUrl}</p>
+                                <p><strong>Nível de acesso:</strong> {selectedConnection.nodeAccessLevel}</p>
+                            </div>
+                        </div>
+                        <div className="flex justify-end gap-3 mt-6">
+                            <Button
+                                variant="outline"
+                                onClick={handleCloseRequestModal}
+                            >
+                                Cancelar
+                            </Button>
+                            <Button
+                                variant="primary"
+                                onClick={handleRejectConnection}
+                                className="bg-red-600 hover:bg-red-700"
+                            >
+                                <XCircleIcon className="w-4 h-4 mr-2" />
+                                Rejeitar
+                            </Button>
+                            <Button
+                                variant="primary"
+                                onClick={handleAcceptConnection}
+                            >
+                                <CheckCircleIcon className="w-4 h-4 mr-2" />
+                                Aceitar
+                            </Button>
+                        </div>
+                    </div>
+                )}
+            </Modal>
         </AppLayout>
     );
 }

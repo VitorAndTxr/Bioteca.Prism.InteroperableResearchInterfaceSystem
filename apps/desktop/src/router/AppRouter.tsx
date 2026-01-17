@@ -23,6 +23,7 @@ function AppRouter() {
     const [version, setVersion] = useState<string>('');
     const [currentPage, setCurrentPage] = useState<Pages>('home');
     const [activePath, setActivePath] = useState<string>('/dashboard');
+    
     const [selectedResearchId, setSelectedResearchId] = useState<string>('');
 
     useEffect(() => {

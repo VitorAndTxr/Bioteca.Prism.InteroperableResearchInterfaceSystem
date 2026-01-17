@@ -48,7 +48,7 @@ interface AddNodeConnectionPayload extends Record<string, unknown> {
  * Node Connection Service Implementation
  */
 export class NodeConnectionService extends BaseService {
-    private readonly USE_MOCK = true;
+    private readonly USE_MOCK = false;
 
     constructor(services: MiddlewareServices) {
         super(services, {
@@ -279,6 +279,64 @@ export class NodeConnectionService extends BaseService {
             this.log('✅ Node connection created:', response.id);
 
             return this.convertToNodeConnection(response);
+        });
+    }
+
+    /**
+     * Approve a pending node connection request
+     *
+     * @param connectionId - ID of the connection to approve
+     */
+    async approveConnection(connectionId: string): Promise<void> {
+        if (this.USE_MOCK) {
+            this.log(`[MOCK] Approving connection: ${connectionId}`);
+            await new Promise(resolve => setTimeout(resolve, 500)); // Simulate delay
+            return;
+        }
+
+        return this.handleMiddlewareError(async () => {
+            this.log(`Approving connection: ${connectionId}`);
+
+            // Ensure session
+            await this.ensureSession();
+
+            // Call backend API
+            await this.middleware.invoke<{ ConnectionId: string }, void>({
+                path: `/api/node/${connectionId}/approve`,
+                method: 'POST',
+                payload: { ConnectionId: connectionId }
+            });
+
+            this.log(`✅ Connection approved: ${connectionId}`);
+        });
+    }
+
+    /**
+     * Reject a pending node connection request
+     *
+     * @param connectionId - ID of the connection to reject
+     */
+    async rejectConnection(connectionId: string): Promise<void> {
+        if (this.USE_MOCK) {
+            this.log(`[MOCK] Rejecting connection: ${connectionId}`);
+            await new Promise(resolve => setTimeout(resolve, 500)); // Simulate delay
+            return;
+        }
+
+        return this.handleMiddlewareError(async () => {
+            this.log(`Rejecting connection: ${connectionId}`);
+
+            // Ensure session
+            await this.ensureSession();
+
+            // Call backend API
+            await this.middleware.invoke<{ ConnectionId: string }, void>({
+                path: `/api/node/${connectionId}/reject`,
+                method: 'POST',
+                payload: { ConnectionId: connectionId }
+            });
+
+            this.log(`✅ Connection rejected: ${connectionId}`);
         });
     }
 

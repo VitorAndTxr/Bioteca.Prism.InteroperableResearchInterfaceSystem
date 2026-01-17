@@ -56,7 +56,7 @@ interface AddUserPayload extends Record<string, unknown> {
  * User Service Implementation
  */
 export class UserService extends BaseService {
-    private readonly USE_MOCK = true;
+    private readonly USE_MOCK = false;
 
     constructor(services: MiddlewareServices) {
         super(services, {

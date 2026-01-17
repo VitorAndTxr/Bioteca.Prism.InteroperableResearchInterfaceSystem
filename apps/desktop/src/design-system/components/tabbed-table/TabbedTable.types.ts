@@ -27,6 +27,8 @@ export interface TabbedTableTab<T = any> {
     title?: string;
     /** Optional: Action button configuration for this tab (overrides global action) */
     action?: TabbedTableAction;
+
+    secondaryAction?: TabbedTableAction;
 }
 
 /**
@@ -75,6 +77,9 @@ export interface TabbedTableProps {
     /** Optional: Action button configuration */
     action?: TabbedTableAction;
 
+        /** Optional: Action button configuration */
+    secondaryAction?: TabbedTableAction;
+
     /** Optional: Search configuration */
     search?: TabbedTableSearch;
 
@@ -98,4 +103,10 @@ export interface TabbedTableProps {
 
     /** Optional: CSS class name */
     className?: string;
+
+    /** Optional: Loading state */
+    loading?: boolean;
+
+    /** Optional: Custom loading component */
+    loadingComponent?: ReactNode;
 }

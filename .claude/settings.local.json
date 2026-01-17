@@ -14,7 +14,14 @@
       "Bash(node:*)",
       "Bash(move:*)",
       "Bash(npm run desktop:*)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(dir:*)",
+      "Bash(nul)",
+      "Bash(mkdir:*)",
+      "Bash(FIGMA_TOKEN:* node:*)",
+      "Bash(mv:*)",
+      "Bash(npm run type-check:all:*)",
+      "Bash(cat:*)"
     ],
     "deny": [],
     "ask": []

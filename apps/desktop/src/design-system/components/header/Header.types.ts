@@ -66,6 +66,7 @@ export interface HeaderProps {
         label: string;
         icon?: ReactNode;
         onClick: () => void;
+        variant?: 'primary' | 'outline' | 'text';
     };
 
     /**

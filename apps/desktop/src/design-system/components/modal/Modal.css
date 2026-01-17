@@ -1,0 +1,192 @@
+/**
+ * Modal Component Styles
+ * Based on IRIS Design System
+ *
+ * Design references from Figma frame 6998-800:
+ * - Background: white with rounded corners (16px)
+ * - Shadow: subtle drop shadow
+ * - Header: bold title, centered
+ * - Content: centered text
+ * - Footer: action buttons
+ */
+
+/* ===== BACKDROP ===== */
+.iris-modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 20px;
+    animation: iris-modal-backdrop-fade-in 0.2s ease-out;
+}
+
+@keyframes iris-modal-backdrop-fade-in {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* ===== MODAL CONTAINER ===== */
+.iris-modal {
+    background-color: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+    max-height: calc(100vh - 40px);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    animation: iris-modal-slide-in 0.2s ease-out;
+}
+
+@keyframes iris-modal-slide-in {
+    from {
+        opacity: 0;
+        transform: translateY(-20px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* ===== SIZE VARIANTS ===== */
+.iris-modal--small {
+    width: 100%;
+    max-width: 360px;
+}
+
+.iris-modal--medium {
+    width: 100%;
+    max-width: 480px;
+}
+
+.iris-modal--large {
+    width: 100%;
+    max-width: 640px;
+}
+
+/* ===== HEADER ===== */
+.iris-modal__header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px 24px;
+    position: relative;
+}
+
+.iris-modal__title {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 0;
+    text-align: center;
+    flex: 1;
+}
+
+.iris-modal__close {
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    padding: 4px;
+    cursor: pointer;
+    color: #666666;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+.iris-modal__close:hover {
+    color: #333333;
+    background-color: #f0f0f0;
+}
+
+.iris-modal__close:focus-visible {
+    outline: 2px solid #49A2A8;
+    outline-offset: 2px;
+}
+
+/* ===== CONTENT ===== */
+.iris-modal__content {
+    padding: 16px 24px 24px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+/* ===== UTILITY CLASSES FOR MODAL CONTENT ===== */
+.iris-modal__message {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 16px;
+    color: #393939;
+    text-align: center;
+    margin: 0 0 24px;
+    line-height: 1.5;
+}
+
+.iris-modal__actions {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 480px) {
+    .iris-modal {
+        margin: 16px;
+        max-height: calc(100vh - 32px);
+    }
+
+    .iris-modal__header {
+        padding: 12px 16px;
+    }
+
+    .iris-modal__content {
+        padding: 12px 16px 20px;
+    }
+
+    .iris-modal__title {
+        font-size: 16px;
+    }
+
+    .iris-modal__actions {
+        flex-direction: column;
+    }
+
+    .iris-modal__actions .iris-button {
+        width: 100%;
+    }
+}
+
+/* ===== ACCESSIBILITY ===== */
+@media (prefers-reduced-motion: reduce) {
+    .iris-modal-backdrop,
+    .iris-modal {
+        animation: none;
+    }
+}
+
+/* ===== HIGH CONTRAST ===== */
+@media (prefers-contrast: high) {
+    .iris-modal {
+        border: 2px solid #000000;
+    }
+
+    .iris-modal__close {
+        border: 1px solid currentColor;
+    }
+}

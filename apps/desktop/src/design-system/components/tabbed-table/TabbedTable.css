@@ -54,6 +54,12 @@
     margin: 0;
 }
 
+.tabbed-table__actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
 /* Search Section */
 .tabbed-table__search {
     padding: 8px 0;
@@ -94,6 +100,10 @@
         flex-direction: column;
         align-items: flex-start;
         gap: 12px;
+    }
+
+    .tabbed-table__actions {
+        align-self: flex-end;
     }
 }
 

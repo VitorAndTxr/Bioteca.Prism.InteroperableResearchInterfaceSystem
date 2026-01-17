@@ -317,6 +317,12 @@ export function ResearchDetailsScreen({ handleNavigation, researchId }: Research
             title: research?.title || 'Pesquisa',
             data: researchers,
             columns: researcherColumns as DataTableColumn<unknown>[],
+            action: {
+                label: 'Adicionar',
+                icon: <PlusIcon />,
+                onClick: (() => console.log('Add researcher to research')),
+                variant: 'primary',
+            },
         },
         {
             value: 'volunteers',
@@ -324,6 +330,18 @@ export function ResearchDetailsScreen({ handleNavigation, researchId }: Research
             title: research?.title || 'Pesquisa',
             data: volunteers,
             columns: volunteerColumns as DataTableColumn<unknown>[],
+            action: {
+                label: 'Adicionar',
+                icon: <PlusIcon />,
+                onClick: (() => console.log('Add volunteer to research')),
+                variant: 'primary',
+            },
+            secondaryAction: {
+                label: 'Adicionar existente',
+                icon: <PlusIcon />,
+                onClick: (() => console.log('Add existing volunteer to research')),
+                variant: 'secondary',
+            }
         },
         {
             value: 'applications',
@@ -348,47 +366,6 @@ export function ResearchDetailsScreen({ handleNavigation, researchId }: Research
         },
     ], [research, researchers, volunteers, applications, devices, sensors,
         researcherColumns, volunteerColumns, applicationColumns, deviceColumns, sensorColumns]);
-
-    const getActionButtons = () => {
-        // Different actions based on active tab - matching Figma design
-        if (activeTab === 'volunteers') {
-            return (
-                <div className="flex gap-3 mb-4 justify-end">
-                    <Button
-                        variant="primary"
-                        size="medium"
-                        icon={<PlusIcon className="w-5 h-5" />}
-                        iconPosition="left"
-                        onClick={() => console.log('Add new volunteer')}
-                    >
-                        Adicionar novo
-                    </Button>
-                    <Button
-                        variant="outline"
-                        size="medium"
-                        icon={<PlusIcon className="w-5 h-5" />}
-                        iconPosition="left"
-                        onClick={() => console.log('Add existing volunteer')}
-                    >
-                        Adicionar existente
-                    </Button>
-                </div>
-            );
-        }
-        return (
-            <div className="flex gap-3 mb-4 justify-end">
-                <Button
-                    variant="primary"
-                    size="medium"
-                    icon={<PlusIcon className="w-5 h-5" />}
-                    iconPosition="left"
-                    onClick={() => console.log('Add new', activeTab)}
-                >
-                    Adicionar
-                </Button>
-            </div>
-        );
-    };
 
     return (
         <AppLayout
@@ -421,10 +398,6 @@ export function ResearchDetailsScreen({ handleNavigation, researchId }: Research
                         </button>
                     </div>
                 )}
-
-                {/* Action buttons */}
-                {!loading && !error && getActionButtons()}
-
                 {/* Tabbed content */}
                 <TabbedTable
                     tabs={tabs}

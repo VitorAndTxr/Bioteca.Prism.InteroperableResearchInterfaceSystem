@@ -15,7 +15,7 @@ import type {
 
 
 export class SnomedService extends BaseService {
-    private readonly USE_MOCK = true;
+    private readonly USE_MOCK = false;
 
     constructor(services: MiddlewareServices) {
         super(services, {
