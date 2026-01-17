@@ -287,14 +287,6 @@ const NodeConnectionsScreen: React.FC<NodeConnectionsScreenProps> = ({ handleNav
                     >
                         <CheckCircleIcon />
                     </button>
-                    <button
-                        className="action-button"
-                        title="Rejeitar solicitação"
-                        onClick={() => handleOpenRequestModal(connection)}
-                        style={{ color: '#dc2626' }}
-                    >
-                        <XCircleIcon />
-                    </button>
                 </div>
             ),
         },
