@@ -13,11 +13,12 @@ import '@/styles/shared/List.css';
 
 type NodeConnectionsScreenProps = {
     handleNavigation: (path: string) => void;
+    onSelectConnection?: (connection: ResearchNodeConnection) => void;
 };
 
 type ConnectionTabs = 'active' | 'requests';
 
-const NodeConnectionsScreen: React.FC<NodeConnectionsScreenProps> = ({ handleNavigation }) => {
+const NodeConnectionsScreen: React.FC<NodeConnectionsScreenProps> = ({ handleNavigation, onSelectConnection }) => {
     const [activeTab, setActiveTab] = useState<ConnectionTabs>('active');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -67,6 +68,16 @@ const NodeConnectionsScreen: React.FC<NodeConnectionsScreenProps> = ({ handleNav
             console.error('Failed to reject connection:', err);
             setError(err instanceof Error ? err.message : 'Failed to reject connection');
         }
+    };
+
+    const handleViewConnection = (connection: ResearchNodeConnection) => {
+        onSelectConnection?.(connection);
+        handleNavigation(`/nodeConnections/view/${connection.id}`);
+    };
+
+    const handleEditConnection = (connection: ResearchNodeConnection) => {
+        onSelectConnection?.(connection);
+        handleNavigation(`/nodeConnections/edit/${connection.id}`);
     };
 
     useEffect(() => {
@@ -201,14 +212,14 @@ const NodeConnectionsScreen: React.FC<NodeConnectionsScreenProps> = ({ handleNav
                     <button
                         className="action-button view"
                         title="Visualizar detalhes"
-                        onClick={() => console.log('View details', connection)}
+                        onClick={() => handleViewConnection(connection)}
                     >
                         <EyeIcon />
                     </button>
                     <button
                         className="action-button edit"
                         title="Editar"
-                        onClick={() => console.log('Edit', connection)}
+                        onClick={() => handleEditConnection(connection)}
                     >
                         <PencilSquareIcon />
                     </button>
@@ -222,7 +233,7 @@ const NodeConnectionsScreen: React.FC<NodeConnectionsScreenProps> = ({ handleNav
                 </div>
             ),
         },
-    ], []);
+    ], [handleViewConnection, handleEditConnection]);
 
     const requestColumns: DataTableColumn<ResearchNodeConnection>[] = useMemo(() => [
         {
@@ -275,14 +286,14 @@ const NodeConnectionsScreen: React.FC<NodeConnectionsScreenProps> = ({ handleNav
                     <button
                         className="action-button view"
                         title="Visualizar detalhes"
-                        onClick={() => console.log('View details', connection)}
+                        onClick={() => handleViewConnection(connection)}
                     >
                         <EyeIcon />
                     </button>
                     <button
                         className="action-button edit"
                         title="Editar"
-                        onClick={() => console.log('Edit', connection)}
+                        onClick={() => handleEditConnection(connection)}
                     >
                         <PencilSquareIcon />
                     </button>
@@ -297,7 +308,7 @@ const NodeConnectionsScreen: React.FC<NodeConnectionsScreenProps> = ({ handleNav
                 </div>
             ),
         },
-    ], [handleOpenRequestModal]);
+    ], [handleViewConnection, handleEditConnection, handleOpenRequestModal]);
 
     const tabs: TabbedTableTab[] = useMemo(() => [
         {

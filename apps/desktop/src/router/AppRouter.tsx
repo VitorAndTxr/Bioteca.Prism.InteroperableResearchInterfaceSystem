@@ -16,6 +16,7 @@ import VolunteersScreen from "@/screens/Volunteers/VolunteersScreen";
 import CreateVolunteerForm from "@/screens/Volunteers/CreateVolunteerForm";
 import NodeConnectionsScreen from "@/screens/NodeConnections/NodeConnectionsScreen";
 import AddConnectionForm from "@/screens/NodeConnections/AddConnectionForm";
+import { ResearchNodeConnection } from "@iris/domain";
 import { useState, useEffect } from "react";
 
 function AppRouter() {
@@ -23,8 +24,9 @@ function AppRouter() {
     const [version, setVersion] = useState<string>('');
     const [currentPage, setCurrentPage] = useState<Pages>('home');
     const [activePath, setActivePath] = useState<string>('/dashboard');
-    
+
     const [selectedResearchId, setSelectedResearchId] = useState<string>('');
+    const [selectedConnection, setSelectedConnection] = useState<ResearchNodeConnection | null>(null);
 
     useEffect(() => {
         // Get app version from Electron
@@ -59,12 +61,24 @@ function AppRouter() {
             return;
         }
 
+        if (path.startsWith('/nodeConnections/view/')) {
+            setCurrentPage('view-connection');
+            return;
+        }
+
+        if (path.startsWith('/nodeConnections/edit/')) {
+            setCurrentPage('edit-connection');
+            return;
+        }
+
         // Navigate to appropriate page based on path
         switch (path) {
             case '/nodeConnections':
                 setCurrentPage('node-connections');
+                setSelectedConnection(null);
                 break;
             case '/nodeConnections/add':
+                setSelectedConnection(null);
                 setCurrentPage('add-connection');
                 break;
             case '/research':
@@ -116,12 +130,30 @@ function AppRouter() {
                 return (
                     <NodeConnectionsScreen
                         handleNavigation={handleNavigation}
+                        onSelectConnection={setSelectedConnection}
                     />
                 );
             case 'add-connection':
                 return (
                     <AddConnectionForm
                         handleNavigation={handleNavigation}
+                        mode="add"
+                    />
+                );
+            case 'view-connection':
+                return (
+                    <AddConnectionForm
+                        handleNavigation={handleNavigation}
+                        mode="view"
+                        connection={selectedConnection ?? undefined}
+                    />
+                );
+            case 'edit-connection':
+                return (
+                    <AddConnectionForm
+                        handleNavigation={handleNavigation}
+                        mode="edit"
+                        connection={selectedConnection ?? undefined}
                     />
                 );
             case 'research':
@@ -221,6 +253,8 @@ type Pages =
     | 'home'
     | 'node-connections'
     | 'add-connection'
+    | 'view-connection'
+    | 'edit-connection'
     | 'research'
     | 'add-research'
     | 'view-research'

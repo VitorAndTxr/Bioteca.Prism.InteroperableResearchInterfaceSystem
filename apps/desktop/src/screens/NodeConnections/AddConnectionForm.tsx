@@ -1,44 +1,53 @@
 /**
  * AddConnectionForm Component
  *
- * Form for creating a new node connection.
- * Uses the NodeConnectionService to create connections in the IRN backend.
+ * Form for creating, viewing, or editing a node connection.
+ * Uses the NodeConnectionService to manage connections in the IRN backend.
  *
  * Features:
+ * - Three modes: add (create new), view (read-only), edit (modify existing)
  * - Node name input
  * - Node URL input
  * - Access level selection
  * - Form validation
  */
 
-import { useState, FormEvent } from 'react';
+import { useState, useEffect, FormEvent } from 'react';
 import { AppLayout } from '../../design-system/components/app-layout';
 import { Input } from '../../design-system/components/input';
 import { Dropdown } from '../../design-system/components/dropdown';
 import { Button } from '../../design-system/components/button';
 import { ArrowUturnLeftIcon, DocumentArrowDownIcon } from '@heroicons/react/24/outline';
 import { mainMenuItems } from '../../config/menu';
-import { NodeAccessLevel, type NewNodeConnectionData } from '@iris/domain';
+import { NodeAccessLevel, AuthorizationStatus, type NewNodeConnectionData, type ResearchNodeConnection } from '@iris/domain';
 import { nodeConnectionService } from '../../services/middleware';
 import '../../styles/shared/AddForm.css';
 
+export type FormMode = 'add' | 'view' | 'edit';
+
 export interface AddConnectionFormProps {
     handleNavigation: (path: string) => void;
+    mode?: FormMode;
+    connection?: ResearchNodeConnection;
     onSave?: (connectionData: NewNodeConnectionData) => void;
     onCancel?: () => void;
 }
 
-export function AddConnectionForm({ handleNavigation, onSave }: AddConnectionFormProps) {
+export function AddConnectionForm({ handleNavigation, mode = 'add', connection, onSave }: AddConnectionFormProps) {
     // Form state
     const [nodeName, setNodeName] = useState('');
     const [nodeUrl, setNodeUrl] = useState('');
     const [nodeAccessLevel, setNodeAccessLevel] = useState<string>('');
+    const [status, setStatus] = useState<string>('pending');
 
     // Additional fields from Figma (informational only for now)
     const [contactInfo, setContactInfo] = useState('');
     const [certificate, setCertificate] = useState('');
     const [certificateSignature, setCertificateSignature] = useState('');
     const [institutionDetails, setInstitutionDetails] = useState('');
+
+    // Determine if form is read-only
+    const isReadOnly = mode === 'view';
 
     // Validation state
     const [errors, setErrors] = useState<Record<string, string>>({});
@@ -47,6 +56,29 @@ export function AddConnectionForm({ handleNavigation, onSave }: AddConnectionFor
     // Submission state
     const [submitting, setSubmitting] = useState(false);
     const [submitError, setSubmitError] = useState<string | null>(null);
+
+    // Initialize form data when connection is provided (view/edit modes)
+    useEffect(() => {
+        if (connection && (mode === 'view' || mode === 'edit')) {
+            setNodeName(connection.nodeName);
+            setNodeUrl(connection.nodeUrl);
+            setNodeAccessLevel(connection.nodeAccessLevel);
+            setStatus(connection.status);
+        }
+    }, [connection, mode]);
+
+    // Header title based on mode
+    const getHeaderTitle = (): string => {
+        switch (mode) {
+            case 'view':
+                return 'Detalhes da conexão';
+            case 'edit':
+                return 'Editar conexão';
+            case 'add':
+            default:
+                return 'Nova conexão';
+        }
+    };
 
     // Access level options for dropdown
     const accessLevelOptions = [
@@ -99,6 +131,11 @@ export function AddConnectionForm({ handleNavigation, onSave }: AddConnectionFor
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
 
+        // View mode should not submit
+        if (mode === 'view') {
+            return;
+        }
+
         // Mark required fields as touched
         setTouched({
             nodeName: true,
@@ -122,20 +159,28 @@ export function AddConnectionForm({ handleNavigation, onSave }: AddConnectionFor
             return;
         }
 
-        // Otherwise, save via NodeConnectionService
         try {
             setSubmitting(true);
             setSubmitError(null);
 
-            console.log('Creating node connection:', connectionData);
-            const createdConnection = await nodeConnectionService.createNodeConnection(connectionData);
-            console.log('Node connection created successfully:', createdConnection);
+            if (mode === 'edit' && connection) {
+                // Edit mode: update existing connection
+                // TODO: Implement update method in NodeConnectionService when backend endpoint is available
+                console.log('Updating node connection:', connection.id, connectionData);
+                // For now, just navigate back - update API not yet implemented
+                console.warn('Update API not yet implemented. Changes not saved.');
+            } else {
+                // Add mode: create new connection
+                console.log('Creating node connection:', connectionData);
+                const createdConnection = await nodeConnectionService.createNodeConnection(connectionData);
+                console.log('Node connection created successfully:', createdConnection);
+            }
 
             // Navigate back to connections list
             handleNavigation('/nodeConnections');
         } catch (err) {
-            console.error('Failed to create node connection:', err);
-            const errorMessage = err instanceof Error ? err.message : 'Falha ao criar conexão';
+            console.error('Failed to save node connection:', err);
+            const errorMessage = err instanceof Error ? err.message : 'Falha ao salvar conexão';
             setSubmitError(errorMessage);
         } finally {
             setSubmitting(false);
@@ -156,7 +201,7 @@ export function AddConnectionForm({ handleNavigation, onSave }: AddConnectionFor
                 logo: 'I.R.I.S.',
             }}
             header={{
-                title: 'Nova conexão',
+                title: getHeaderTitle(),
                 showUserMenu: false,
                 primaryAction: {
                     label: 'Voltar',
@@ -192,7 +237,8 @@ export function AddConnectionForm({ handleNavigation, onSave }: AddConnectionFor
                             onBlur={() => handleBlur('nodeName')}
                             validationStatus={touched.nodeName && errors.nodeName ? 'error' : 'none'}
                             errorMessage={touched.nodeName ? errors.nodeName : undefined}
-                            required
+                            disabled={isReadOnly}
+                            required={!isReadOnly}
                         />
                         <Input
                             label="URL"
@@ -202,7 +248,8 @@ export function AddConnectionForm({ handleNavigation, onSave }: AddConnectionFor
                             onBlur={() => handleBlur('nodeUrl')}
                             validationStatus={touched.nodeUrl && errors.nodeUrl ? 'error' : 'none'}
                             errorMessage={touched.nodeUrl ? errors.nodeUrl : undefined}
-                            required
+                            disabled={isReadOnly}
+                            required={!isReadOnly}
                         />
 
                         {/* Row 2: Status and Nível de acesso */}
@@ -210,7 +257,7 @@ export function AddConnectionForm({ handleNavigation, onSave }: AddConnectionFor
                             label="Status"
                             placeholder="Input placeholder"
                             options={statusOptions}
-                            value="pending"
+                            value={status}
                             disabled
                         />
                         <Dropdown
@@ -218,11 +265,12 @@ export function AddConnectionForm({ handleNavigation, onSave }: AddConnectionFor
                             placeholder="Input placeholder"
                             options={accessLevelOptions}
                             value={nodeAccessLevel}
-                            onChange={setNodeAccessLevel}
+                            onChange={(value) => setNodeAccessLevel(Array.isArray(value) ? value[0] : value)}
                             onBlur={() => handleBlur('nodeAccessLevel')}
                             validation={touched.nodeAccessLevel && errors.nodeAccessLevel ? 'error' : 'none'}
                             errorMessage={touched.nodeAccessLevel ? errors.nodeAccessLevel : undefined}
-                            required
+                            disabled={isReadOnly}
+                            required={!isReadOnly}
                         />
 
                         {/* Row 3: Informações de contato and Certificado */}
@@ -231,12 +279,14 @@ export function AddConnectionForm({ handleNavigation, onSave }: AddConnectionFor
                             placeholder="Input placeholder"
                             value={contactInfo}
                             onChange={(e) => setContactInfo(e.target.value)}
+                            disabled={isReadOnly}
                         />
                         <Input
                             label="Certificado"
                             placeholder="Input placeholder"
                             value={certificate}
                             onChange={(e) => setCertificate(e.target.value)}
+                            disabled={isReadOnly}
                         />
 
                         {/* Row 4: Assinatura do certificado and Detalhes da instituição */}
@@ -245,25 +295,29 @@ export function AddConnectionForm({ handleNavigation, onSave }: AddConnectionFor
                             placeholder="Input placeholder"
                             value={certificateSignature}
                             onChange={(e) => setCertificateSignature(e.target.value)}
+                            disabled={isReadOnly}
                         />
                         <Input
                             label="Detalhes da instituição"
                             placeholder="Input placeholder"
                             value={institutionDetails}
                             onChange={(e) => setInstitutionDetails(e.target.value)}
+                            disabled={isReadOnly}
                         />
                     </div>
 
-                    <div className="add-form__actions">
-                        <Button
-                            type="submit"
-                            variant="primary"
-                            disabled={submitting}
-                            icon={<DocumentArrowDownIcon className="w-5 h-5" />}
-                        >
-                            {submitting ? 'Salvando...' : 'Salvar conexão'}
-                        </Button>
-                    </div>
+                    {!isReadOnly && (
+                        <div className="add-form__actions">
+                            <Button
+                                type="submit"
+                                variant="primary"
+                                disabled={submitting}
+                                icon={<DocumentArrowDownIcon className="w-5 h-5" />}
+                            >
+                                {submitting ? 'Salvando...' : mode === 'edit' ? 'Atualizar conexão' : 'Salvar conexão'}
+                            </Button>
+                        </div>
+                    )}
                 </form>
             </div>
         </AppLayout>
