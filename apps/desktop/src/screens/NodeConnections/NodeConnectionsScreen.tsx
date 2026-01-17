@@ -280,6 +280,13 @@ const NodeConnectionsScreen: React.FC<NodeConnectionsScreenProps> = ({ handleNav
                         <EyeIcon />
                     </button>
                     <button
+                        className="action-button edit"
+                        title="Editar"
+                        onClick={() => console.log('Edit', connection)}
+                    >
+                        <PencilSquareIcon />
+                    </button>
+                    <button
                         className="action-button"
                         title="Aceitar solicitação"
                         onClick={() => handleOpenRequestModal(connection)}
