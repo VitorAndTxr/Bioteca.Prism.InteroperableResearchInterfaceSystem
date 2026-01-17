@@ -9,6 +9,7 @@ import { CheckCircleIcon, XCircleIcon, EyeIcon, PencilSquareIcon, ArrowPathIcon,
 import Button from "@/design-system/components/button/Button";
 import Pagination from '@/design-system/components/pagination/Pagination';
 import Modal from "@/design-system/components/modal/Modal";
+import '@/styles/shared/List.css';
 
 type NodeConnectionsScreenProps = {
     handleNavigation: (path: string) => void;
@@ -196,27 +197,27 @@ const NodeConnectionsScreen: React.FC<NodeConnectionsScreenProps> = ({ handleNav
             accessor: 'id',
             align: 'center',
             render: (_, connection) => (
-                <div className="flex justify-center gap-3">
+                <div className="list-actions">
                     <button
-                        className="p-1 text-[#393939] hover:text-[#49A2A8] transition-colors"
+                        className="action-button view"
                         title="Visualizar detalhes"
                         onClick={() => console.log('View details', connection)}
                     >
-                        <EyeIcon className="w-4 h-4" />
+                        <EyeIcon />
                     </button>
                     <button
-                        className="p-1 text-[#393939] hover:text-[#49A2A8] transition-colors"
+                        className="action-button edit"
                         title="Editar"
                         onClick={() => console.log('Edit', connection)}
                     >
-                        <PencilSquareIcon className="w-4 h-4" />
+                        <PencilSquareIcon />
                     </button>
                     <button
-                        className="p-1 text-[#393939] hover:text-[#49A2A8] transition-colors"
+                        className="action-button view"
                         title="Sincronizar"
                         onClick={() => console.log('Sync', connection)}
                     >
-                        <ArrowPathIcon className="w-4 h-4" />
+                        <ArrowPathIcon />
                     </button>
                 </div>
             ),
@@ -270,34 +271,29 @@ const NodeConnectionsScreen: React.FC<NodeConnectionsScreenProps> = ({ handleNav
             accessor: 'id',
             align: 'center',
             render: (_, connection) => (
-                <div className="flex justify-center gap-3">
+                <div className="list-actions">
                     <button
-                        className="p-1 text-[#393939] hover:text-[#49A2A8] transition-colors"
+                        className="action-button view"
                         title="Visualizar detalhes"
                         onClick={() => console.log('View details', connection)}
                     >
-                        <EyeIcon className="w-4 h-4" />
+                        <EyeIcon />
                     </button>
                     <button
-                        className="p-1 text-[#393939] hover:text-[#49A2A8] transition-colors"
-                        title="Editar"
-                        onClick={() => console.log('Edit', connection)}
-                    >
-                        <PencilSquareIcon className="w-4 h-4" />
-                    </button>
-                    <button
-                        className="p-1 text-green-600 hover:text-green-800 transition-colors"
+                        className="action-button"
                         title="Aceitar solicitação"
                         onClick={() => handleOpenRequestModal(connection)}
+                        style={{ color: '#16a34a' }}
                     >
-                        <CheckCircleIcon className="w-4 h-4" />
+                        <CheckCircleIcon />
                     </button>
                     <button
-                        className="p-1 text-red-600 hover:text-red-800 transition-colors"
+                        className="action-button"
                         title="Rejeitar solicitação"
                         onClick={() => handleOpenRequestModal(connection)}
+                        style={{ color: '#dc2626' }}
                     >
-                        <XCircleIcon className="w-4 h-4" />
+                        <XCircleIcon />
                     </button>
                 </div>
             ),
@@ -379,41 +375,36 @@ const NodeConnectionsScreen: React.FC<NodeConnectionsScreenProps> = ({ handleNav
             <Modal
                 isOpen={showRequestModal}
                 onClose={handleCloseRequestModal}
-                title="Solicitação de Conexão"
-                size="small"
+                title="Solicitação de conexão do Nó"
+                size="medium"
             >
                 {selectedConnection && (
-                    <div className="space-y-4">
-                        <p className="text-gray-700">
-                            Deseja aceitar ou rejeitar a solicitação de conexão de <strong>{selectedConnection.nodeName}</strong>?
+                    <div style={{ textAlign: 'center', padding: '16px 0' }}>
+                        <p style={{ color: '#2C3131', fontSize: '16px', marginBottom: '12px' }}>
+                            Você autoriza a conexão do Nó {selectedConnection.nodeName}?
                         </p>
-                        <div className="flex flex-col gap-3">
-                            <div className="text-sm text-gray-600">
-                                <p><strong>URL:</strong> {selectedConnection.nodeUrl}</p>
-                                <p><strong>Nível de acesso:</strong> {selectedConnection.nodeAccessLevel}</p>
-                            </div>
-                        </div>
-                        <div className="flex justify-end gap-3 mt-6">
-                            <Button
-                                variant="outline"
-                                onClick={handleCloseRequestModal}
-                            >
-                                Cancelar
-                            </Button>
-                            <Button
-                                variant="primary"
-                                onClick={handleRejectConnection}
-                                className="bg-red-600 hover:bg-red-700"
-                            >
-                                <XCircleIcon className="w-4 h-4 mr-2" />
-                                Rejeitar
-                            </Button>
+                        <p style={{ color: '#2C3131', fontSize: '16px'}}>
+                            <strong>URL do Nó:</strong> {selectedConnection.nodeUrl}
+                        </p >
+                        <p style={{ color: '#2C3131', fontSize: '16px', marginBottom: '24px'}}>
+                            <strong>Nível de Acesso:</strong> {getAccessLevelBadge(selectedConnection.nodeAccessLevel)}
+                        </p>
+                        <div style={{ display: 'flex', justifyContent: 'center', gap: '16px' }}>
                             <Button
                                 variant="primary"
                                 onClick={handleAcceptConnection}
+                                icon={<CheckCircleIcon />}
+                                iconPosition="left"
                             >
-                                <CheckCircleIcon className="w-4 h-4 mr-2" />
                                 Aceitar
+                            </Button>
+                            <Button
+                                variant="outline"
+                                onClick={handleRejectConnection}
+                                icon={<XCircleIcon />}
+                                iconPosition="left"
+                            >
+                                Rejeitar
                             </Button>
                         </div>
                     </div>
