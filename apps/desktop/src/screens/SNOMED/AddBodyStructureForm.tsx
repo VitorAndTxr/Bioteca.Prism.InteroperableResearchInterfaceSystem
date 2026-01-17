@@ -25,10 +25,14 @@ import type { AddSnomedBodyStructurePayload, SnomedBodyStructure } from '@iris/d
 import '../../styles/shared/AddForm.css';
 import { snomedService } from '../../services/middleware';
 
+export type FormMode = 'add' | 'view' | 'edit';
+
 export interface AddBodyStructureFormProps {
     handleNavigation: (path: string) => void;
     onSave?: (structureData: Partial<SnomedBodyStructure>) => void;
     onCancel?: () => void;
+    mode?: FormMode;
+    bodyStructure?: SnomedBodyStructure;
 }
 
 // Mock structure types - Replace with real API call
@@ -40,7 +44,13 @@ const mockStructureTypeOptions = [
     { value: 'Articulação', label: 'Articulação' },
 ];
 
-export function AddBodyStructureForm({ handleNavigation, onSave, onCancel }: AddBodyStructureFormProps) {
+export function AddBodyStructureForm({
+    handleNavigation,
+    onSave,
+    onCancel,
+    mode = 'add',
+    bodyStructure
+}: AddBodyStructureFormProps) {
     // Form state
     const [snomedCode, setSnomedCode] = useState('');
     const [structureType, setStructureType] = useState<string>('');
@@ -52,6 +62,8 @@ export function AddBodyStructureForm({ handleNavigation, onSave, onCancel }: Add
     const [parentRegionOption, setParentRegionOption] = useState<{ value: string; label: string }[]>([]);
     const [parentStructureOption, setParentStructureOption] = useState<{ value: string; label: string }[]>([]);
 
+    // Derived state
+    const isReadOnly = mode === 'view';
 
     // Validation state
     const [errors, setErrors] = useState<Record<string, string>>({});
@@ -60,6 +72,18 @@ export function AddBodyStructureForm({ handleNavigation, onSave, onCancel }: Add
     // Submission state
     const [submitting, setSubmitting] = useState(false);
     const [submitError, setSubmitError] = useState<string | null>(null);
+
+    // Initialize form state from bodyStructure prop
+    useEffect(() => {
+        if (bodyStructure) {
+            setSnomedCode(bodyStructure.snomedCode);
+            setStructureType(bodyStructure.structureType);
+            setDisplayName(bodyStructure.displayName);
+            setDescription(bodyStructure.description);
+            setBodyRegionCode(bodyStructure.parentRegion?.snomedCode ?? '');
+            setParentStructureCode(bodyStructure.parentStructureCode?.snomedCode);
+        }
+    }, [bodyStructure]);
 
     useEffect(() => {
         snomedService.getActiveBodyRegions().then(response => {
@@ -172,6 +196,19 @@ export function AddBodyStructureForm({ handleNavigation, onSave, onCancel }: Add
         }
     };
 
+    // Dynamic header title based on mode
+    const getHeaderTitle = (): string => {
+        switch (mode) {
+            case 'view':
+                return 'Detalhes da estrutura do corpo';
+            case 'edit':
+                return 'Editar estrutura do corpo';
+            case 'add':
+            default:
+                return 'Nova estrutura do corpo';
+        }
+    };
+
     return (
         <AppLayout
             sidebar={{
@@ -181,7 +218,7 @@ export function AddBodyStructureForm({ handleNavigation, onSave, onCancel }: Add
                 logo: 'I.R.I.S.',
             }}
             header={{
-                title: 'Nova estrutura do corpo',
+                title: getHeaderTitle(),
                 showUserMenu: true,
             }}
         >
@@ -197,6 +234,7 @@ export function AddBodyStructureForm({ handleNavigation, onSave, onCancel }: Add
                             onBlur={() => handleBlur('snomedCode')}
                             validationStatus={touched.snomedCode && errors.snomedCode ? 'error' : 'none'}
                             errorMessage={touched.snomedCode ? errors.snomedCode : undefined}
+                            disabled={isReadOnly}
                             required
                         />
 
@@ -206,10 +244,11 @@ export function AddBodyStructureForm({ handleNavigation, onSave, onCancel }: Add
                             placeholder="Input placeholder"
                             options={mockStructureTypeOptions}
                             value={structureType}
-                            onChange={(value) => setStructureType(value as string)}
+                            onChange={(value) => setStructureType(Array.isArray(value) ? value[0] : value)}
                             onBlur={() => handleBlur('structureType')}
                             validation={touched.structureType && errors.structureType ? 'error' : 'none'}
                             errorMessage={touched.structureType ? errors.structureType : undefined}
+                            disabled={isReadOnly}
                             required
                         />
 
@@ -222,6 +261,7 @@ export function AddBodyStructureForm({ handleNavigation, onSave, onCancel }: Add
                             onBlur={() => handleBlur('displayName')}
                             validationStatus={touched.displayName && errors.displayName ? 'error' : 'none'}
                             errorMessage={touched.displayName ? errors.displayName : undefined}
+                            disabled={isReadOnly}
                             required
                         />
 
@@ -234,6 +274,7 @@ export function AddBodyStructureForm({ handleNavigation, onSave, onCancel }: Add
                             onBlur={() => handleBlur('description')}
                             validationStatus={touched.description && errors.description ? 'error' : 'none'}
                             errorMessage={touched.description ? errors.description : undefined}
+                            disabled={isReadOnly}
                             required
                         />
 
@@ -243,10 +284,11 @@ export function AddBodyStructureForm({ handleNavigation, onSave, onCancel }: Add
                             placeholder="Input placeholder"
                             options={parentRegionOption}
                             value={bodyRegionCode}
-                            onChange={(value) => setBodyRegionCode(value as string)}
+                            onChange={(value) => setBodyRegionCode(Array.isArray(value) ? value[0] : value)}
                             onBlur={() => handleBlur('bodyRegionCode')}
                             validation={touched.bodyRegionCode && errors.bodyRegionCode ? 'error' : 'none'}
                             errorMessage={touched.bodyRegionCode ? errors.bodyRegionCode : undefined}
+                            disabled={isReadOnly}
                             searchable
                             required
                         />
@@ -257,7 +299,8 @@ export function AddBodyStructureForm({ handleNavigation, onSave, onCancel }: Add
                             placeholder="Input placeholder"
                             options={parentStructureOption}
                             value={parentStructureCode}
-                            onChange={(value) => setParentStructureCode(value as string)}
+                            onChange={(value) => setParentStructureCode(Array.isArray(value) ? value[0] : value)}
+                            disabled={isReadOnly}
                             searchable
                         />
                     </div>
@@ -274,14 +317,20 @@ export function AddBodyStructureForm({ handleNavigation, onSave, onCancel }: Add
                         >
                             Voltar
                         </Button>
-                        <Button
-                            type="submit"
-                            variant="primary"
-                            size="big"
-                            disabled={submitting}
-                        >
-                            {submitting ? 'Salvando...' : 'Salvar Estrutura do Corpo'}
-                        </Button>
+                        {mode !== 'view' && (
+                            <Button
+                                type="submit"
+                                variant="primary"
+                                size="big"
+                                disabled={submitting}
+                            >
+                                {submitting
+                                    ? 'Salvando...'
+                                    : mode === 'edit'
+                                        ? 'Atualizar Estrutura do Corpo'
+                                        : 'Salvar Estrutura do Corpo'}
+                            </Button>
+                        )}
                     </div>
                 </form>
             </div>

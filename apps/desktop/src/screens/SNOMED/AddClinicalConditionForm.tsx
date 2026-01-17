@@ -11,7 +11,7 @@
  * - Form validation
  */
 
-import React, { useState, FormEvent } from 'react';
+import React, { useState, useEffect, FormEvent } from 'react';
 import { AppLayout } from '../../design-system/components/app-layout';
 import { Input } from '../../design-system/components/input';
 import { Button } from '../../design-system/components/button';
@@ -21,14 +21,23 @@ import type { ClinicalCondition } from '@iris/domain';
 import '../../styles/shared/AddForm.css';
 import { snomedService } from '../../services/middleware';
 
+export type FormMode = 'add' | 'view' | 'edit';
 
 export interface AddClinicalConditionFormProps {
     handleNavigation: (path: string) => void;
     onSave?: (conditionData: Partial<ClinicalCondition>) => void;
     onCancel?: () => void;
+    mode?: FormMode;
+    clinicalCondition?: ClinicalCondition;
 }
 
-export function AddClinicalConditionForm({ handleNavigation, onSave, onCancel }: AddClinicalConditionFormProps) {
+export function AddClinicalConditionForm({
+    handleNavigation,
+    onSave,
+    onCancel,
+    mode = 'add',
+    clinicalCondition
+}: AddClinicalConditionFormProps) {
     // Form state
     const [snomedCode, setSnomedCode] = useState('');
     const [displayName, setDisplayName] = useState('');
@@ -40,6 +49,30 @@ export function AddClinicalConditionForm({ handleNavigation, onSave, onCancel }:
 
     const [submitting, setSubmitting] = useState(false);
     const [submitError, setSubmitError] = useState<string | null>(null);
+
+    const isReadOnly = mode === 'view';
+
+    // Initialize form state from clinicalCondition prop
+    useEffect(() => {
+        if (clinicalCondition) {
+            setSnomedCode(clinicalCondition.snomedCode || '');
+            setDisplayName(clinicalCondition.displayName || '');
+            setDescription(clinicalCondition.description || '');
+        }
+    }, [clinicalCondition]);
+
+    // Get header title based on mode
+    const getHeaderTitle = (): string => {
+        switch (mode) {
+            case 'view':
+                return 'Detalhes da condição clínica';
+            case 'edit':
+                return 'Editar condição clínica';
+            case 'add':
+            default:
+                return 'Nova condição clínica';
+        }
+    };
 
     // Mark field as touched
     const handleBlur = (field: string) => {
@@ -121,7 +154,7 @@ export function AddClinicalConditionForm({ handleNavigation, onSave, onCancel }:
                 logo: 'I.R.I.S.',
             }}
             header={{
-                title: 'Nova condição clínica',
+                title: getHeaderTitle(),
                 showUserMenu: true,
             }}
         >
@@ -138,6 +171,7 @@ export function AddClinicalConditionForm({ handleNavigation, onSave, onCancel }:
                             validationStatus={touched.snomedCode && errors.snomedCode ? 'error' : 'none'}
                             errorMessage={touched.snomedCode ? errors.snomedCode : undefined}
                             required
+                            disabled={isReadOnly}
                         />
 
                         {/* Name */}
@@ -150,6 +184,7 @@ export function AddClinicalConditionForm({ handleNavigation, onSave, onCancel }:
                             validationStatus={touched.displayName && errors.displayName ? 'error' : 'none'}
                             errorMessage={touched.displayName ? errors.displayName : undefined}
                             required
+                            disabled={isReadOnly}
                         />
 
                         {/* Description - Full width */}
@@ -163,6 +198,7 @@ export function AddClinicalConditionForm({ handleNavigation, onSave, onCancel }:
                             errorMessage={touched.description ? errors.description : undefined}
                             required
                             fullWidth
+                            disabled={isReadOnly}
                         />
                     </div>
 
@@ -178,16 +214,22 @@ export function AddClinicalConditionForm({ handleNavigation, onSave, onCancel }:
                         >
                             Voltar
                         </Button>
-                        <Button
-                            type="submit"
-                            variant="primary"
-                            size="big"
-                            icon={<CheckCircleIcon className="w-5 h-5" />}
-                            iconPosition="left"
-                            disabled={submitting}
-                        >
-                            {submitting ? 'Salvando...' : 'Salvar condição clínica'}
-                        </Button>
+                        {!isReadOnly && (
+                            <Button
+                                type="submit"
+                                variant="primary"
+                                size="big"
+                                icon={<CheckCircleIcon className="w-5 h-5" />}
+                                iconPosition="left"
+                                disabled={submitting}
+                            >
+                                {submitting
+                                    ? 'Salvando...'
+                                    : mode === 'edit'
+                                        ? 'Atualizar Condição Clínica'
+                                        : 'Salvar condição clínica'}
+                            </Button>
+                        )}
                     </div>
                 </form>
             </div>

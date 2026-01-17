@@ -9,13 +9,17 @@ import type { AddSnomedBodyRegionPayload, SnomedBodyRegion } from '@iris/domain'
 import { snomedService } from '../../services/middleware';
 import '../../styles/shared/AddForm.css';
 
+export type FormMode = 'add' | 'view' | 'edit';
+
 export interface AddBodyRegionFormProps {
     handleNavigation: (path: string) => void;
     onSave?: (regionData: Partial<AddSnomedBodyRegionPayload>) => void;
     onCancel?: () => void;
+    mode?: FormMode;
+    bodyRegion?: SnomedBodyRegion;
 }
 
-export function AddBodyRegionForm({ handleNavigation, onSave, onCancel }: AddBodyRegionFormProps) {
+export function AddBodyRegionForm({ handleNavigation, onSave, onCancel, mode = 'add', bodyRegion }: AddBodyRegionFormProps) {
     // Form state
     const [snomedCode, setSnomedCode] = useState('');
     const [displayName, setDisplayName] = useState('');
@@ -23,6 +27,8 @@ export function AddBodyRegionForm({ handleNavigation, onSave, onCancel }: AddBod
     const [parentRegionCode, setParentRegionCode] = useState<string | undefined>();
     const [parentRegionOption, setParentRegionOption] = useState<{ value: string; label: string }[]>([]);
 
+    // Derived state
+    const isReadOnly = mode === 'view';
 
     // Validation state
     const [errors, setErrors] = useState<Record<string, string>>({});
@@ -32,17 +38,40 @@ export function AddBodyRegionForm({ handleNavigation, onSave, onCancel }: AddBod
     const [submitting, setSubmitting] = useState(false);
     const [submitError, setSubmitError] = useState<string | null>(null);
 
+    // Initialize form from bodyRegion prop
+    useEffect(() => {
+        if (bodyRegion) {
+            setSnomedCode(bodyRegion.snomedCode);
+            setDisplayName(bodyRegion.displayName);
+            setDescription(bodyRegion.description);
+            setParentRegionCode(bodyRegion.parentRegion?.snomedCode);
+        }
+    }, [bodyRegion]);
+
     useEffect(() => {
         snomedService.getActiveBodyRegions().then(response => {
-            const options = response.map(bodyRegion => ({
-                value: bodyRegion.snomedCode,
-                label: `${bodyRegion.displayName}`,
+            const options = response.map(region => ({
+                value: region.snomedCode,
+                label: `${region.displayName}`,
             }));
             setParentRegionOption(options);
         }).catch(error => {
             console.error('Failed to fetch body regions for dropdown:', error);
         });
     }, []);
+
+    // Dynamic header title based on mode
+    const getHeaderTitle = (): string => {
+        switch (mode) {
+            case 'view':
+                return 'Detalhes da região do corpo';
+            case 'edit':
+                return 'Editar região do corpo';
+            case 'add':
+            default:
+                return 'Nova região do corpo';
+        }
+    };
 
     // Mark field as touched
     const handleBlur = (field: string) => {
@@ -128,7 +157,7 @@ export function AddBodyRegionForm({ handleNavigation, onSave, onCancel }: AddBod
                 logo: 'I.R.I.S.',
             }}
             header={{
-                title: 'Nova região do corpo',
+                title: getHeaderTitle(),
                 showUserMenu: true,
             }}
         >
@@ -145,6 +174,7 @@ export function AddBodyRegionForm({ handleNavigation, onSave, onCancel }: AddBod
                             validationStatus={touched.snomedCode && errors.snomedCode ? 'error' : 'none'}
                             errorMessage={touched.snomedCode ? errors.snomedCode : undefined}
                             required
+                            disabled={isReadOnly}
                         />
 
                         {/* Name */}
@@ -157,6 +187,7 @@ export function AddBodyRegionForm({ handleNavigation, onSave, onCancel }: AddBod
                             validationStatus={touched.displayName && errors.displayName ? 'error' : 'none'}
                             errorMessage={touched.displayName ? errors.displayName : undefined}
                             required
+                            disabled={isReadOnly}
                         />
 
                         {/* Description */}
@@ -169,6 +200,7 @@ export function AddBodyRegionForm({ handleNavigation, onSave, onCancel }: AddBod
                             validationStatus={touched.description && errors.description ? 'error' : 'none'}
                             errorMessage={touched.description ? errors.description : undefined}
                             required
+                            disabled={isReadOnly}
                         />
 
                         {/* Parent Region */}
@@ -177,8 +209,9 @@ export function AddBodyRegionForm({ handleNavigation, onSave, onCancel }: AddBod
                             placeholder="Input placeholder"
                             options={parentRegionOption}
                             value={parentRegionCode}
-                            onChange={(value) => setParentRegionCode(value as string)}
+                            onChange={(value) => setParentRegionCode(Array.isArray(value) ? value[0] : value)}
                             searchable
+                            disabled={isReadOnly}
                         />
                     </div>
 
@@ -194,14 +227,20 @@ export function AddBodyRegionForm({ handleNavigation, onSave, onCancel }: AddBod
                         >
                             Voltar
                         </Button>
-                        <Button
-                            type="submit"
-                            variant="primary"
-                            size="big"
-                            disabled={submitting}
-                        >
-                            {submitting ? 'Salvando...' : 'Salvar Região do Corpo'}
-                        </Button>
+                        {!isReadOnly && (
+                            <Button
+                                type="submit"
+                                variant="primary"
+                                size="big"
+                                disabled={submitting}
+                            >
+                                {submitting
+                                    ? 'Salvando...'
+                                    : mode === 'edit'
+                                        ? 'Atualizar Região do Corpo'
+                                        : 'Salvar Região do Corpo'}
+                            </Button>
+                        )}
                     </div>
                 </form>
             </div>

@@ -12,7 +12,7 @@
  * - Form validation
  */
 
-import React, { useState, FormEvent } from 'react';
+import React, { useState, useEffect, FormEvent } from 'react';
 import { AppLayout } from '../../design-system/components/app-layout';
 import { Input } from '../../design-system/components/input';
 import { Dropdown } from '../../design-system/components/dropdown';
@@ -23,10 +23,14 @@ import type { SnomedTopographicalModifier } from '@iris/domain';
 import { snomedService } from '../../services/middleware';
 import '../../styles/shared/AddForm.css';
 
+export type FormMode = 'add' | 'view' | 'edit';
+
 export interface AddTopographicModifierFormProps {
     handleNavigation: (path: string) => void;
     onSave?: (modifierData: Partial<SnomedTopographicalModifier>) => void;
     onCancel?: () => void;
+    mode?: FormMode;
+    topographicModifier?: SnomedTopographicalModifier;
 }
 
 // Mock categories - Replace with real API call
@@ -37,7 +41,13 @@ const mockCategoryOptions = [
     { value: 'Orientação', label: 'Orientação' },
 ];
 
-export function AddTopographicModifierForm({ handleNavigation, onSave, onCancel }: AddTopographicModifierFormProps) {
+export function AddTopographicModifierForm({
+    handleNavigation,
+    onSave,
+    onCancel,
+    mode = 'add',
+    topographicModifier
+}: AddTopographicModifierFormProps) {
     // Form state
     const [code, setCode] = useState('');
     const [category, setCategory] = useState<string>('');
@@ -50,6 +60,31 @@ export function AddTopographicModifierForm({ handleNavigation, onSave, onCancel 
 
     const [submitting, setSubmitting] = useState(false);
     const [submitError, setSubmitError] = useState<string | null>(null);
+
+    const isReadOnly = mode === 'view';
+
+    // Initialize form state from topographicModifier prop
+    useEffect(() => {
+        if (topographicModifier) {
+            setCode(topographicModifier.snomedCode);
+            setCategory(topographicModifier.category);
+            setDisplayName(topographicModifier.displayName);
+            setDescription(topographicModifier.description);
+        }
+    }, [topographicModifier]);
+
+    // Dynamic header title based on mode
+    const getHeaderTitle = (): string => {
+        switch (mode) {
+            case 'view':
+                return 'Detalhes do modificador topográfico';
+            case 'edit':
+                return 'Editar modificador topográfico';
+            case 'add':
+            default:
+                return 'Novo modificador topográfico';
+        }
+    };
 
     // Mark field as touched
     const handleBlur = (field: string) => {
@@ -137,7 +172,7 @@ export function AddTopographicModifierForm({ handleNavigation, onSave, onCancel 
                 logo: 'I.R.I.S.',
             }}
             header={{
-                title: 'Novo modificador topográfico',
+                title: getHeaderTitle(),
                 showUserMenu: true,
             }}
         >
@@ -154,6 +189,7 @@ export function AddTopographicModifierForm({ handleNavigation, onSave, onCancel 
                             validationStatus={touched.code && errors.code ? 'error' : 'none'}
                             errorMessage={touched.code ? errors.code : undefined}
                             required
+                            disabled={isReadOnly}
                         />
 
                         {/* Category */}
@@ -162,11 +198,12 @@ export function AddTopographicModifierForm({ handleNavigation, onSave, onCancel 
                             placeholder="Input placeholder"
                             options={mockCategoryOptions}
                             value={category}
-                            onChange={(value) => setCategory(value as string)}
+                            onChange={(value) => setCategory(Array.isArray(value) ? value[0] ?? '' : value)}
                             onBlur={() => handleBlur('category')}
                             validation={touched.category && errors.category ? 'error' : 'none'}
                             errorMessage={touched.category ? errors.category : undefined}
                             required
+                            disabled={isReadOnly}
                         />
 
                         {/* Name */}
@@ -179,6 +216,7 @@ export function AddTopographicModifierForm({ handleNavigation, onSave, onCancel 
                             validationStatus={touched.displayName && errors.displayName ? 'error' : 'none'}
                             errorMessage={touched.displayName ? errors.displayName : undefined}
                             required
+                            disabled={isReadOnly}
                         />
 
                         {/* Description */}
@@ -191,6 +229,7 @@ export function AddTopographicModifierForm({ handleNavigation, onSave, onCancel 
                             validationStatus={touched.description && errors.description ? 'error' : 'none'}
                             errorMessage={touched.description ? errors.description : undefined}
                             required
+                            disabled={isReadOnly}
                         />
                     </div>
 
@@ -206,16 +245,22 @@ export function AddTopographicModifierForm({ handleNavigation, onSave, onCancel 
                         >
                             Voltar
                         </Button>
-                        <Button
-                            type="submit"
-                            variant="primary"
-                            size="big"
-                            icon={<CheckCircleIcon className="w-5 h-5" />}
-                            iconPosition="left"
-                            disabled={submitting}
-                        >
-                            {submitting ? 'Salvando...' : 'Salvar modificador topográfico'}
-                        </Button>
+                        {mode !== 'view' && (
+                            <Button
+                                type="submit"
+                                variant="primary"
+                                size="big"
+                                icon={<CheckCircleIcon className="w-5 h-5" />}
+                                iconPosition="left"
+                                disabled={submitting}
+                            >
+                                {submitting
+                                    ? 'Salvando...'
+                                    : mode === 'edit'
+                                        ? 'Atualizar Modificador Topográfico'
+                                        : 'Salvar modificador topográfico'}
+                            </Button>
+                        )}
                     </div>
                 </form>
             </div>

@@ -16,7 +16,15 @@ import VolunteersScreen from "@/screens/Volunteers/VolunteersScreen";
 import CreateVolunteerForm from "@/screens/Volunteers/CreateVolunteerForm";
 import NodeConnectionsScreen from "@/screens/NodeConnections/NodeConnectionsScreen";
 import AddConnectionForm from "@/screens/NodeConnections/AddConnectionForm";
-import { ResearchNodeConnection } from "@iris/domain";
+import {
+    ResearchNodeConnection,
+    User,
+    Researcher,
+    SnomedBodyRegion,
+    SnomedBodyStructure,
+    SnomedTopographicalModifier,
+    ClinicalCondition
+} from "@iris/domain";
 import { useState, useEffect } from "react";
 
 function AppRouter() {
@@ -27,6 +35,16 @@ function AppRouter() {
 
     const [selectedResearchId, setSelectedResearchId] = useState<string>('');
     const [selectedConnection, setSelectedConnection] = useState<ResearchNodeConnection | null>(null);
+
+    // User and Researcher selection states
+    const [selectedUser, setSelectedUser] = useState<User | null>(null);
+    const [selectedResearcher, setSelectedResearcher] = useState<Researcher | null>(null);
+
+    // SNOMED selection states
+    const [selectedBodyRegion, setSelectedBodyRegion] = useState<SnomedBodyRegion | null>(null);
+    const [selectedBodyStructure, setSelectedBodyStructure] = useState<SnomedBodyStructure | null>(null);
+    const [selectedTopographicModifier, setSelectedTopographicModifier] = useState<SnomedTopographicalModifier | null>(null);
+    const [selectedClinicalCondition, setSelectedClinicalCondition] = useState<ClinicalCondition | null>(null);
 
     useEffect(() => {
         // Get app version from Electron
@@ -71,6 +89,66 @@ function AppRouter() {
             return;
         }
 
+        // User routes
+        if (path.startsWith('/users/view/')) {
+            setCurrentPage('view-user');
+            return;
+        }
+        if (path.startsWith('/users/edit/')) {
+            setCurrentPage('edit-user');
+            return;
+        }
+
+        // Researcher routes
+        if (path.startsWith('/researchers/view/')) {
+            setCurrentPage('view-researcher');
+            return;
+        }
+        if (path.startsWith('/researchers/edit/')) {
+            setCurrentPage('edit-researcher');
+            return;
+        }
+
+        // SNOMED Body Region routes
+        if (path.startsWith('/snomed/body-region/view/')) {
+            setCurrentPage('view-body-region');
+            return;
+        }
+        if (path.startsWith('/snomed/body-region/edit/')) {
+            setCurrentPage('edit-body-region');
+            return;
+        }
+
+        // SNOMED Body Structure routes
+        if (path.startsWith('/snomed/body-structure/view/')) {
+            setCurrentPage('view-body-structure');
+            return;
+        }
+        if (path.startsWith('/snomed/body-structure/edit/')) {
+            setCurrentPage('edit-body-structure');
+            return;
+        }
+
+        // SNOMED Topographic Modifier routes
+        if (path.startsWith('/snomed/topographic-modifier/view/')) {
+            setCurrentPage('view-topographic-modifier');
+            return;
+        }
+        if (path.startsWith('/snomed/topographic-modifier/edit/')) {
+            setCurrentPage('edit-topographic-modifier');
+            return;
+        }
+
+        // SNOMED Clinical Condition routes
+        if (path.startsWith('/snomed/clinical-condition/view/')) {
+            setCurrentPage('view-clinical-condition');
+            return;
+        }
+        if (path.startsWith('/snomed/clinical-condition/edit/')) {
+            setCurrentPage('edit-clinical-condition');
+            return;
+        }
+
         // Navigate to appropriate page based on path
         switch (path) {
             case '/nodeConnections':
@@ -95,6 +173,10 @@ function AppRouter() {
                 break;
             case '/snomed':
                 setCurrentPage('snomed');
+                setSelectedBodyRegion(null);
+                setSelectedBodyStructure(null);
+                setSelectedTopographicModifier(null);
+                setSelectedClinicalCondition(null);
                 break;
             case '/snomed/body-region/add':
                 setCurrentPage('add-body-region');
@@ -110,6 +192,8 @@ function AppRouter() {
                 break;
             case '/users':
                 setCurrentPage('users');
+                setSelectedUser(null);
+                setSelectedResearcher(null);
                 break;
             case '/users/add':
                 setCurrentPage('add-user');
@@ -191,48 +275,156 @@ function AppRouter() {
                 return (
                     <SNOMEDScreen
                         handleNavigation={handleNavigation}
+                        onSelectBodyRegion={setSelectedBodyRegion}
+                        onSelectBodyStructure={setSelectedBodyStructure}
+                        onSelectTopographicModifier={setSelectedTopographicModifier}
+                        onSelectClinicalCondition={setSelectedClinicalCondition}
                     />
                 );
             case 'add-body-region':
                 return (
                     <AddBodyRegionForm
                         handleNavigation={handleNavigation}
+                        mode="add"
+                    />
+                );
+            case 'view-body-region':
+                return (
+                    <AddBodyRegionForm
+                        handleNavigation={handleNavigation}
+                        mode="view"
+                        bodyRegion={selectedBodyRegion ?? undefined}
+                    />
+                );
+            case 'edit-body-region':
+                return (
+                    <AddBodyRegionForm
+                        handleNavigation={handleNavigation}
+                        mode="edit"
+                        bodyRegion={selectedBodyRegion ?? undefined}
                     />
                 );
             case 'add-body-structure':
                 return (
                     <AddBodyStructureForm
                         handleNavigation={handleNavigation}
+                        mode="add"
+                    />
+                );
+            case 'view-body-structure':
+                return (
+                    <AddBodyStructureForm
+                        handleNavigation={handleNavigation}
+                        mode="view"
+                        bodyStructure={selectedBodyStructure ?? undefined}
+                    />
+                );
+            case 'edit-body-structure':
+                return (
+                    <AddBodyStructureForm
+                        handleNavigation={handleNavigation}
+                        mode="edit"
+                        bodyStructure={selectedBodyStructure ?? undefined}
                     />
                 );
             case 'add-topographic-modifier':
                 return (
                     <AddTopographicModifierForm
                         handleNavigation={handleNavigation}
+                        mode="add"
+                    />
+                );
+            case 'view-topographic-modifier':
+                return (
+                    <AddTopographicModifierForm
+                        handleNavigation={handleNavigation}
+                        mode="view"
+                        topographicModifier={selectedTopographicModifier ?? undefined}
+                    />
+                );
+            case 'edit-topographic-modifier':
+                return (
+                    <AddTopographicModifierForm
+                        handleNavigation={handleNavigation}
+                        mode="edit"
+                        topographicModifier={selectedTopographicModifier ?? undefined}
                     />
                 );
             case 'add-clinical-condition':
                 return (
                     <AddClinicalConditionForm
                         handleNavigation={handleNavigation}
+                        mode="add"
+                    />
+                );
+            case 'view-clinical-condition':
+                return (
+                    <AddClinicalConditionForm
+                        handleNavigation={handleNavigation}
+                        mode="view"
+                        clinicalCondition={selectedClinicalCondition ?? undefined}
+                    />
+                );
+            case 'edit-clinical-condition':
+                return (
+                    <AddClinicalConditionForm
+                        handleNavigation={handleNavigation}
+                        mode="edit"
+                        clinicalCondition={selectedClinicalCondition ?? undefined}
                     />
                 );
             case 'users':
                 return (
                     <UsersAndResearchesersScreen
                         handleNavigation={handleNavigation}
+                        onSelectUser={setSelectedUser}
+                        onSelectResearcher={setSelectedResearcher}
                     />
                 );
             case 'add-user':
                 return (
                     <AddUserForm
                         handleNavigation={handleNavigation}
+                        mode="add"
+                    />
+                );
+            case 'view-user':
+                return (
+                    <AddUserForm
+                        handleNavigation={handleNavigation}
+                        mode="view"
+                        user={selectedUser ?? undefined}
+                    />
+                );
+            case 'edit-user':
+                return (
+                    <AddUserForm
+                        handleNavigation={handleNavigation}
+                        mode="edit"
+                        user={selectedUser ?? undefined}
                     />
                 );
             case 'add-researcher':
                 return (
                     <AddResearcherForm
                         handleNavigation={handleNavigation}
+                        mode="add"
+                    />
+                );
+            case 'view-researcher':
+                return (
+                    <AddResearcherForm
+                        handleNavigation={handleNavigation}
+                        mode="view"
+                        researcher={selectedResearcher ?? undefined}
+                    />
+                );
+            case 'edit-researcher':
+                return (
+                    <AddResearcherForm
+                        handleNavigation={handleNavigation}
+                        mode="edit"
+                        researcher={selectedResearcher ?? undefined}
                     />
                 );
             case 'home':
@@ -263,11 +455,23 @@ type Pages =
     | 'snomed'
     | 'users'
     | 'add-user'
+    | 'view-user'
+    | 'edit-user'
     | 'add-researcher'
+    | 'view-researcher'
+    | 'edit-researcher'
     | 'add-body-region'
+    | 'view-body-region'
+    | 'edit-body-region'
     | 'add-body-structure'
+    | 'view-body-structure'
+    | 'edit-body-structure'
     | 'add-topographic-modifier'
-    | 'add-clinical-condition';
+    | 'view-topographic-modifier'
+    | 'edit-topographic-modifier'
+    | 'add-clinical-condition'
+    | 'view-clinical-condition'
+    | 'edit-clinical-condition';
 
 
 export default AppRouter;

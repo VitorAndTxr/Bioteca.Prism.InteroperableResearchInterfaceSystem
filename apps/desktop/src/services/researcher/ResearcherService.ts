@@ -202,6 +202,61 @@ export class ResearcherService extends BaseService {
         });
     }
 
+    /**
+     * Update existing researcher
+     *
+     * @param researcherId - ID of the researcher to update
+     * @param researcherData - Updated researcher data
+     * @returns Updated researcher
+     */
+    async updateResearcher(researcherId: string, researcherData: NewResearcherData): Promise<Researcher> {
+        if (this.USE_MOCK) {
+            return new Promise(resolve => {
+                setTimeout(() => {
+                    resolve({
+                        researcherId: researcherId,
+                        researchNodeId: researcherData.researchNodeId,
+                        name: researcherData.name,
+                        email: researcherData.email,
+                        institution: researcherData.institution,
+                        role: researcherData.role,
+                        orcid: researcherData.orcid
+                    });
+                }, 500);
+            });
+        }
+
+        return this.handleMiddlewareError(async () => {
+            this.log('Updating researcher:', researcherId, researcherData.name);
+
+            // Validate input
+            this.validateResearcherData(researcherData);
+
+            // Ensure session
+            await this.ensureSession();
+
+            // Convert to middleware format (PascalCase)
+            const middlewarePayload: AddResearcherPayload = {
+                Name: researcherData.name,
+                Email: researcherData.email,
+                Institution: researcherData.institution,
+                Role: researcherData.role,
+                Orcid: researcherData.orcid,
+                ResearchNodeId: researcherData.researchNodeId
+            };
+
+            // Call backend API
+            const response = await this.middleware.invoke<AddResearcherPayload, ResearcherDTO>({
+                path: `/api/researcher/Update/${researcherId}`,
+                method: 'PUT',
+                payload: middlewarePayload
+            });
+
+            this.log('✅ Researcher updated:', response.researcherId);
+
+            return this.convertToResearcher(response);
+        });
+    }
 
     async getByNodeId(): Promise<Researcher[]> {
         if (this.USE_MOCK) {
