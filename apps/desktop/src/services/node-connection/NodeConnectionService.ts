@@ -24,13 +24,14 @@ import {
 /**
  * Middleware Node Connection DTO (camelCase - matches backend JSON serialization)
  * Backend returns ResearchNodeConnection entity with these fields
+ * Note: status and nodeAccessLevel may be numeric (C# enum default) or string
  */
 interface NodeConnectionDTO {
     id: string;
     nodeName: string;
     nodeUrl: string;
-    status: string;
-    nodeAccessLevel: string;
+    status: string | number;
+    nodeAccessLevel: string | number;
     registeredAt: string;
     updatedAt: string;
 }
@@ -359,8 +360,28 @@ export class NodeConnectionService extends BaseService {
 
     /**
      * Map backend authorization status to domain enum
+     * Handles both string and numeric values from the backend
      */
-    private mapAuthorizationStatus(status: string): AuthorizationStatus {
+    private mapAuthorizationStatus(status: string | number): AuthorizationStatus {
+        // Handle numeric enum values from C# backend
+        // Backend enum: Unknown = 0, Authorized = 1, Pending = 2, Revoked = 3
+        const numericMap: Record<number, AuthorizationStatus> = {
+            0: AuthorizationStatus.UNKNOWN,
+            1: AuthorizationStatus.AUTHORIZED,
+            2: AuthorizationStatus.PENDING,
+            3: AuthorizationStatus.REVOKED
+        };
+
+        if (typeof status === 'number') {
+            return numericMap[status] ?? AuthorizationStatus.UNKNOWN;
+        }
+
+        // Also handle numeric strings
+        const numericValue = parseInt(status, 10);
+        if (!isNaN(numericValue) && numericMap[numericValue] !== undefined) {
+            return numericMap[numericValue];
+        }
+
         const statusMap: Record<string, AuthorizationStatus> = {
             'unknown': AuthorizationStatus.UNKNOWN,
             'pending': AuthorizationStatus.PENDING,
@@ -381,8 +402,27 @@ export class NodeConnectionService extends BaseService {
 
     /**
      * Map backend node access level to domain enum
+     * Handles both string and numeric values from the backend
      */
-    private mapNodeAccessLevel(level: string): NodeAccessLevel {
+    private mapNodeAccessLevel(level: string | number): NodeAccessLevel {
+        // Handle numeric enum values from C# backend
+        // Backend enum: Public = 0, Private = 1, Restricted = 2
+        const numericMap: Record<number, NodeAccessLevel> = {
+            0: NodeAccessLevel.PUBLIC,
+            1: NodeAccessLevel.PRIVATE,
+            2: NodeAccessLevel.RESTRICTED
+        };
+
+        if (typeof level === 'number') {
+            return numericMap[level] ?? NodeAccessLevel.PUBLIC;
+        }
+
+        // Also handle numeric strings
+        const numericValue = parseInt(level, 10);
+        if (!isNaN(numericValue) && numericMap[numericValue] !== undefined) {
+            return numericMap[numericValue];
+        }
+
         const levelMap: Record<string, NodeAccessLevel> = {
             'public': NodeAccessLevel.PUBLIC,
             'private': NodeAccessLevel.PRIVATE,

@@ -34,9 +34,9 @@ export enum NodeAccessLevel {
  */
 export enum AuthorizationStatus {
     UNKNOWN = 'unknown',
-    PENDING = 'pending',
-    AUTHORIZED = 'authorized',
-    REVOKED = 'revoked'
+    PENDING = 'Pending',
+    AUTHORIZED = 'Authorized',
+    REVOKED = 'Revoked'
 }
 
 /**
