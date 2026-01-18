@@ -75,15 +75,27 @@ export function AddBodyStructureForm({
 
     // Initialize form state from bodyStructure prop
     useEffect(() => {
-        if (bodyStructure) {
+        console.log('[AddBodyStructureForm] useEffect triggered');
+        console.log('[AddBodyStructureForm] mode:', mode);
+        console.log('[AddBodyStructureForm] bodyStructure:', bodyStructure);
+
+        if (bodyStructure && (mode === 'view' || mode === 'edit')) {
+            console.log('[AddBodyStructureForm] Initializing form with:', {
+                snomedCode: bodyStructure.snomedCode,
+                type: bodyStructure.type,
+                displayName: bodyStructure.displayName,
+                description: bodyStructure.description,
+                bodyRegion: bodyStructure.bodyRegion,
+                parentStructure: bodyStructure.parentStructure
+            });
             setSnomedCode(bodyStructure.snomedCode);
-            setStructureType(bodyStructure.structureType);
+            setStructureType(bodyStructure.type);
             setDisplayName(bodyStructure.displayName);
             setDescription(bodyStructure.description);
-            setBodyRegionCode(bodyStructure.parentRegion?.snomedCode ?? '');
-            setParentStructureCode(bodyStructure.parentStructureCode?.snomedCode);
+            setBodyRegionCode(bodyStructure.bodyRegion?.snomedCode ?? '');
+            setParentStructureCode(bodyStructure.parentStructure?.snomedCode);
         }
-    }, [bodyStructure]);
+    }, [bodyStructure, mode]);
 
     useEffect(() => {
         snomedService.getActiveBodyRegions().then(response => {
@@ -167,7 +179,8 @@ export function AddBodyStructureForm({
                     displayName,
                     description,
                     type: structureType,
-                    bodyRegionCode
+                    bodyRegionCode: bodyRegionCode || undefined,
+                    parentStructureCode: parentStructureCode || undefined
                 };
                 console.log('Updating body structure:', updatePayload);
                 const updatedBodyStructure = await snomedService.updateBodyStructure(bodyStructure.snomedCode, updatePayload);

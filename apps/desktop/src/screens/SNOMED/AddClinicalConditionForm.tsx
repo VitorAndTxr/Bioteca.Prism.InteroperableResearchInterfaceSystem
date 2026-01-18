@@ -54,12 +54,21 @@ export function AddClinicalConditionForm({
 
     // Initialize form state from clinicalCondition prop
     useEffect(() => {
-        if (clinicalCondition) {
+        console.log('[AddClinicalConditionForm] useEffect triggered');
+        console.log('[AddClinicalConditionForm] mode:', mode);
+        console.log('[AddClinicalConditionForm] clinicalCondition:', clinicalCondition);
+
+        if (clinicalCondition && (mode === 'view' || mode === 'edit')) {
+            console.log('[AddClinicalConditionForm] Initializing form with:', {
+                snomedCode: clinicalCondition.snomedCode,
+                displayName: clinicalCondition.displayName,
+                description: clinicalCondition.description
+            });
             setSnomedCode(clinicalCondition.snomedCode || '');
             setDisplayName(clinicalCondition.displayName || '');
             setDescription(clinicalCondition.description || '');
         }
-    }, [clinicalCondition]);
+    }, [clinicalCondition, mode]);
 
     // Get header title based on mode
     const getHeaderTitle = (): string => {

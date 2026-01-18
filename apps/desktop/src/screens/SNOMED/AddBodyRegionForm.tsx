@@ -40,13 +40,23 @@ export function AddBodyRegionForm({ handleNavigation, onSave, onCancel, mode = '
 
     // Initialize form from bodyRegion prop
     useEffect(() => {
-        if (bodyRegion) {
+        console.log('[AddBodyRegionForm] useEffect triggered');
+        console.log('[AddBodyRegionForm] mode:', mode);
+        console.log('[AddBodyRegionForm] bodyRegion:', bodyRegion);
+
+        if (bodyRegion && (mode === 'view' || mode === 'edit')) {
+            console.log('[AddBodyRegionForm] Initializing form with:', {
+                snomedCode: bodyRegion.snomedCode,
+                displayName: bodyRegion.displayName,
+                description: bodyRegion.description,
+                parentRegion: bodyRegion.parentRegion
+            });
             setSnomedCode(bodyRegion.snomedCode);
             setDisplayName(bodyRegion.displayName);
             setDescription(bodyRegion.description);
             setParentRegionCode(bodyRegion.parentRegion?.snomedCode);
         }
-    }, [bodyRegion]);
+    }, [bodyRegion, mode]);
 
     useEffect(() => {
         snomedService.getActiveBodyRegions().then(response => {
@@ -120,7 +130,8 @@ export function AddBodyRegionForm({ handleNavigation, onSave, onCancel, mode = '
             if (mode === 'edit' && bodyRegion) {
                 const updatePayload: UpdateSnomedBodyRegionPayload = {
                     displayName,
-                    description
+                    description,
+                    parentRegionCode: parentRegionCode || undefined
                 };
                 console.log('Updating region:', updatePayload);
                 const updatedRegion = await snomedService.updateBodyRegion(bodyRegion.snomedCode, updatePayload);

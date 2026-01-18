@@ -245,8 +245,8 @@ export class SnomedService extends BaseService {
                         snomedCode: `BS-${page}-${i}`,
                         displayName: `Mock Body Structure ${page}-${i}`,
                         description: `Description for Mock Body Structure ${page}-${i}`,
-                        structureType: 'Mock Type',
-                        parentRegion: {
+                        type: 'Mock Type',
+                        bodyRegion: {
                             snomedCode: `BR-${page}-${i}`,
                             displayName: `Parent Region ${page}-${i}`,
                             description: `Parent Description`
@@ -305,8 +305,8 @@ export class SnomedService extends BaseService {
                         snomedCode: bodyStructure.snomedCode,
                         displayName: bodyStructure.displayName,
                         description: bodyStructure.description,
-                        structureType: bodyStructure.type,
-                        parentRegion: {
+                        type: bodyStructure.type,
+                        bodyRegion: {
                             snomedCode: bodyStructure.bodyRegionCode,
                             displayName: 'Mock Parent Region',
                             description: 'Mock Description'
@@ -349,8 +349,8 @@ export class SnomedService extends BaseService {
                         snomedCode,
                         displayName: `Mock Body Structure ${snomedCode}`,
                         description: `Description for Mock Body Structure ${snomedCode}`,
-                        structureType: 'Mock Type',
-                        parentRegion: {
+                        type: 'Mock Type',
+                        bodyRegion: {
                             snomedCode: 'BR-001',
                             displayName: 'Mock Region',
                             description: 'Mock Description'
@@ -395,8 +395,8 @@ export class SnomedService extends BaseService {
                         snomedCode,
                         displayName: payload.displayName,
                         description: payload.description,
-                        structureType: payload.type,
-                        parentRegion: {
+                        type: payload.type,
+                        bodyRegion: {
                             snomedCode: payload.bodyRegionCode ?? 'BR-001',
                             displayName: 'Mock Region',
                             description: 'Mock Description'
@@ -432,15 +432,15 @@ export class SnomedService extends BaseService {
                             snomedCode: 'BS-001',
                             displayName: 'Mock Active Structure 1',
                             description: 'Desc 1',
-                            structureType: 'Type A',
-                            parentRegion: { snomedCode: 'BR-001', displayName: 'Region 1', description: 'Desc' }
+                            type: 'Type A',
+                            bodyRegion: { snomedCode: 'BR-001', displayName: 'Region 1', description: 'Desc' }
                         },
                         {
                             snomedCode: 'BS-002',
                             displayName: 'Mock Active Structure 2',
                             description: 'Desc 2',
-                            structureType: 'Type B',
-                            parentRegion: { snomedCode: 'BR-002', displayName: 'Region 2', description: 'Desc' }
+                            type: 'Type B',
+                            bodyRegion: { snomedCode: 'BR-002', displayName: 'Region 2', description: 'Desc' }
                         }
                     ]);
                 }, 500);

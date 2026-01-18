@@ -49,20 +49,20 @@ export interface SnomedBodyStructure {
   /** SNOMED code (primary key) */
   snomedCode: string;
 
-  /** Body region code */
-  parentRegion: SnomedBodyRegion;
-
   /** Display name */
   displayName: string;
 
-  /** Structure type */
-  structureType: string;
-
-  /** Parent structure code (for hierarchical structure) */
-  parentStructureCode?: SnomedBodyStructure;
-
   /** Description */
   description: string;
+
+  /** Structure type (e.g., "Órgão", "Tecido", "Músculo") */
+  type: string;
+
+  /** Body region this structure belongs to */
+  bodyRegion?: SnomedBodyRegion;
+
+  /** Parent structure (for hierarchical structure) */
+  parentStructure?: SnomedBodyStructure;
 }
 
 
@@ -173,6 +173,9 @@ export interface UpdateSnomedBodyRegionPayload extends Record<string, unknown> {
 
   /** Description */
   description: string;
+
+  /** Parent region code (optional) */
+  parentRegionCode?: string;
 }
 
 /**
@@ -190,6 +193,9 @@ export interface UpdateSnomedBodyStructurePayload extends Record<string, unknown
 
   /** Body region code (optional) */
   bodyRegionCode?: string;
+
+  /** Parent structure code (optional) */
+  parentStructureCode?: string;
 }
 
 /**

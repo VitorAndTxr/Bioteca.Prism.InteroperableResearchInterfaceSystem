@@ -96,7 +96,16 @@ export function AddUserForm({
 
     // Initialize form state from user prop when in view/edit mode
     useEffect(() => {
+        console.log('[AddUserForm] useEffect triggered');
+        console.log('[AddUserForm] mode:', mode);
+        console.log('[AddUserForm] user:', user);
+
         if ((mode === 'view' || mode === 'edit') && user) {
+            console.log('[AddUserForm] Initializing form with:', {
+                login: user.login,
+                role: user.role,
+                researcher: user.researcher
+            });
             setLogin(user.login);
             setUserType(user.role.toUpperCase());
             setRelatedResearcher(user.researcher?.researcherId || '');

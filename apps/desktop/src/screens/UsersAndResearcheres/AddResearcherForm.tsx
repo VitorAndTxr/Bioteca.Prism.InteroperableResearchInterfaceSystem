@@ -64,7 +64,18 @@ export function AddResearcherForm({
 
     // Initialize form state from researcher prop when in view/edit mode
     useEffect(() => {
+        console.log('[AddResearcherForm] useEffect triggered');
+        console.log('[AddResearcherForm] mode:', mode);
+        console.log('[AddResearcherForm] researcher:', researcher);
+
         if (researcher && (mode === 'view' || mode === 'edit')) {
+            console.log('[AddResearcherForm] Initializing form with:', {
+                name: researcher.name,
+                email: researcher.email,
+                institution: researcher.institution,
+                orcid: researcher.orcid,
+                role: researcher.role
+            });
             setName(researcher.name);
             setEmail(researcher.email);
             setInstitution(researcher.institution);

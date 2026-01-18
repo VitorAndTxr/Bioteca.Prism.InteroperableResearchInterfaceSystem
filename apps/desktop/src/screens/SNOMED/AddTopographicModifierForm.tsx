@@ -65,13 +65,23 @@ export function AddTopographicModifierForm({
 
     // Initialize form state from topographicModifier prop
     useEffect(() => {
-        if (topographicModifier) {
+        console.log('[AddTopographicModifierForm] useEffect triggered');
+        console.log('[AddTopographicModifierForm] mode:', mode);
+        console.log('[AddTopographicModifierForm] topographicModifier:', topographicModifier);
+
+        if (topographicModifier && (mode === 'view' || mode === 'edit')) {
+            console.log('[AddTopographicModifierForm] Initializing form with:', {
+                snomedCode: topographicModifier.snomedCode,
+                category: topographicModifier.category,
+                displayName: topographicModifier.displayName,
+                description: topographicModifier.description
+            });
             setCode(topographicModifier.snomedCode);
             setCategory(topographicModifier.category);
             setDisplayName(topographicModifier.displayName);
             setDescription(topographicModifier.description);
         }
-    }, [topographicModifier]);
+    }, [topographicModifier, mode]);
 
     // Dynamic header title based on mode
     const getHeaderTitle = (): string => {
