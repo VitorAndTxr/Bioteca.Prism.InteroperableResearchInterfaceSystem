@@ -8,9 +8,9 @@
 
 const https = require('https');
 const fs = require('fs');
+const { requireFigmaToken } = require('./utils/get-figma-token');
 
 const fileKey = process.argv[2];
-const token = process.argv[3] || process.env.FIGMA_TOKEN;
 
 if (!fileKey) {
     console.error('Usage: node get-code-connect-map.js <file-key> [token]');
@@ -18,11 +18,7 @@ if (!fileKey) {
     process.exit(1);
 }
 
-if (!token) {
-    console.error('❌ Error: FIGMA_TOKEN not provided');
-    console.error('Set FIGMA_TOKEN environment variable or pass as second argument');
-    process.exit(1);
-}
+const token = requireFigmaToken(process.argv[3]);
 
 console.log(`🔗 Fetching Code Connect mapping for file ${fileKey}...`);
 

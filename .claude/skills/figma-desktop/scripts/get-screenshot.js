@@ -8,11 +8,11 @@
 
 const https = require('https');
 const fs = require('fs');
+const { requireFigmaToken } = require('./utils/get-figma-token');
 
 const fileKey = process.argv[2];
 const nodeId = process.argv[3];
-const token = process.argv[4] || process.env.FIGMA_TOKEN;
-const outputFile = process.argv[5] || `screenshot-${nodeId.replace(':', '-')}.png`;
+const outputFile = process.argv[5] || (nodeId ? `screenshot-${nodeId.replace(':', '-')}.png` : 'screenshot.png');
 
 if (!fileKey || !nodeId) {
   console.error('Usage: node get-screenshot.js <file-key> <node-id> [token] [output-file]');
@@ -20,11 +20,7 @@ if (!fileKey || !nodeId) {
   process.exit(1);
 }
 
-if (!token) {
-  console.error('❌ Error: FIGMA_TOKEN not provided');
-  console.error('Set FIGMA_TOKEN environment variable or pass as third argument');
-  process.exit(1);
-}
+const token = requireFigmaToken(process.argv[4]);
 
 // Step 1: Request image URL from Figma API
 const url = `https://api.figma.com/v1/images/${fileKey}?ids=${nodeId}&format=png&scale=2`;

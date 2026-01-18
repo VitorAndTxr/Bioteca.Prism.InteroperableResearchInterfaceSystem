@@ -25,19 +25,36 @@ Node.js scripts that extract Figma data (requires `FIGMA_TOKEN`):
 
 ### Figma Token
 
-1. Go to https://www.figma.com/settings
-2. Generate Personal Access Token
-3. Set environment variable:
-   ```bash
-   # Windows (PowerShell)
-   $env:FIGMA_TOKEN="your-token"
+Generate your token at https://www.figma.com/settings → Personal Access Tokens
 
-   # Windows (CMD)
-   set FIGMA_TOKEN=your-token
+The scripts look for the token in this order:
+1. CLI argument (passed directly to script)
+2. `FIGMA_TOKEN` environment variable
+3. `FIGMA_KEY` environment variable
+4. Claude user settings (`~/.claude/settings.json`)
 
-   # Mac/Linux
-   export FIGMA_TOKEN="your-token"
-   ```
+**Recommended: Claude Settings** (persists across sessions)
+
+Add to `~/.claude/settings.json`:
+```json
+{
+  "env": {
+    "FIGMA_KEY": "your-figma-token"
+  }
+}
+```
+
+**Alternative: Environment Variable**
+```bash
+# Windows (PowerShell)
+$env:FIGMA_TOKEN="your-token"
+
+# Windows (CMD)
+set FIGMA_TOKEN=your-token
+
+# Mac/Linux
+export FIGMA_TOKEN="your-token"
+```
 
 ### IRIS Project File Key
 ```
@@ -141,6 +158,10 @@ Find the file key in any Figma URL:
 https://figma.com/design/<FILE_KEY>/...
 ```
 
-## Figma API Key
+## Token Resolution
 
-Use environment variable `FIGMA_TOKEN` or `claude.env.FIGMA_KEY`
+Scripts automatically resolve the Figma token from:
+1. CLI argument
+2. `FIGMA_TOKEN` env var
+3. `FIGMA_KEY` env var
+4. `~/.claude/settings.json` → `env.FIGMA_KEY`

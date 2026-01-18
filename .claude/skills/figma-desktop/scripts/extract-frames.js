@@ -2,21 +2,15 @@
 
 /**
  * Extract all frames from Figma page using REST API
- * Usage: node extract-frames.js <file-key> <node-id> <figma-token>
+ * Usage: node extract-frames.js <file-key> <node-id> [figma-token]
  */
 
 const https = require('https');
+const { requireFigmaToken } = require('./utils/get-figma-token');
 
 const fileKey = process.argv[2] || 'xFC8eCJcSwB9EyicTmDJ7w';
 const nodeId = process.argv[3] || '2501:2715';
-const token = process.argv[4] || process.env.FIGMA_TOKEN;
-
-if (!token) {
-  console.error('❌ Error: FIGMA_TOKEN not provided');
-  console.error('Usage: node extract-frames.js [file-key] [node-id] [token]');
-  console.error('   OR: FIGMA_TOKEN=xxx node extract-frames.js [file-key] [node-id]');
-  process.exit(1);
-}
+const token = requireFigmaToken(process.argv[4]);
 
 const url = `https://api.figma.com/v1/files/${fileKey}/nodes?ids=${nodeId}`;
 

@@ -8,10 +8,10 @@
 
 const https = require('https');
 const fs = require('fs');
+const { requireFigmaToken } = require('./utils/get-figma-token');
 
 const fileKey = process.argv[2];
 const nodeId = process.argv[3];
-const token = process.argv[4] || process.env.FIGMA_TOKEN;
 
 if (!fileKey || !nodeId) {
     console.error('Usage: node get-figjam.js <file-key> <node-id> [token]');
@@ -19,11 +19,7 @@ if (!fileKey || !nodeId) {
     process.exit(1);
 }
 
-if (!token) {
-    console.error('❌ Error: FIGMA_TOKEN not provided');
-    console.error('Set FIGMA_TOKEN environment variable or pass as third argument');
-    process.exit(1);
-}
+const token = requireFigmaToken(process.argv[4]);
 
 const url = `https://api.figma.com/v1/files/${fileKey}/nodes?ids=${nodeId}`;
 

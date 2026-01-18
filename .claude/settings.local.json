@@ -22,7 +22,8 @@
       "Bash(mv:*)",
       "Bash(npm run type-check:all:*)",
       "Bash(cat:*)",
-      "Skill(skill-creator)"
+      "Skill(skill-creator)",
+      "Skill(update-figma)"
     ],
     "deny": [],
     "ask": []

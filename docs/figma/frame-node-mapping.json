@@ -3,8 +3,8 @@
   "fileName": "I.R.I.S.-Prototype",
   "baseUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype",
   "mappingDate": "2025-11-20",
-  "lastUpdated": "2025-11-20",
-  "updateNotes": "Revalidation: Updated frame name 'Usuários e Pesquisadores' to 'Usuários'. Added 9 new frames: Pesquisadores (038), Voluntários (039), Pesquisa específica - Aplicações (040), Pesquisa específica - Dispositivos list (041), Pesquisa específica - Sensores list (042), Aceite Solicitações (043), Adicionar voluntário existente (044), Confirmar remoção de voluntário (045), Condições clínicas open (046). Note: Frames 036/041 and 037/042 share names but are different screens (form vs list).",
+  "lastUpdated": "2026-01-18",
+  "updateNotes": "Revalidation: Synced with Figma (44 frames, no changes). Updated implementation status: 22 verified, 17 pending, 5 partial. Added implementation file references.",
   "totalFrames": 44,
   "frames": [
     {
@@ -15,7 +15,8 @@
       "type": "Screen",
       "priority": "High",
       "dimensions": "1280x720",
-      "status": "verified",
+      "status": "implemented",
+      "implementationFile": "apps/desktop/src/screens/Login/Login.tsx",
       "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6804-13742"
     },
     {
@@ -26,7 +27,8 @@
       "type": "Screen",
       "priority": "High",
       "dimensions": "1280x720",
-      "status": "verified",
+      "status": "implemented",
+      "implementationFile": "apps/desktop/src/screens/UsersAndResearcheres/UsersList.tsx",
       "notes": "Renamed from 'Usuários e Pesquisadores'",
       "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6804-13670"
     },
@@ -38,7 +40,8 @@
       "type": "Screen",
       "priority": "High",
       "dimensions": "1280x720",
-      "status": "verified",
+      "status": "implemented",
+      "implementationFile": "apps/desktop/src/screens/Research/ResearchList.tsx",
       "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6910-3378"
     },
     {
@@ -49,7 +52,8 @@
       "type": "Screen",
       "priority": "Medium",
       "dimensions": "1280x720",
-      "status": "verified",
+      "status": "implemented",
+      "implementationFile": "apps/desktop/src/screens/UsersAndResearcheres/AddUserForm.tsx",
       "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6804-12778"
     },
     {
@@ -60,7 +64,8 @@
       "type": "Screen",
       "priority": "Medium",
       "dimensions": "1280x720",
-      "status": "verified",
+      "status": "implemented",
+      "implementationFile": "apps/desktop/src/screens/UsersAndResearcheres/AddResearcherForm.tsx",
       "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6804-12812"
     },
     {
@@ -115,7 +120,9 @@
       "type": "Screen",
       "priority": "High",
       "dimensions": "1280x720",
-      "status": "verified",
+      "status": "implemented",
+      "implementationFile": "apps/desktop/src/screens/NodeConnections/NodeConnectionsScreen.tsx",
+      "notes": "Requests tab in NodeConnectionsScreen",
       "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6804-13591"
     },
     {
@@ -126,7 +133,9 @@
       "type": "Screen",
       "priority": "High",
       "dimensions": "1280x720",
-      "status": "verified",
+      "status": "implemented",
+      "implementationFile": "apps/desktop/src/screens/NodeConnections/NodeConnectionsScreen.tsx",
+      "notes": "Active connections tab in NodeConnectionsScreen",
       "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6804-13512"
     },
     {
@@ -137,7 +146,9 @@
       "type": "Screen",
       "priority": "Medium",
       "dimensions": "1280x720",
-      "status": "pending",
+      "status": "implemented",
+      "implementationFile": "apps/desktop/src/screens/SNOMED/SNOMEDList.tsx",
+      "notes": "Body region tab in SNOMEDList",
       "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6804-12924"
     },
     {
@@ -148,7 +159,9 @@
       "type": "Screen",
       "priority": "Medium",
       "dimensions": "1280x720",
-      "status": "verified",
+      "status": "implemented",
+      "implementationFile": "apps/desktop/src/screens/SNOMED/SNOMEDList.tsx",
+      "notes": "Body structure tab in SNOMEDList",
       "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6804-13008"
     },
     {
@@ -159,7 +172,9 @@
       "type": "Screen",
       "priority": "Medium",
       "dimensions": "1280x720",
-      "status": "pending",
+      "status": "implemented",
+      "implementationFile": "apps/desktop/src/screens/SNOMED/SNOMEDList.tsx",
+      "notes": "Topographic modifier tab in SNOMEDList",
       "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6804-13092"
     },
     {
@@ -170,7 +185,9 @@
       "type": "Screen",
       "priority": "Medium",
       "dimensions": "1280x720",
-      "status": "pending",
+      "status": "implemented",
+      "implementationFile": "apps/desktop/src/screens/SNOMED/SNOMEDList.tsx",
+      "notes": "Clinical condition tab in SNOMEDList",
       "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6804-13176"
     },
     {
@@ -181,7 +198,9 @@
       "type": "Screen",
       "priority": "Medium",
       "dimensions": "1280x720",
-      "status": "pending",
+      "status": "implemented",
+      "implementationFile": "apps/desktop/src/screens/SNOMED/SNOMEDList.tsx",
+      "notes": "Clinical event tab in SNOMEDList",
       "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6804-13260"
     },
     {
@@ -192,7 +211,9 @@
       "type": "Screen",
       "priority": "Medium",
       "dimensions": "1280x720",
-      "status": "pending",
+      "status": "implemented",
+      "implementationFile": "apps/desktop/src/screens/SNOMED/SNOMEDList.tsx",
+      "notes": "Medication tab in SNOMEDList",
       "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6804-13344"
     },
     {
@@ -203,7 +224,9 @@
       "type": "Screen",
       "priority": "Medium",
       "dimensions": "1280x720",
-      "status": "pending",
+      "status": "implemented",
+      "implementationFile": "apps/desktop/src/screens/SNOMED/SNOMEDList.tsx",
+      "notes": "Allergy/Intolerance tab in SNOMEDList",
       "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6804-13428"
     },
     {
@@ -214,7 +237,9 @@
       "type": "Screen",
       "priority": "Medium",
       "dimensions": "1280x720",
-      "status": "verified",
+      "status": "implemented",
+      "implementationFile": "apps/desktop/src/screens/Research/ResearchDetailsScreen.tsx",
+      "notes": "Volunteers tab in Research Details",
       "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6910-4190"
     },
     {
@@ -225,7 +250,9 @@
       "type": "Screen",
       "priority": "Medium",
       "dimensions": "1280x720",
-      "status": "verified",
+      "status": "implemented",
+      "implementationFile": "apps/desktop/src/screens/Research/ResearchDetailsScreen.tsx",
+      "notes": "Researchers tab in Research Details",
       "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6910-3745"
     },
     {
@@ -236,7 +263,8 @@
       "type": "Screen",
       "priority": "Medium",
       "dimensions": "1280x720",
-      "status": "verified",
+      "status": "pending",
+      "notes": "Clinical event add form not yet implemented",
       "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6910-2905"
     },
     {
@@ -247,7 +275,8 @@
       "type": "Screen",
       "priority": "Medium",
       "dimensions": "1280x720",
-      "status": "verified",
+      "status": "implemented",
+      "implementationFile": "apps/desktop/src/screens/SNOMED/AddClinicalConditionForm.tsx",
       "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6910-2825"
     },
     {
@@ -258,7 +287,8 @@
       "type": "Screen",
       "priority": "Medium",
       "dimensions": "1280x720",
-      "status": "verified",
+      "status": "pending",
+      "notes": "Add researcher to research form not yet implemented",
       "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6910-4029"
     },
     {
@@ -269,7 +299,8 @@
       "type": "Screen",
       "priority": "Medium",
       "dimensions": "1280x720",
-      "status": "verified",
+      "status": "implemented",
+      "implementationFile": "apps/desktop/src/screens/SNOMED/AddTopographicModifierForm.tsx",
       "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6910-2719"
     },
     {
@@ -280,7 +311,8 @@
       "type": "Screen",
       "priority": "Medium",
       "dimensions": "1280x720",
-      "status": "verified",
+      "status": "pending",
+      "notes": "Allergy/intolerance add form not yet implemented",
       "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6910-3177"
     },
     {
@@ -291,7 +323,8 @@
       "type": "Screen",
       "priority": "Medium",
       "dimensions": "1280x720",
-      "status": "verified",
+      "status": "pending",
+      "notes": "Medication add form not yet implemented",
       "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6910-3052"
     },
     {
@@ -302,7 +335,8 @@
       "type": "Screen",
       "priority": "Medium",
       "dimensions": "1280x720",
-      "status": "verified",
+      "status": "implemented",
+      "implementationFile": "apps/desktop/src/screens/SNOMED/AddBodyStructureForm.tsx",
       "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6910-2612"
     },
     {
@@ -313,7 +347,8 @@
       "type": "Screen",
       "priority": "Medium",
       "dimensions": "1280x720",
-      "status": "verified",
+      "status": "implemented",
+      "implementationFile": "apps/desktop/src/screens/NodeConnections/AddConnectionForm.tsx",
       "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6910-3543"
     },
     {
@@ -324,7 +359,8 @@
       "type": "Screen",
       "priority": "Medium",
       "dimensions": "1280x720",
-      "status": "verified",
+      "status": "implemented",
+      "implementationFile": "apps/desktop/src/screens/SNOMED/AddBodyRegionForm.tsx",
       "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6910-2488"
     },
     {
@@ -335,7 +371,8 @@
       "type": "Component",
       "priority": "Medium",
       "dimensions": "672x146",
-      "status": "verified",
+      "status": "pending",
+      "notes": "Accordion component for volunteer research list",
       "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6998-3774"
     },
     {
@@ -346,7 +383,8 @@
       "type": "Screen",
       "priority": "Medium",
       "dimensions": "1280x765",
-      "status": "verified",
+      "status": "implemented",
+      "implementationFile": "apps/desktop/src/screens/Volunteers/CreateVolunteerForm.tsx",
       "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6998-918"
     },
     {
@@ -403,8 +441,9 @@
       "type": "Screen",
       "priority": "High",
       "dimensions": "1280x720",
-      "status": "pending",
-      "notes": "New frame - Researcher list screen",
+      "status": "implemented",
+      "implementationFile": "apps/desktop/src/screens/UsersAndResearcheres/UsersList.tsx",
+      "notes": "Researchers tab in UsersList component",
       "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6804-12845"
     },
     {
@@ -415,8 +454,8 @@
       "type": "Screen",
       "priority": "High",
       "dimensions": "1280x720",
-      "status": "pending",
-      "notes": "New frame - Volunteer list screen",
+      "status": "implemented",
+      "implementationFile": "apps/desktop/src/screens/Volunteers/VolunteersList.tsx",
       "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6998-847"
     },
     {
@@ -463,8 +502,9 @@
       "type": "Modal",
       "priority": "Medium",
       "dimensions": "405x230",
-      "status": "pending",
-      "notes": "New frame - Accept connection request modal",
+      "status": "implemented",
+      "implementationFile": "apps/desktop/src/screens/NodeConnections/NodeConnectionsScreen.tsx",
+      "notes": "Modal component in NodeConnectionsScreen for accepting/rejecting connection requests",
       "figmaUrl": "https://www.figma.com/design/xFC8eCJcSwB9EyicTmDJ7w/I.R.I.S.-Prototype?node-id=6998-800"
     },
     {
