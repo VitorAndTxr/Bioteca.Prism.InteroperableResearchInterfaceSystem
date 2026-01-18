@@ -212,34 +212,11 @@ function initializeMiddleware() {
     // Set JWT token provider for Authorization header
     // This retrieves the JWT token from secure storage for [Authorize] endpoints
     sessionManager.setJwtTokenProvider(async () => {
-        console.log('[Middleware] JWT Token Provider called - fetching from storage...');
-
         try {
-            // Check if there's anything in localStorage first
-            const rawValue = localStorage.getItem('iris:userauth:state');
-            console.log('[Middleware] Raw localStorage value:', rawValue ? `Found (${rawValue.length} chars)` : 'null');
-
-            // UserAuthService stores auth state with key 'userauth:state'
-            // Format: { token: string, expiresAt: string, user: User }
-            const authState = await storage.getItem('userauth:state') as any;
-            console.log('[Middleware] Storage result after decryption:', authState ? 'Auth state found' : 'null/undefined');
-
-            if (authState && authState.token) {
-                console.log('[Middleware] ✅ JWT Token extracted:', `${authState.token.substring(0, 20)}...`);
-                return authState.token;
-            }
-
-            console.log('[Middleware] ⚠️ No token found in decrypted state');
-            return null;
+            const authState = await storage.getItem('userauth:state') as { token?: string } | null;
+            return authState?.token ?? null;
         } catch (error) {
-            console.error('[Middleware] ❌ DECRYPTION ERROR:', error);
-            console.error('[Middleware]    Error message:', error instanceof Error ? error.message : String(error));
-            console.error('[Middleware]    Error stack:', error instanceof Error ? error.stack : 'No stack trace');
-
-            // Check if encryption is available
-            const isEncryptionAvailable = (storage as any).isEncryptionAvailable?.();
-            console.log('[Middleware]    Encryption available:', isEncryptionAvailable);
-
+            console.error('[Middleware] Failed to get JWT token from storage:', error);
             return null;
         }
     });
@@ -333,6 +310,8 @@ function initializeMiddleware() {
 
 // Export singleton instances
 let services: ReturnType<typeof initializeMiddleware> | null = null;
+let initializationPromise: Promise<void> | null = null;
+let isInitialized = false;
 
 /**
  * Get middleware services (singleton)
@@ -348,43 +327,34 @@ export function getMiddlewareServices() {
  * Initialize and hydrate middleware from storage
  * This loads persisted channel/session state and initializes auth service
  */
-export async function initializeAndHydrate() {
-    console.log('[Middleware] 🔧 Initialization starting...');
-    const { middleware, userAuthService, storage } = getMiddlewareServices();
+export async function initializeAndHydrate(): Promise<void> {
+    if (initializationPromise) return initializationPromise;
+    if (isInitialized) return;
 
-    try {
-        // Note: Middleware was created with null initial state
-        // If we had persisted state, we would need to recreate the middleware
-        // For now, hydrate() will just initialize with empty state
-        console.log('[Middleware]    Hydrating middleware...');
-        await middleware.hydrate();
-        console.log(`[Middleware]    ✅ Middleware hydrated (status: ${middleware.currentStatus})`);
+    initializationPromise = (async () => {
+        const { middleware, userAuthService } = getMiddlewareServices();
 
-        // Initialize auth service (loads stored auth state)
-        console.log('[Middleware]    Initializing UserAuthService...');
-        await userAuthService.initialize();
-        console.log('[Middleware]    ✅ UserAuthService initialized');
-
-        console.log('[Middleware] ✅ Successfully initialized and hydrated');
-        console.log('[Middleware]    Status:', middleware.currentStatus);
-        console.log('[Middleware]    Authenticated:', userAuthService.isAuthenticated());
-
-        if (userAuthService.isAuthenticated()) {
-            const user = await userAuthService.getCurrentUser();
-            console.log('[Middleware]    Current user:', user.username, `(${user.email})`);
+        try {
+            await middleware.hydrate();
+            await userAuthService.initialize();
+            isInitialized = true;
+        } catch (error) {
+            console.error('[Middleware] Failed to initialize:', error);
+            isInitialized = true;
+            throw error;
         }
-    } catch (error) {
-        console.error('[Middleware] ❌ Failed to initialize:', error);
-    }
+    })();
+
+    return initializationPromise;
 }
 
 // Export commonly used services directly for synchronous imports
 export const { middleware, authService, userAuthService, userService, researcherService, researchService, snomedService, nodeConnectionService, volunteerService } = getMiddlewareServices();
 
 /**
- * Cleanup middleware resources
+ * Cleanup middleware resources (preserves persisted session for page refresh support)
  */
-export async function cleanupMiddleware() {
-    const { userAuthService } = getMiddlewareServices();
-    await userAuthService.dispose();
+export function cleanupMiddleware(): void {
+    // Intentionally empty - session data must persist across page refreshes
+    // userAuthService.dispose() is only called on explicit logout
 }

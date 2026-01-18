@@ -1,18 +1,34 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import './App.css';
-
-// Import context providers
-import { AuthProvider, useAuth } from './context/AuthContext';
+import { AuthProvider } from './context/AuthContext';
 import { initializeAndHydrate, cleanupMiddleware } from './services/middleware';
 import AppRouter from './router/AppRouter';
 
 function App() {
+    const [isInitialized, setIsInitialized] = useState(false);
+
     useEffect(() => {
-        initializeAndHydrate();
+        initializeAndHydrate()
+            .then(() => setIsInitialized(true))
+            .catch((error) => {
+                console.error('[App] Middleware initialization failed:', error);
+                setIsInitialized(true);
+            });
+
         return () => {
             cleanupMiddleware();
         };
     }, []);
+
+    // Show loading state while middleware initializes
+    if (!isInitialized) {
+        return (
+            <div className="app-loading">
+                <div className="loading-spinner" />
+                <p>Initializing...</p>
+            </div>
+        );
+    }
 
     return (
         <AuthProvider>
@@ -22,7 +38,3 @@ function App() {
 }
 
 export default App;
-
-
-
-

@@ -15,7 +15,7 @@ import type {
     AuthState,
     AuthError
 } from '@iris/domain';
-import { authService } from '../services/middleware';
+import { authService, userAuthService } from '../services/middleware';
 
 // ==================== Types ====================
 
@@ -45,13 +45,6 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
-// ==================== Storage Keys ====================
-
-const STORAGE_KEYS = {
-    SESSION_INFO: 'iris_session_info',
-    REMEMBER_ME: 'iris_remember_me'
-} as const;
-
 // ==================== Provider ====================
 
 interface AuthProviderProps {
@@ -65,45 +58,38 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const [sessionInfo, setSessionInfo] = useState<SessionInfo | null>(null);
 
     /**
-     * Initialize authentication state from storage
+     * Initialize authentication state from UserAuthService
+     * Note: Middleware must be initialized before AuthProvider mounts (see App.tsx)
      */
     useEffect(() => {
         initializeAuth();
     }, []);
 
     /**
-     * Initialize authentication
+     * Initialize authentication from UserAuthService (single source of truth)
      */
     const initializeAuth = useCallback(async () => {
         try {
             setAuthState('loading' as AuthState);
 
-            // Check for stored session
-            const storedSession = localStorage.getItem(STORAGE_KEYS.SESSION_INFO);
-            if (!storedSession) {
+            if (!userAuthService.isAuthenticated()) {
                 setAuthState('unauthenticated' as AuthState);
                 return;
             }
 
-            const session: SessionInfo = JSON.parse(storedSession);
+            const currentUser = await userAuthService.getCurrentUser();
+            const session: SessionInfo = {
+                token: userAuthService.getToken() || '',
+                expiresAt: userAuthService.getTokenExpiration() || new Date(),
+                issuedAt: new Date(),
+                rememberMe: false
+            };
 
-            // Validate session
-            const isValid = await authService.validateSession(session);
-            if (!isValid) {
-                // Session expired, clear storage
-                clearStoredSession();
-                setAuthState('unauthenticated' as AuthState);
-                return;
-            }
-
-            // Restore user from session
-            const currentUser = await authService.getCurrentUser(session.token);
             setUser(currentUser);
             setSessionInfo(session);
             setAuthState('authenticated' as AuthState);
         } catch (err) {
             console.error('[AuthContext] Failed to initialize auth:', err);
-            clearStoredSession();
             setAuthState('unauthenticated' as AuthState);
         }
     }, []);
@@ -112,18 +98,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
      * Login
      */
     const login = useCallback(async (credentials: LoginCredentials) => {
-        console.log('[AuthContext] 🔑 Login function called');
-        console.log('[AuthContext]    Email:', credentials.email);
-
         try {
             setAuthState('loading' as AuthState);
             setError(null);
 
-            console.log('[AuthContext]    Calling authService.login()...');
             const response = await authService.login(credentials);
-            console.log('[AuthContext]    ✅ authService.login() successful');
-
-            // Create session info
             const session: SessionInfo = {
                 token: response.token,
                 expiresAt: response.expiresAt,
@@ -131,13 +110,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
                 rememberMe: credentials.rememberMe || false
             };
 
-            // Store session
-            localStorage.setItem(STORAGE_KEYS.SESSION_INFO, JSON.stringify(session));
-            if (credentials.rememberMe) {
-                localStorage.setItem(STORAGE_KEYS.REMEMBER_ME, 'true');
-            }
-
-            // Update state
             setUser(response.user);
             setSessionInfo(session);
             setAuthState('authenticated' as AuthState);
@@ -155,14 +127,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const logout = useCallback(async () => {
         try {
             await authService.logout();
-        } catch (err) {
-            console.error('[AuthContext] Logout error:', err);
         } finally {
-            // Clear state
             setUser(null);
             setSessionInfo(null);
             setAuthState('unauthenticated' as AuthState);
-            clearStoredSession();
         }
     }, []);
 
@@ -175,8 +143,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
             setError(null);
 
             const response = await authService.register(data);
-
-            // Create session info
             const session: SessionInfo = {
                 token: response.token,
                 expiresAt: response.expiresAt,
@@ -184,10 +150,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
                 rememberMe: false
             };
 
-            // Store session
-            localStorage.setItem(STORAGE_KEYS.SESSION_INFO, JSON.stringify(session));
-
-            // Update state
             setUser(response.user);
             setSessionInfo(session);
             setAuthState('authenticated' as AuthState);
@@ -256,8 +218,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
         try {
             const response = await authService.refreshToken(sessionInfo.token);
-
-            // Update session info
             const newSession: SessionInfo = {
                 token: response.token,
                 expiresAt: response.expiresAt,
@@ -265,14 +225,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
                 rememberMe: sessionInfo.rememberMe
             };
 
-            // Store new session
-            localStorage.setItem(STORAGE_KEYS.SESSION_INFO, JSON.stringify(newSession));
-
-            // Update state
             setUser(response.user);
             setSessionInfo(newSession);
         } catch (err) {
-            console.error('[AuthContext] Failed to refresh session:', err);
             await logout();
             throw err;
         }
@@ -295,14 +250,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
         if (!user) return false;
         return authService.hasPermission(user, requiredRole as any);
     }, [user]);
-
-    /**
-     * Clear stored session
-     */
-    const clearStoredSession = () => {
-        localStorage.removeItem(STORAGE_KEYS.SESSION_INFO);
-        localStorage.removeItem(STORAGE_KEYS.REMEMBER_ME);
-    };
 
     // ==================== Context Value ====================
 
