@@ -109,7 +109,7 @@ export class ResearchService extends BaseService {
                             nodeName: `Mock Node ${page}-${i}`,
                             nodeUrl: `https://mock-node-${page}-${i}.com`,
                             status: AuthorizationStatus.AUTHORIZED,
-                            nodeAccessLevel: NodeAccessLevel.PUBLIC,
+                            nodeAccessLevel: NodeAccessLevel.READ_ONLY,
                             registeredAt: new Date(),
                             updatedAt: new Date()
                         }
@@ -181,7 +181,7 @@ export class ResearchService extends BaseService {
                             nodeName: 'Mock Node',
                             nodeUrl: 'https://mock-node.com',
                             status: AuthorizationStatus.AUTHORIZED,
-                            nodeAccessLevel: NodeAccessLevel.PUBLIC,
+                            nodeAccessLevel: NodeAccessLevel.READ_ONLY,
                             registeredAt: new Date(),
                             updatedAt: new Date()
                         }
@@ -304,18 +304,18 @@ export class ResearchService extends BaseService {
      */
     private mapNodeAccessLevel(level: string): NodeAccessLevel {
         const levelMap: Record<string, NodeAccessLevel> = {
-            'public': NodeAccessLevel.PUBLIC,
-            'private': NodeAccessLevel.PRIVATE,
-            'restricted': NodeAccessLevel.RESTRICTED,
-            'PUBLIC': NodeAccessLevel.PUBLIC,
-            'PRIVATE': NodeAccessLevel.PRIVATE,
-            'RESTRICTED': NodeAccessLevel.RESTRICTED,
-            'Public': NodeAccessLevel.PUBLIC,
-            'Private': NodeAccessLevel.PRIVATE,
-            'Restricted': NodeAccessLevel.RESTRICTED
+            'readonly': NodeAccessLevel.READ_ONLY,
+            'readwrite': NodeAccessLevel.READ_WRITE,
+            'admin': NodeAccessLevel.ADMIN,
+            'READONLY': NodeAccessLevel.READ_ONLY,
+            'READWRITE': NodeAccessLevel.READ_WRITE,
+            'ADMIN': NodeAccessLevel.ADMIN,
+            'ReadOnly': NodeAccessLevel.READ_ONLY,
+            'ReadWrite': NodeAccessLevel.READ_WRITE,
+            'Admin': NodeAccessLevel.ADMIN
         };
 
-        return levelMap[level] || NodeAccessLevel.PUBLIC;
+        return levelMap[level] || NodeAccessLevel.READ_ONLY;
     }
 
     /**

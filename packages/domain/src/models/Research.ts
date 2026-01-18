@@ -20,11 +20,12 @@ export enum ResearchStatus {
  * Node Access Level
  *
  * Defines the access level for research node connections
+ * Must match backend NodeAccessTypeEnum values
  */
 export enum NodeAccessLevel {
-    PUBLIC = 'public',
-    PRIVATE = 'private',
-    RESTRICTED = 'restricted'
+    READ_ONLY = 'ReadOnly',
+    READ_WRITE = 'ReadWrite',
+    ADMIN = 'Admin'
 }
 
 /**
@@ -50,6 +51,10 @@ export interface ResearchNodeConnection {
     nodeUrl: string;
     status: AuthorizationStatus;
     nodeAccessLevel: NodeAccessLevel;
+    contactInfo?: string;
+    certificate?: string;
+    certificateFingerprint?: string;
+    institutionDetails?: string;
     registeredAt: Date;
     updatedAt: Date;
 }
@@ -88,4 +93,20 @@ export interface NewNodeConnectionData {
     nodeName: string;
     nodeUrl: string;
     nodeAccessLevel: NodeAccessLevel;
+}
+
+/**
+ * Update Node Connection Payload
+ *
+ * Data required to update an existing research node connection
+ */
+export interface UpdateNodeConnectionPayload {
+    nodeName: string;
+    nodeUrl: string;
+    nodeAccessLevel: string;
+    status: string;
+    contactInfo?: string;
+    certificate?: string;
+    certificateFingerprint?: string;
+    institutionDetails?: string;
 }

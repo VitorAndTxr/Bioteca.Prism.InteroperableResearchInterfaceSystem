@@ -19,7 +19,7 @@ import { Dropdown } from '../../design-system/components/dropdown';
 import { Button } from '../../design-system/components/button';
 import { ArrowUturnLeftIcon, DocumentArrowDownIcon } from '@heroicons/react/24/outline';
 import { mainMenuItems } from '../../config/menu';
-import { NodeAccessLevel, AuthorizationStatus, type NewNodeConnectionData, type ResearchNodeConnection } from '@iris/domain';
+import { NodeAccessLevel, AuthorizationStatus, type NewNodeConnectionData, type ResearchNodeConnection, type UpdateNodeConnectionPayload } from '@iris/domain';
 import { nodeConnectionService } from '../../services/middleware';
 import '../../styles/shared/AddForm.css';
 
@@ -38,7 +38,7 @@ export function AddConnectionForm({ handleNavigation, mode = 'add', connection, 
     const [nodeName, setNodeName] = useState('');
     const [nodeUrl, setNodeUrl] = useState('');
     const [nodeAccessLevel, setNodeAccessLevel] = useState<string>('');
-    const [status, setStatus] = useState<string>('pending');
+    const [status, setStatus] = useState<string>(AuthorizationStatus.PENDING);
 
     // Additional fields from Figma (informational only for now)
     const [contactInfo, setContactInfo] = useState('');
@@ -60,10 +60,18 @@ export function AddConnectionForm({ handleNavigation, mode = 'add', connection, 
     // Initialize form data when connection is provided (view/edit modes)
     useEffect(() => {
         if (connection && (mode === 'view' || mode === 'edit')) {
+            console.log('[AddConnectionForm] Initializing form with connection:', connection);
+            console.log('[AddConnectionForm] nodeAccessLevel:', connection.nodeAccessLevel);
+            console.log('[AddConnectionForm] status:', connection.status);
+
             setNodeName(connection.nodeName);
             setNodeUrl(connection.nodeUrl);
             setNodeAccessLevel(connection.nodeAccessLevel);
             setStatus(connection.status);
+            setContactInfo(connection.contactInfo ?? '');
+            setCertificate(connection.certificate ?? '');
+            setCertificateSignature(connection.certificateFingerprint ?? '');
+            setInstitutionDetails(connection.institutionDetails ?? '');
         }
     }, [connection, mode]);
 
@@ -80,18 +88,19 @@ export function AddConnectionForm({ handleNavigation, mode = 'add', connection, 
         }
     };
 
-    // Access level options for dropdown
+    // Access level options for dropdown (matches backend NodeAccessTypeEnum)
     const accessLevelOptions = [
-        { value: NodeAccessLevel.PUBLIC, label: 'Público' },
-        { value: NodeAccessLevel.PRIVATE, label: 'Privado' },
-        { value: NodeAccessLevel.RESTRICTED, label: 'Restrito' },
+        { value: NodeAccessLevel.READ_ONLY, label: 'Somente Leitura' },
+        { value: NodeAccessLevel.READ_WRITE, label: 'Leitura e Escrita' },
+        { value: NodeAccessLevel.ADMIN, label: 'Administrador' },
     ];
 
-    // Status options (display only - backend handles status)
+    // Status options (using AuthorizationStatus enum values)
     const statusOptions = [
-        { value: 'pending', label: 'Pendente' },
-        { value: 'authorized', label: 'Autorizado' },
-        { value: 'revoked', label: 'Revogado' },
+        { value: AuthorizationStatus.UNKNOWN, label: 'Desconhecido' },
+        { value: AuthorizationStatus.PENDING, label: 'Pendente' },
+        { value: AuthorizationStatus.AUTHORIZED, label: 'Autorizado' },
+        { value: AuthorizationStatus.REVOKED, label: 'Revogado' },
     ];
 
     // Mark field as touched
@@ -165,10 +174,19 @@ export function AddConnectionForm({ handleNavigation, mode = 'add', connection, 
 
             if (mode === 'edit' && connection) {
                 // Edit mode: update existing connection
-                // TODO: Implement update method in NodeConnectionService when backend endpoint is available
-                console.log('Updating node connection:', connection.id, connectionData);
-                // For now, just navigate back - update API not yet implemented
-                console.warn('Update API not yet implemented. Changes not saved.');
+                const updatePayload: UpdateNodeConnectionPayload = {
+                    nodeName: connectionData.nodeName,
+                    nodeUrl: connectionData.nodeUrl,
+                    nodeAccessLevel: connectionData.nodeAccessLevel,
+                    status: status,
+                    contactInfo: contactInfo || undefined,
+                    certificate: certificate || undefined,
+                    certificateFingerprint: certificateSignature || undefined,
+                    institutionDetails: institutionDetails || undefined,
+                };
+                console.log('Updating node connection:', connection.id, updatePayload);
+                const updatedConnection = await nodeConnectionService.updateConnection(connection.id, updatePayload);
+                console.log('Node connection updated successfully:', updatedConnection);
             } else {
                 // Add mode: create new connection
                 console.log('Creating node connection:', connectionData);
@@ -231,7 +249,7 @@ export function AddConnectionForm({ handleNavigation, mode = 'add', connection, 
                         {/* Row 1: Nome and URL */}
                         <Input
                             label="Nome"
-                            placeholder="Input placeholder"
+                            placeholder="Nome da instituição"
                             value={nodeName}
                             onChange={(e) => setNodeName(e.target.value)}
                             onBlur={() => handleBlur('nodeName')}
@@ -242,7 +260,7 @@ export function AddConnectionForm({ handleNavigation, mode = 'add', connection, 
                         />
                         <Input
                             label="URL"
-                            placeholder="Input placeholder"
+                            placeholder="https://exemplo.com/api/node"
                             value={nodeUrl}
                             onChange={(e) => setNodeUrl(e.target.value)}
                             onBlur={() => handleBlur('nodeUrl')}
@@ -255,14 +273,15 @@ export function AddConnectionForm({ handleNavigation, mode = 'add', connection, 
                         {/* Row 2: Status and Nível de acesso */}
                         <Dropdown
                             label="Status"
-                            placeholder="Input placeholder"
+                            placeholder="Selecione o status"
                             options={statusOptions}
                             value={status}
-                            disabled
+                            onChange={(value) => setStatus(Array.isArray(value) ? value[0] : value)}
+                            disabled={isReadOnly}
                         />
                         <Dropdown
                             label="Nível de acesso"
-                            placeholder="Input placeholder"
+                            placeholder="Selecione o nível de acesso"
                             options={accessLevelOptions}
                             value={nodeAccessLevel}
                             onChange={(value) => setNodeAccessLevel(Array.isArray(value) ? value[0] : value)}
@@ -276,14 +295,14 @@ export function AddConnectionForm({ handleNavigation, mode = 'add', connection, 
                         {/* Row 3: Informações de contato and Certificado */}
                         <Input
                             label="Informações de contato"
-                            placeholder="Input placeholder"
+                            placeholder="Email ou telefone de contato"
                             value={contactInfo}
                             onChange={(e) => setContactInfo(e.target.value)}
                             disabled={isReadOnly}
                         />
                         <Input
                             label="Certificado"
-                            placeholder="Input placeholder"
+                            placeholder="Certificado X.509 (Base64)"
                             value={certificate}
                             onChange={(e) => setCertificate(e.target.value)}
                             disabled={isReadOnly}
@@ -292,14 +311,14 @@ export function AddConnectionForm({ handleNavigation, mode = 'add', connection, 
                         {/* Row 4: Assinatura do certificado and Detalhes da instituição */}
                         <Input
                             label="Assinatura do certificado"
-                            placeholder="Input placeholder"
+                            placeholder="Fingerprint SHA-256"
                             value={certificateSignature}
                             onChange={(e) => setCertificateSignature(e.target.value)}
                             disabled={isReadOnly}
                         />
                         <Input
                             label="Detalhes da instituição"
-                            placeholder="Input placeholder"
+                            placeholder="Informações adicionais sobre a instituição"
                             value={institutionDetails}
                             onChange={(e) => setInstitutionDetails(e.target.value)}
                             disabled={isReadOnly}

@@ -4,10 +4,14 @@ import type {
     PaginatedResponse,
     SnomedBodyRegion,
     AddSnomedBodyRegionPayload,
+    UpdateSnomedBodyRegionPayload,
     SnomedBodyStructure,
     AddSnomedBodyStructurePayload,
+    UpdateSnomedBodyStructurePayload,
     SnomedTopographicalModifier,
+    UpdateSnomedTopographicalModifierPayload,
     ClinicalCondition,
+    UpdateSnomedClinicalConditionPayload,
     SnomedClinicalEvent,
     SnomedMedication,
     SnomedAllergyIntolerance
@@ -123,7 +127,81 @@ export class SnomedService extends BaseService {
         });
     }
 
+    /**
+     * Get a specific body region by SNOMED code
+     *
+     * @param snomedCode - The SNOMED code of the body region
+     * @returns The body region with the given code
+     */
+    async getBodyRegionByCode(snomedCode: string): Promise<SnomedBodyRegion> {
+        if (this.USE_MOCK) {
+            return new Promise(resolve => {
+                setTimeout(() => {
+                    resolve({
+                        snomedCode,
+                        displayName: `Mock Body Region ${snomedCode}`,
+                        description: `Description for Mock Body Region ${snomedCode}`
+                    });
+                }, 500);
+            });
+        }
 
+        return this.handleMiddlewareError(async () => {
+            this.log(`Fetching body region by code: ${snomedCode}`);
+
+            await this.ensureSession();
+
+            const response = await this.middleware.invoke<Record<string, unknown>, SnomedBodyRegion>({
+                path: `/api/SNOMED/BodyRegion/${snomedCode}`,
+                method: 'GET',
+                payload: {}
+            });
+
+            this.log(`Retrieved body region: ${response.displayName}`);
+
+            return response;
+        });
+    }
+
+    /**
+     * Update an existing body region
+     *
+     * @param snomedCode - The SNOMED code of the body region to update
+     * @param payload - The update payload containing displayName and description
+     * @returns The updated body region
+     */
+    async updateBodyRegion(
+        snomedCode: string,
+        payload: UpdateSnomedBodyRegionPayload
+    ): Promise<SnomedBodyRegion> {
+        if (this.USE_MOCK) {
+            return new Promise(resolve => {
+                setTimeout(() => {
+                    resolve({
+                        snomedCode,
+                        displayName: payload.displayName,
+                        description: payload.description
+                    });
+                }, 500);
+            });
+        }
+
+        return this.handleMiddlewareError(async () => {
+            this.log(`Updating body region with code: ${snomedCode}`);
+
+            await this.ensureSession();
+
+            const response = await this.middleware.invoke<UpdateSnomedBodyRegionPayload, SnomedBodyRegion>({
+                path: `/api/SNOMED/BodyRegion/Update/${snomedCode}`,
+                method: 'PUT',
+                payload
+            });
+
+            this.log(`Updated body region: ${response.snomedCode}`);
+
+            return response;
+        });
+    }
 
     async getActiveBodyRegions(): Promise<SnomedBodyRegion[]> {
         if (this.USE_MOCK) {
@@ -257,6 +335,94 @@ export class SnomedService extends BaseService {
         });
     }
 
+    /**
+     * Get a specific body structure by SNOMED code
+     *
+     * @param snomedCode - The SNOMED code of the body structure
+     * @returns The body structure with the given code
+     */
+    async getBodyStructureByCode(snomedCode: string): Promise<SnomedBodyStructure> {
+        if (this.USE_MOCK) {
+            return new Promise(resolve => {
+                setTimeout(() => {
+                    resolve({
+                        snomedCode,
+                        displayName: `Mock Body Structure ${snomedCode}`,
+                        description: `Description for Mock Body Structure ${snomedCode}`,
+                        structureType: 'Mock Type',
+                        parentRegion: {
+                            snomedCode: 'BR-001',
+                            displayName: 'Mock Region',
+                            description: 'Mock Description'
+                        }
+                    });
+                }, 500);
+            });
+        }
+
+        return this.handleMiddlewareError(async () => {
+            this.log(`Fetching body structure by code: ${snomedCode}`);
+
+            await this.ensureSession();
+
+            const response = await this.middleware.invoke<Record<string, unknown>, SnomedBodyStructure>({
+                path: `/api/SNOMED/BodyStructure/${snomedCode}`,
+                method: 'GET',
+                payload: {}
+            });
+
+            this.log(`Retrieved body structure: ${response.displayName}`);
+
+            return response;
+        });
+    }
+
+    /**
+     * Update an existing body structure
+     *
+     * @param snomedCode - The SNOMED code of the body structure to update
+     * @param payload - The update payload containing displayName, description, type, and optional bodyRegionCode
+     * @returns The updated body structure
+     */
+    async updateBodyStructure(
+        snomedCode: string,
+        payload: UpdateSnomedBodyStructurePayload
+    ): Promise<SnomedBodyStructure> {
+        if (this.USE_MOCK) {
+            return new Promise(resolve => {
+                setTimeout(() => {
+                    resolve({
+                        snomedCode,
+                        displayName: payload.displayName,
+                        description: payload.description,
+                        structureType: payload.type,
+                        parentRegion: {
+                            snomedCode: payload.bodyRegionCode ?? 'BR-001',
+                            displayName: 'Mock Region',
+                            description: 'Mock Description'
+                        }
+                    });
+                }, 500);
+            });
+        }
+
+        return this.handleMiddlewareError(async () => {
+            this.log(`Updating body structure with code: ${snomedCode}`);
+
+            await this.ensureSession();
+
+            const response = await this.middleware.invoke<UpdateSnomedBodyStructurePayload, SnomedBodyStructure>({
+                path: `/api/SNOMED/BodyStructure/Update/${snomedCode}`,
+                method: 'PUT',
+                payload
+            });
+
+            this.log(`Updated body structure: ${response.snomedCode}`);
+
+            return response;
+        });
+    }
+
     async getActiveBodyStructures(): Promise<SnomedBodyStructure[]> {
         if (this.USE_MOCK) {
             return new Promise(resolve => {
@@ -356,6 +522,84 @@ export class SnomedService extends BaseService {
         });
     }
 
+    /**
+     * Get a specific topographical modifier by SNOMED code
+     *
+     * @param snomedCode - The SNOMED code of the topographical modifier
+     * @returns The topographical modifier with the given code
+     */
+    async getTopographicalModifierByCode(snomedCode: string): Promise<SnomedTopographicalModifier> {
+        if (this.USE_MOCK) {
+            return new Promise(resolve => {
+                setTimeout(() => {
+                    resolve({
+                        snomedCode,
+                        displayName: `Mock Modifier ${snomedCode}`,
+                        category: 'Mock Category',
+                        description: `Description for Mock Modifier ${snomedCode}`
+                    });
+                }, 500);
+            });
+        }
+
+        return this.handleMiddlewareError(async () => {
+            this.log(`Fetching topographical modifier by code: ${snomedCode}`);
+
+            await this.ensureSession();
+
+            const response = await this.middleware.invoke<Record<string, unknown>, SnomedTopographicalModifier>({
+                path: `/api/SNOMED/TopographicalModifier/${snomedCode}`,
+                method: 'GET',
+                payload: {}
+            });
+
+            this.log(`Retrieved topographical modifier: ${response.displayName}`);
+
+            return response;
+        });
+    }
+
+    /**
+     * Update an existing topographical modifier
+     *
+     * @param snomedCode - The SNOMED code of the topographical modifier to update
+     * @param payload - The update payload containing displayName, description, and category
+     * @returns The updated topographical modifier
+     */
+    async updateTopographicalModifier(
+        snomedCode: string,
+        payload: UpdateSnomedTopographicalModifierPayload
+    ): Promise<SnomedTopographicalModifier> {
+        if (this.USE_MOCK) {
+            return new Promise(resolve => {
+                setTimeout(() => {
+                    resolve({
+                        snomedCode,
+                        displayName: payload.displayName,
+                        description: payload.description,
+                        category: payload.category
+                    });
+                }, 500);
+            });
+        }
+
+        return this.handleMiddlewareError(async () => {
+            this.log(`Updating topographical modifier with code: ${snomedCode}`);
+
+            await this.ensureSession();
+
+            const response = await this.middleware.invoke<UpdateSnomedTopographicalModifierPayload, SnomedTopographicalModifier>({
+                path: `/api/SNOMED/TopographicalModifier/Update/${snomedCode}`,
+                method: 'PUT',
+                payload
+            });
+
+            this.log(`Updated topographical modifier: ${response.snomedCode}`);
+
+            return response;
+        });
+    }
+
     async getTopographicalModifiersPaginated(
         page: number = 1,
         pageSize: number = 10
@@ -449,6 +693,82 @@ export class SnomedService extends BaseService {
                 payload: clinicalCondition
             });
             this.log(`Created clinical condition with SNOMED code: ${response.snomedCode}`);
+            return response;
+        });
+    }
+
+    /**
+     * Get a specific clinical condition by SNOMED code
+     *
+     * @param snomedCode - The SNOMED code of the clinical condition
+     * @returns The clinical condition with the given code
+     */
+    async getClinicalConditionByCode(snomedCode: string): Promise<ClinicalCondition> {
+        if (this.USE_MOCK) {
+            return new Promise(resolve => {
+                setTimeout(() => {
+                    resolve({
+                        snomedCode,
+                        displayName: `Mock Condition ${snomedCode}`,
+                        description: `Description for Mock Condition ${snomedCode}`
+                    });
+                }, 500);
+            });
+        }
+
+        return this.handleMiddlewareError(async () => {
+            this.log(`Fetching clinical condition by code: ${snomedCode}`);
+
+            await this.ensureSession();
+
+            const response = await this.middleware.invoke<Record<string, unknown>, ClinicalCondition>({
+                path: `/api/SNOMED/ClinicalCondition/${snomedCode}`,
+                method: 'GET',
+                payload: {}
+            });
+
+            this.log(`Retrieved clinical condition: ${response.displayName}`);
+
+            return response;
+        });
+    }
+
+    /**
+     * Update an existing clinical condition
+     *
+     * @param snomedCode - The SNOMED code of the clinical condition to update
+     * @param payload - The update payload containing displayName and description
+     * @returns The updated clinical condition
+     */
+    async updateClinicalCondition(
+        snomedCode: string,
+        payload: UpdateSnomedClinicalConditionPayload
+    ): Promise<ClinicalCondition> {
+        if (this.USE_MOCK) {
+            return new Promise(resolve => {
+                setTimeout(() => {
+                    resolve({
+                        snomedCode,
+                        displayName: payload.displayName,
+                        description: payload.description
+                    });
+                }, 500);
+            });
+        }
+
+        return this.handleMiddlewareError(async () => {
+            this.log(`Updating clinical condition with code: ${snomedCode}`);
+
+            await this.ensureSession();
+
+            const response = await this.middleware.invoke<UpdateSnomedClinicalConditionPayload, ClinicalCondition>({
+                path: `/api/SNOMED/ClinicalCondition/Update/${snomedCode}`,
+                method: 'PUT',
+                payload
+            });
+
+            this.log(`Updated clinical condition: ${response.snomedCode}`);
+
             return response;
         });
     }

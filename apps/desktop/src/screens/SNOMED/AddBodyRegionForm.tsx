@@ -5,7 +5,7 @@ import { Dropdown } from '../../design-system/components/dropdown';
 import { Button } from '../../design-system/components/button';
 import { ArrowLeftIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
 import { mainMenuItems } from '../../config/menu';
-import type { AddSnomedBodyRegionPayload, SnomedBodyRegion } from '@iris/domain';
+import type { AddSnomedBodyRegionPayload, SnomedBodyRegion, UpdateSnomedBodyRegionPayload } from '@iris/domain';
 import { snomedService } from '../../services/middleware';
 import '../../styles/shared/AddForm.css';
 
@@ -113,26 +113,34 @@ export function AddBodyRegionForm({ handleNavigation, onSave, onCancel, mode = '
             return;
         }
 
-        const regionData:AddSnomedBodyRegionPayload = {
-            snomedCode,
-            displayName,
-            description,
-            parentRegionCode
-        };
-
         try {
             setSubmitting(true);
             setSubmitError(null);
 
-            console.log('Creating region:', regionData);
-            const createdRegion = await snomedService.createBodyRegion(regionData);
-            console.log('✅ Region created successfully:', createdRegion);
+            if (mode === 'edit' && bodyRegion) {
+                const updatePayload: UpdateSnomedBodyRegionPayload = {
+                    displayName,
+                    description
+                };
+                console.log('Updating region:', updatePayload);
+                const updatedRegion = await snomedService.updateBodyRegion(bodyRegion.snomedCode, updatePayload);
+                console.log('✅ Region updated successfully:', updatedRegion);
+            } else {
+                const regionData: AddSnomedBodyRegionPayload = {
+                    snomedCode,
+                    displayName,
+                    description,
+                    parentRegionCode
+                };
+                console.log('Creating region:', regionData);
+                const createdRegion = await snomedService.createBodyRegion(regionData);
+                console.log('✅ Region created successfully:', createdRegion);
+            }
 
-            // Navigate back to users list
             handleNavigation('/snomed');
         } catch (err) {
-            console.error('Failed to create region:', err);
-            const errorMessage = err instanceof Error ? err.message : 'Failed to create region';
+            console.error('Failed to save region:', err);
+            const errorMessage = err instanceof Error ? err.message : 'Failed to save region';
             setSubmitError(errorMessage);
         } finally {
             setSubmitting(false);

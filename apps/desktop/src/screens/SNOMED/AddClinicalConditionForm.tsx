@@ -17,7 +17,7 @@ import { Input } from '../../design-system/components/input';
 import { Button } from '../../design-system/components/button';
 import { ArrowLeftIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
 import { mainMenuItems } from '../../config/menu';
-import type { ClinicalCondition } from '@iris/domain';
+import type { ClinicalCondition, UpdateSnomedClinicalConditionPayload } from '@iris/domain';
 import '../../styles/shared/AddForm.css';
 import { snomedService } from '../../services/middleware';
 
@@ -114,22 +114,32 @@ export function AddClinicalConditionForm({
             return;
         }
 
-        const conditionData: ClinicalCondition = {
-            snomedCode,
-            displayName,
-            description
-        };
-
-        try{
+        try {
             setSubmitting(true);
-            setSubmitError(null);  
+            setSubmitError(null);
 
-            const createdClinicalCondition = await snomedService.createClinicalCondition(conditionData);
-
-            console.log('Created Clinical Condition:', createdClinicalCondition);
+            if (mode === 'edit' && clinicalCondition) {
+                const updatePayload: UpdateSnomedClinicalConditionPayload = {
+                    displayName,
+                    description
+                };
+                console.log('Updating clinical condition:', updatePayload);
+                const updatedCondition = await snomedService.updateClinicalCondition(clinicalCondition.snomedCode, updatePayload);
+                console.log('✅ Clinical condition updated successfully:', updatedCondition);
+            } else {
+                const conditionData: ClinicalCondition = {
+                    snomedCode,
+                    displayName,
+                    description
+                };
+                console.log('Creating clinical condition:', conditionData);
+                const createdClinicalCondition = await snomedService.createClinicalCondition(conditionData);
+                console.log('✅ Clinical condition created successfully:', createdClinicalCondition);
+            }
 
             handleNavigation('/snomed');
         } catch (error) {
+            console.error('Failed to save clinical condition:', error);
             setSubmitError(error instanceof Error ? error.message : 'Failed to save clinical condition');
         } finally {
             setSubmitting(false);

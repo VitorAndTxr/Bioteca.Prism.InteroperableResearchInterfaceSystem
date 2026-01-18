@@ -33,3 +33,16 @@ export interface NewResearcherData {
     role: ResearcherRole;
     researchNodeId: string; // Optional - can be provided by backend
 }
+
+/**
+ * Update Researcher Payload
+ *
+ * Data that can be updated on an existing researcher
+ */
+export interface UpdateResearcherPayload extends Record<string, unknown> {
+    name?: string;
+    email?: string;
+    institution?: string;
+    role?: string;
+    orcid?: string;
+}

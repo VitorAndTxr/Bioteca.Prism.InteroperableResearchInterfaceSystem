@@ -23,7 +23,7 @@ import { Password } from '../../design-system/components/password';
 import { Button } from '../../design-system/components/button';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { mainMenuItems } from '../../config/menu';
-import type { NewUserData, User } from '@iris/domain';
+import type { NewUserData, User, UpdateUserPayload } from '@iris/domain';
 import { userService, researcherService } from '../../services/middleware';
 import '../../styles/shared/AddForm.css';
 
@@ -189,9 +189,13 @@ export function AddUserForm({
                 const createdUser = await userService.createUser(userData);
                 console.log('User created successfully:', createdUser);
             } else if (mode === 'edit' && user) {
-                // TODO: Implement updateUser in UserService
-                console.log('Updating user:', user.id, userData);
-                // await userService.updateUser(user.id, userData);
+                const updatePayload: UpdateUserPayload = {
+                    login,
+                    role: userType,
+                    researcherId: relatedResearcher || undefined,
+                };
+                console.log('Updating user:', user.id, updatePayload);
+                await userService.updateUser(user.id, updatePayload);
                 console.log('User updated successfully');
             }
 

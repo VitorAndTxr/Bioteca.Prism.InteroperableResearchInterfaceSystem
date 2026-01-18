@@ -6,13 +6,16 @@
  *
  * Endpoints:
  * - GET /api/researcher/GetResearchers - Get paginated list of researchers
+ * - GET /api/researcher/{id} - Get single researcher by ID
  * - POST /api/researcher/New - Create new researcher
+ * - PUT /api/researcher/Update/{id} - Update existing researcher
  */
 
 import { BaseService, type MiddlewareServices } from '../BaseService';
 import type {
     Researcher,
     NewResearcherData,
+    UpdateResearcherPayload,
     PaginatedResponse,
     AuthError,
     AuthErrorCode,
@@ -253,6 +256,111 @@ export class ResearcherService extends BaseService {
             });
 
             this.log('✅ Researcher updated:', response.researcherId);
+
+            return this.convertToResearcher(response);
+        });
+    }
+
+    /**
+     * Get researcher by ID
+     *
+     * @param id - Researcher ID (GUID)
+     * @returns Single researcher entity
+     * @throws AuthError with 'not_found' code if researcher doesn't exist
+     */
+    async getById(id: string): Promise<Researcher> {
+        if (this.USE_MOCK) {
+            return new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    if (id === 'not-found') {
+                        reject(this.createAuthError(
+                            'not_found' as AuthErrorCode,
+                            'Researcher not found'
+                        ));
+                        return;
+                    }
+                    resolve({
+                        researcherId: id,
+                        researchNodeId: 'mock-node-1',
+                        name: 'Mock Researcher',
+                        email: 'mock@example.com',
+                        institution: 'Mock Institution',
+                        role: 'researcher' as ResearcherRole,
+                        orcid: '0000-0000-0000-0000'
+                    });
+                }, 500);
+            });
+        }
+
+        return this.handleMiddlewareError(async () => {
+            this.log(`Fetching researcher by ID: ${id}`);
+
+            await this.ensureSession();
+
+            const response = await this.middleware.invoke<Record<string, unknown>, ResearcherDTO>({
+                path: `/api/researcher/${id}`,
+                method: 'GET',
+                payload: {}
+            });
+
+            this.log(`Retrieved researcher: ${response.name}`);
+
+            return this.convertToResearcher(response);
+        });
+    }
+
+    /**
+     * Update an existing researcher
+     *
+     * @param id - Researcher ID (GUID)
+     * @param payload - The update payload with optional fields
+     * @returns Updated researcher entity
+     * @throws AuthError with 'not_found' code if researcher doesn't exist
+     */
+    async updateResearcher(id: string, payload: UpdateResearcherPayload): Promise<Researcher> {
+        if (this.USE_MOCK) {
+            return new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    if (id === 'not-found') {
+                        reject(this.createAuthError(
+                            'not_found' as AuthErrorCode,
+                            'Researcher not found'
+                        ));
+                        return;
+                    }
+                    resolve({
+                        researcherId: id,
+                        researchNodeId: 'mock-node-1',
+                        name: payload.name ?? 'Mock Researcher',
+                        email: payload.email ?? 'mock@example.com',
+                        institution: payload.institution ?? 'Mock Institution',
+                        role: (payload.role as ResearcherRole) ?? ('researcher' as ResearcherRole),
+                        orcid: payload.orcid ?? '0000-0000-0000-0000'
+                    });
+                }, 500);
+            });
+        }
+
+        return this.handleMiddlewareError(async () => {
+            this.log(`Updating researcher with ID: ${id}`);
+
+            await this.ensureSession();
+
+            // Convert to PascalCase for backend
+            const middlewarePayload: Record<string, unknown> = {};
+            if (payload.name !== undefined) middlewarePayload['Name'] = payload.name;
+            if (payload.email !== undefined) middlewarePayload['Email'] = payload.email;
+            if (payload.institution !== undefined) middlewarePayload['Institution'] = payload.institution;
+            if (payload.role !== undefined) middlewarePayload['Role'] = payload.role;
+            if (payload.orcid !== undefined) middlewarePayload['Orcid'] = payload.orcid;
+
+            const response = await this.middleware.invoke<Record<string, unknown>, ResearcherDTO>({
+                path: `/api/researcher/Update/${id}`,
+                method: 'PUT',
+                payload: middlewarePayload
+            });
+
+            this.log(`Updated researcher: ${response.name}`);
 
             return this.convertToResearcher(response);
         });

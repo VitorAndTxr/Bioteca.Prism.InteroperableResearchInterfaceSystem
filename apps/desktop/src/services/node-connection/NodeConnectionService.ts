@@ -7,7 +7,11 @@
  * Endpoints:
  * - GET /api/node/GetActiveNodeConnectionsPaginated - Get paginated list of active node connections
  * - GET /api/node/GetAllUnaprovedPaginated - Get paginated list of unapproved node connections
+ * - GET /api/node/{id} - Get single node connection by ID
  * - POST /api/node/NewConnection - Create new node connection
+ * - PUT /api/node/Update/{id} - Update existing node connection
+ * - POST /api/node/{id}/approve - Approve pending connection
+ * - POST /api/node/{id}/reject - Reject pending connection
  */
 
 import { BaseService, type MiddlewareServices } from '../BaseService';
@@ -16,6 +20,7 @@ import {
     AuthorizationStatus,
     type ResearchNodeConnection,
     type NewNodeConnectionData,
+    type UpdateNodeConnectionPayload,
     type PaginatedResponse,
     type AuthError,
     type AuthErrorCode
@@ -32,6 +37,10 @@ interface NodeConnectionDTO {
     nodeUrl: string;
     status: string | number;
     nodeAccessLevel: string | number;
+    contactInfo?: string;
+    certificate?: string;
+    certificateFingerprint?: string;
+    institutionDetails?: string;
     registeredAt: string;
     updatedAt: string;
 }
@@ -43,6 +52,22 @@ interface AddNodeConnectionPayload extends Record<string, unknown> {
     NodeName: string;
     NodeUrl: string;
     NodeAccessLevel: string;
+}
+
+/**
+ * Middleware Update Node Connection Payload (PascalCase - matches backend)
+ * NodeAccessLevel must be numeric (0=ReadOnly, 1=ReadWrite, 2=Admin)
+ * Status must be numeric (0=Unknown, 1=Authorized, 2=Pending, 3=Revoked)
+ */
+interface UpdateNodeConnectionMiddlewarePayload extends Record<string, unknown> {
+    NodeName: string;
+    NodeUrl: string;
+    NodeAccessLevel: number;
+    Status: number;
+    ContactInfo?: string;
+    Certificate?: string;
+    CertificateFingerprint?: string;
+    InstitutionDetails?: string;
 }
 
 /**
@@ -93,7 +118,7 @@ export class NodeConnectionService extends BaseService {
                     nodeName: 'Hospital das Clínicas',
                     nodeUrl: 'https://hc.fm.usp.br/api/node',
                     status: AuthorizationStatus.AUTHORIZED,
-                    nodeAccessLevel: NodeAccessLevel.PUBLIC,
+                    nodeAccessLevel: NodeAccessLevel.READ_ONLY,
                     registeredAt: new Date('2025-01-15T10:00:00Z'),
                     updatedAt: new Date('2025-01-15T10:00:00Z')
                 },
@@ -102,7 +127,7 @@ export class NodeConnectionService extends BaseService {
                     nodeName: 'Instituto do Coração',
                     nodeUrl: 'https://incor.usp.br/api/node',
                     status: AuthorizationStatus.AUTHORIZED,
-                    nodeAccessLevel: NodeAccessLevel.RESTRICTED,
+                    nodeAccessLevel: NodeAccessLevel.ADMIN,
                     registeredAt: new Date('2025-02-01T14:30:00Z'),
                     updatedAt: new Date('2025-02-01T14:30:00Z')
                 }
@@ -110,7 +135,7 @@ export class NodeConnectionService extends BaseService {
 
             return {
                 data: mockData,
-                currentRecord: 1,
+                currentPage: 1,
                 pageSize: pageSize,
                 totalRecords: mockData.length
             };
@@ -173,7 +198,7 @@ export class NodeConnectionService extends BaseService {
                     nodeName: 'Universidade Federal de São Paulo',
                     nodeUrl: 'https://unifesp.br/api/node',
                     status: AuthorizationStatus.PENDING,
-                    nodeAccessLevel: NodeAccessLevel.PUBLIC,
+                    nodeAccessLevel: NodeAccessLevel.READ_ONLY,
                     registeredAt: new Date('2025-10-18T09:15:00Z'),
                     updatedAt: new Date('2025-10-18T09:15:00Z')
                 },
@@ -182,7 +207,7 @@ export class NodeConnectionService extends BaseService {
                     nodeName: 'Laboratório de Neurociência',
                     nodeUrl: 'https://neuro.lab.org/api/node',
                     status: AuthorizationStatus.PENDING,
-                    nodeAccessLevel: NodeAccessLevel.PRIVATE,
+                    nodeAccessLevel: NodeAccessLevel.READ_WRITE,
                     registeredAt: new Date('2025-10-19T11:45:00Z'),
                     updatedAt: new Date('2025-10-19T11:45:00Z')
                 }
@@ -190,7 +215,7 @@ export class NodeConnectionService extends BaseService {
 
             return {
                 data: mockData,
-                currentRecord: 1,
+                currentPage: 1,
                 pageSize: pageSize,
                 totalRecords: mockData.length
             };
@@ -341,6 +366,75 @@ export class NodeConnectionService extends BaseService {
         });
     }
 
+    /**
+     * Get a node connection by ID
+     *
+     * @param id - ID of the node connection to retrieve
+     * @returns The node connection
+     * @throws Error if connection not found (404)
+     */
+    async getById(id: string): Promise<ResearchNodeConnection> {
+        return this.handleMiddlewareError(async () => {
+            this.log(`Fetching node connection by ID: ${id}`);
+
+            // Ensure we have an authenticated session
+            await this.ensureSession();
+
+            // Call backend API
+            const response = await this.middleware.invoke<Record<string, unknown>, NodeConnectionDTO>({
+                path: `/api/node/${id}`,
+                method: 'GET',
+                payload: {}
+            });
+
+            this.log(`✅ Retrieved node connection: ${response.nodeName}`);
+
+            return this.convertToNodeConnection(response);
+        });
+    }
+
+    /**
+     * Update an existing node connection
+     *
+     * @param id - ID of the node connection to update
+     * @param payload - Updated connection data (nodeName, nodeUrl, nodeAccessLevel)
+     * @returns Updated node connection
+     */
+    async updateConnection(id: string, payload: UpdateNodeConnectionPayload): Promise<ResearchNodeConnection> {
+        return this.handleMiddlewareError(async () => {
+            this.log(`Updating node connection: ${id}`, payload);
+
+            // Ensure we have an authenticated session
+            await this.ensureSession();
+
+            // Convert to middleware format (PascalCase)
+            // Backend expects numeric enums
+            const accessLevelNumeric = this.mapNodeAccessLevelToNumeric(payload.nodeAccessLevel);
+            const statusNumeric = this.mapAuthorizationStatusToNumeric(payload.status);
+            const middlewarePayload: UpdateNodeConnectionMiddlewarePayload = {
+                NodeName: payload.nodeName,
+                NodeUrl: payload.nodeUrl,
+                NodeAccessLevel: accessLevelNumeric,
+                Status: statusNumeric,
+                ContactInfo: payload.contactInfo,
+                Certificate: payload.certificate,
+                CertificateFingerprint: payload.certificateFingerprint,
+                InstitutionDetails: payload.institutionDetails,
+            };
+
+            // Call backend API
+            const response = await this.middleware.invoke<UpdateNodeConnectionMiddlewarePayload, NodeConnectionDTO>({
+                path: `/api/node/Update/${id}`,
+                method: 'PUT',
+                payload: middlewarePayload
+            });
+
+            this.log(`✅ Node connection updated: ${response.nodeName}`);
+
+            return this.convertToNodeConnection(response);
+        });
+    }
+
     // ==================== Private Helpers ====================
 
     /**
@@ -353,6 +447,10 @@ export class NodeConnectionService extends BaseService {
             nodeUrl: dto.nodeUrl,
             status: this.mapAuthorizationStatus(dto.status),
             nodeAccessLevel: this.mapNodeAccessLevel(dto.nodeAccessLevel),
+            contactInfo: dto.contactInfo,
+            certificate: dto.certificate,
+            certificateFingerprint: dto.certificateFingerprint,
+            institutionDetails: dto.institutionDetails,
             registeredAt: new Date(dto.registeredAt),
             updatedAt: new Date(dto.updatedAt)
         };
@@ -406,15 +504,15 @@ export class NodeConnectionService extends BaseService {
      */
     private mapNodeAccessLevel(level: string | number): NodeAccessLevel {
         // Handle numeric enum values from C# backend
-        // Backend enum: Public = 0, Private = 1, Restricted = 2
+        // Backend enum: ReadOnly = 0, ReadWrite = 1, Admin = 2
         const numericMap: Record<number, NodeAccessLevel> = {
-            0: NodeAccessLevel.PUBLIC,
-            1: NodeAccessLevel.PRIVATE,
-            2: NodeAccessLevel.RESTRICTED
+            0: NodeAccessLevel.READ_ONLY,
+            1: NodeAccessLevel.READ_WRITE,
+            2: NodeAccessLevel.ADMIN
         };
 
         if (typeof level === 'number') {
-            return numericMap[level] ?? NodeAccessLevel.PUBLIC;
+            return numericMap[level] ?? NodeAccessLevel.READ_ONLY;
         }
 
         // Also handle numeric strings
@@ -424,18 +522,18 @@ export class NodeConnectionService extends BaseService {
         }
 
         const levelMap: Record<string, NodeAccessLevel> = {
-            'public': NodeAccessLevel.PUBLIC,
-            'private': NodeAccessLevel.PRIVATE,
-            'restricted': NodeAccessLevel.RESTRICTED,
-            'PUBLIC': NodeAccessLevel.PUBLIC,
-            'PRIVATE': NodeAccessLevel.PRIVATE,
-            'RESTRICTED': NodeAccessLevel.RESTRICTED,
-            'Public': NodeAccessLevel.PUBLIC,
-            'Private': NodeAccessLevel.PRIVATE,
-            'Restricted': NodeAccessLevel.RESTRICTED
+            'readonly': NodeAccessLevel.READ_ONLY,
+            'readwrite': NodeAccessLevel.READ_WRITE,
+            'admin': NodeAccessLevel.ADMIN,
+            'READONLY': NodeAccessLevel.READ_ONLY,
+            'READWRITE': NodeAccessLevel.READ_WRITE,
+            'ADMIN': NodeAccessLevel.ADMIN,
+            'ReadOnly': NodeAccessLevel.READ_ONLY,
+            'ReadWrite': NodeAccessLevel.READ_WRITE,
+            'Admin': NodeAccessLevel.ADMIN
         };
 
-        return levelMap[level] || NodeAccessLevel.PUBLIC;
+        return levelMap[level] || NodeAccessLevel.READ_ONLY;
     }
 
     /**
@@ -443,12 +541,53 @@ export class NodeConnectionService extends BaseService {
      */
     private mapNodeAccessLevelToString(level: NodeAccessLevel): string {
         const levelMap: Record<NodeAccessLevel, string> = {
-            [NodeAccessLevel.PUBLIC]: 'Public',
-            [NodeAccessLevel.PRIVATE]: 'Private',
-            [NodeAccessLevel.RESTRICTED]: 'Restricted'
+            [NodeAccessLevel.READ_ONLY]: 'ReadOnly',
+            [NodeAccessLevel.READ_WRITE]: 'ReadWrite',
+            [NodeAccessLevel.ADMIN]: 'Admin'
         };
 
-        return levelMap[level] || 'Public';
+        return levelMap[level] || 'ReadOnly';
+    }
+
+    /**
+     * Map NodeAccessLevel string to numeric value for backend enum
+     * Backend expects: ReadOnly=0, ReadWrite=1, Admin=2
+     */
+    private mapNodeAccessLevelToNumeric(level: string): number {
+        const levelMap: Record<string, number> = {
+            'ReadOnly': 0,
+            'ReadWrite': 1,
+            'Admin': 2,
+            // Also handle lowercase
+            'readonly': 0,
+            'readwrite': 1,
+            'admin': 2,
+        };
+
+        return levelMap[level] ?? 0;
+    }
+
+    /**
+     * Map AuthorizationStatus string to numeric value for backend enum
+     * Backend expects: Unknown=0, Authorized=1, Pending=2, Revoked=3
+     */
+    private mapAuthorizationStatusToNumeric(status: string): number {
+        const statusMap: Record<string, number> = {
+            'Unknown': 0,
+            'unknown': 0,
+            'UNKNOWN': 0,
+            'Authorized': 1,
+            'authorized': 1,
+            'AUTHORIZED': 1,
+            'Pending': 2,
+            'pending': 2,
+            'PENDING': 2,
+            'Revoked': 3,
+            'revoked': 3,
+            'REVOKED': 3,
+        };
+
+        return statusMap[status] ?? 2; // Default to Pending
     }
 
     /**

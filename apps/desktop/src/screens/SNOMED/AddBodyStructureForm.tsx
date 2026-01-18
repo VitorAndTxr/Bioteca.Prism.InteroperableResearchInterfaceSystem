@@ -21,7 +21,7 @@ import { Dropdown } from '../../design-system/components/dropdown';
 import { Button } from '../../design-system/components/button';
 import { ArrowLeftIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
 import { mainMenuItems } from '../../config/menu';
-import type { AddSnomedBodyStructurePayload, SnomedBodyStructure } from '@iris/domain';
+import type { AddSnomedBodyStructurePayload, SnomedBodyStructure, UpdateSnomedBodyStructurePayload } from '@iris/domain';
 import '../../styles/shared/AddForm.css';
 import { snomedService } from '../../services/middleware';
 
@@ -158,31 +158,40 @@ export function AddBodyStructureForm({
             return;
         }
 
-        const structureData: AddSnomedBodyStructurePayload = {
-            snomedCode,
-            type: structureType,
-            displayName,
-            description,
-            bodyRegionCode: bodyRegionCode,
-            parentStructureCode
-        };
-
-        console.log('Submitting structure data:', structureData);
-
         try {
             setSubmitting(true);
-            setSubmitError(null);  
+            setSubmitError(null);
 
-            const createdBodyStructure = await snomedService.createBodyStructure(structureData);
-
-            console.log('✅ Structure created successfully:', createdBodyStructure);
+            if (mode === 'edit' && bodyStructure) {
+                const updatePayload: UpdateSnomedBodyStructurePayload = {
+                    displayName,
+                    description,
+                    type: structureType,
+                    bodyRegionCode
+                };
+                console.log('Updating body structure:', updatePayload);
+                const updatedBodyStructure = await snomedService.updateBodyStructure(bodyStructure.snomedCode, updatePayload);
+                console.log('✅ Body structure updated successfully:', updatedBodyStructure);
+            } else {
+                const structureData: AddSnomedBodyStructurePayload = {
+                    snomedCode,
+                    type: structureType,
+                    displayName,
+                    description,
+                    bodyRegionCode: bodyRegionCode,
+                    parentStructureCode
+                };
+                console.log('Creating body structure:', structureData);
+                const createdBodyStructure = await snomedService.createBodyStructure(structureData);
+                console.log('✅ Body structure created successfully:', createdBodyStructure);
+            }
 
             handleNavigation('/snomed');
         } catch (error) {
-            console.error('Failed to create body structure:', error);
-            const errorMessage = error instanceof Error ? error.message : 'Failed to create body structure';
+            console.error('Failed to save body structure:', error);
+            const errorMessage = error instanceof Error ? error.message : 'Failed to save body structure';
             setSubmitError(errorMessage);
-        }finally {
+        } finally {
             setSubmitting(false);
         }
     };

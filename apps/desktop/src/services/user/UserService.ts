@@ -6,13 +6,16 @@
  *
  * Endpoints:
  * - GET /api/user/GetUsers - Get paginated list of users
+ * - GET /api/user/{id} - Get user by ID
  * - POST /api/user/New - Create new user
+ * - PUT /api/user/Update/{id} - Update existing user
  */
 
 import { BaseService, type MiddlewareServices } from '../BaseService';
 import type {
     User,
     NewUserData,
+    UpdateUserPayload,
     PaginatedResponse,
     AuthError,
     AuthErrorCode
@@ -49,6 +52,15 @@ interface AddUserPayload extends Record<string, unknown> {
     Login: string;
     Password: string;
     Role: string;
+    ResearcherId?: string;
+}
+
+/**
+ * Middleware Update User Payload (PascalCase - matches backend)
+ */
+interface UpdateUserMiddlewarePayload extends Record<string, unknown> {
+    Login?: string;
+    Role?: string;
     ResearcherId?: string;
 }
 
@@ -195,6 +207,73 @@ export class UserService extends BaseService {
             });
 
             this.log('✅ User created:', response.id);
+
+            return this.convertToUser(response);
+        });
+    }
+
+    /**
+     * Get user by ID
+     *
+     * @param id - User ID (GUID)
+     * @returns User entity
+     * @throws AuthError with 'user_not_found' code if user does not exist
+     */
+    async getById(id: string): Promise<User> {
+        return this.handleMiddlewareError(async () => {
+            this.log(`Fetching user by ID: ${id}`);
+
+            // Ensure we have an authenticated session
+            await this.ensureSession();
+
+            // Call backend API
+            const response = await this.middleware.invoke<Record<string, unknown>, UserDTO>({
+                path: `/api/user/${id}`,
+                method: 'GET',
+                payload: {}
+            });
+
+            this.log(`Retrieved user: ${response.login}`);
+
+            return this.convertToUser(response);
+        });
+    }
+
+    /**
+     * Update existing user
+     *
+     * @param id - User ID (GUID)
+     * @param payload - Fields to update (login, role, researcherId)
+     * @returns Updated user entity
+     * @throws AuthError with 'user_not_found' code if user does not exist
+     */
+    async updateUser(id: string, payload: UpdateUserPayload): Promise<User> {
+        return this.handleMiddlewareError(async () => {
+            this.log(`Updating user: ${id}`, payload);
+
+            // Ensure we have an authenticated session
+            await this.ensureSession();
+
+            // Convert to middleware format (PascalCase)
+            const middlewarePayload: UpdateUserMiddlewarePayload = {};
+            if (payload.login !== undefined) {
+                middlewarePayload.Login = payload.login;
+            }
+            if (payload.role !== undefined) {
+                middlewarePayload.Role = payload.role;
+            }
+            if (payload.researcherId !== undefined) {
+                middlewarePayload.ResearcherId = payload.researcherId;
+            }
+
+            // Call backend API
+            const response = await this.middleware.invoke<UpdateUserMiddlewarePayload, UserDTO>({
+                path: `/api/user/Update/${id}`,
+                method: 'PUT',
+                payload: middlewarePayload
+            });
+
+            this.log('✅ User updated:', response.id);
 
             return this.convertToUser(response);
         });

@@ -34,3 +34,14 @@ export interface NewUserData {
     role: string;
     researcherId?: string;
 }
+
+/**
+ * Update User Payload
+ *
+ * Data that can be updated on an existing user
+ */
+export interface UpdateUserPayload {
+    login?: string;
+    role?: string;
+    researcherId?: string;
+}

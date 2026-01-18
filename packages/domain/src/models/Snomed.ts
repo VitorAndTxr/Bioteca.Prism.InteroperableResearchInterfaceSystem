@@ -159,3 +159,60 @@ export interface SnomedAllergyIntolerance extends Record<string, unknown> {
   /** Description */
   description: string;
 }
+
+// ============================================================================
+// Update Payload Types
+// ============================================================================
+
+/**
+ * Payload for updating a SNOMED CT body region
+ */
+export interface UpdateSnomedBodyRegionPayload extends Record<string, unknown> {
+  /** Display name */
+  displayName: string;
+
+  /** Description */
+  description: string;
+}
+
+/**
+ * Payload for updating a SNOMED CT body structure
+ */
+export interface UpdateSnomedBodyStructurePayload extends Record<string, unknown> {
+  /** Display name */
+  displayName: string;
+
+  /** Description */
+  description: string;
+
+  /** Structure type */
+  type: string;
+
+  /** Body region code (optional) */
+  bodyRegionCode?: string;
+}
+
+/**
+ * Payload for updating a SNOMED CT topographical modifier
+ */
+export interface UpdateSnomedTopographicalModifierPayload extends Record<string, unknown> {
+  /** Display name */
+  displayName: string;
+
+  /** Description */
+  description: string;
+
+  /** Category */
+  category: string;
+}
+
+/**
+ * Payload for updating a SNOMED CT clinical condition
+ */
+export interface UpdateSnomedClinicalConditionPayload extends Record<string, unknown> {
+  /** Display name */
+  displayName: string;
+
+  /** Description */
+  description: string;
+}

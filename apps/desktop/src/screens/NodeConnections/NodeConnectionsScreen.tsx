@@ -135,15 +135,15 @@ const NodeConnectionsScreen: React.FC<NodeConnectionsScreenProps> = ({ handleNav
 
     const getAccessLevelBadge = (level: NodeAccessLevel) => {
         const styles: Record<string, string> = {
-            [NodeAccessLevel.PUBLIC]: 'bg-blue-100 text-blue-800',
-            [NodeAccessLevel.PRIVATE]: 'bg-purple-100 text-purple-800',
-            [NodeAccessLevel.RESTRICTED]: 'bg-orange-100 text-orange-800',
+            [NodeAccessLevel.READ_ONLY]: 'bg-blue-100 text-blue-800',
+            [NodeAccessLevel.READ_WRITE]: 'bg-purple-100 text-purple-800',
+            [NodeAccessLevel.ADMIN]: 'bg-orange-100 text-orange-800',
         };
 
         const labels: Record<string, string> = {
-            [NodeAccessLevel.PUBLIC]: 'Público',
-            [NodeAccessLevel.PRIVATE]: 'Privado',
-            [NodeAccessLevel.RESTRICTED]: 'Restrito',
+            [NodeAccessLevel.READ_ONLY]: 'Somente Leitura',
+            [NodeAccessLevel.READ_WRITE]: 'Leitura e Escrita',
+            [NodeAccessLevel.ADMIN]: 'Administrador',
         };
 
         return (

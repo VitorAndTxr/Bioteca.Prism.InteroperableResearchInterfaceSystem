@@ -19,7 +19,7 @@ import { Dropdown } from '../../design-system/components/dropdown';
 import { Button } from '../../design-system/components/button';
 import { ArrowLeftIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
 import { mainMenuItems } from '../../config/menu';
-import type { SnomedTopographicalModifier } from '@iris/domain';
+import type { SnomedTopographicalModifier, UpdateSnomedTopographicalModifierPayload } from '@iris/domain';
 import { snomedService } from '../../services/middleware';
 import '../../styles/shared/AddForm.css';
 
@@ -131,23 +131,34 @@ export function AddTopographicModifierForm({
             return;
         }
 
-        const modifierData: SnomedTopographicalModifier = {
-            snomedCode: code,
-            category,
-            displayName,
-            description
-        };
-
-        try{
+        try {
             setSubmitting(true);
             setSubmitError(null);
 
-            const createdModifier = await snomedService.createTopographicalModifier(modifierData);
-
-            console.log('Created Topographical Modifier:', createdModifier);
+            if (mode === 'edit' && topographicModifier) {
+                const updatePayload: UpdateSnomedTopographicalModifierPayload = {
+                    displayName,
+                    description,
+                    category
+                };
+                console.log('Updating topographical modifier:', updatePayload);
+                const updatedModifier = await snomedService.updateTopographicalModifier(topographicModifier.snomedCode, updatePayload);
+                console.log('✅ Topographical modifier updated successfully:', updatedModifier);
+            } else {
+                const modifierData: SnomedTopographicalModifier = {
+                    snomedCode: code,
+                    category,
+                    displayName,
+                    description
+                };
+                console.log('Creating topographical modifier:', modifierData);
+                const createdModifier = await snomedService.createTopographicalModifier(modifierData);
+                console.log('✅ Topographical modifier created successfully:', createdModifier);
+            }
 
             handleNavigation('/snomed');
         } catch (error) {
+            console.error('Failed to save topographical modifier:', error);
             setSubmitError(error instanceof Error ? error.message : 'Failed to save topographical modifier');
         } finally {
             setSubmitting(false);
