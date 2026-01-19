@@ -5,7 +5,10 @@ import {
     SnomedBodyRegion,
     SnomedBodyStructure,
     SnomedTopographicalModifier,
-    ClinicalCondition
+    ClinicalCondition,
+    SnomedClinicalEvent,
+    SnomedMedication,
+    SnomedAllergyIntolerance
 } from "@iris/domain";
 
 type SNOMEDScreenProps = {
@@ -14,6 +17,9 @@ type SNOMEDScreenProps = {
     onSelectBodyStructure?: (structure: SnomedBodyStructure) => void;
     onSelectTopographicModifier?: (modifier: SnomedTopographicalModifier) => void;
     onSelectClinicalCondition?: (condition: ClinicalCondition) => void;
+    onSelectClinicalEvent?: (event: SnomedClinicalEvent) => void;
+    onSelectMedication?: (medication: SnomedMedication) => void;
+    onSelectAllergyIntolerance?: (allergy: SnomedAllergyIntolerance) => void;
 };
 
 const SNOMEDScreen: React.FC<SNOMEDScreenProps> = ({
@@ -21,7 +27,10 @@ const SNOMEDScreen: React.FC<SNOMEDScreenProps> = ({
     onSelectBodyRegion,
     onSelectBodyStructure,
     onSelectTopographicModifier,
-    onSelectClinicalCondition
+    onSelectClinicalCondition,
+    onSelectClinicalEvent,
+    onSelectMedication,
+    onSelectAllergyIntolerance
 }) => {
     // Body Region handlers
     const handleBodyRegionView = (region: SnomedBodyRegion) => {
@@ -63,6 +72,36 @@ const SNOMEDScreen: React.FC<SNOMEDScreenProps> = ({
         handleNavigation(`/snomed/clinical-condition/edit/${condition.snomedCode}`);
     };
 
+    // Clinical Event handlers
+    const handleClinicalEventView = (event: SnomedClinicalEvent) => {
+        onSelectClinicalEvent?.(event);
+        handleNavigation(`/snomed/clinical-event/view/${event.snomedCode}`);
+    };
+    const handleClinicalEventEdit = (event: SnomedClinicalEvent) => {
+        onSelectClinicalEvent?.(event);
+        handleNavigation(`/snomed/clinical-event/edit/${event.snomedCode}`);
+    };
+
+    // Medication handlers
+    const handleMedicationView = (medication: SnomedMedication) => {
+        onSelectMedication?.(medication);
+        handleNavigation(`/snomed/medication/view/${medication.snomedCode}`);
+    };
+    const handleMedicationEdit = (medication: SnomedMedication) => {
+        onSelectMedication?.(medication);
+        handleNavigation(`/snomed/medication/edit/${medication.snomedCode}`);
+    };
+
+    // Allergy/Intolerance handlers
+    const handleAllergyIntoleranceView = (allergy: SnomedAllergyIntolerance) => {
+        onSelectAllergyIntolerance?.(allergy);
+        handleNavigation(`/snomed/allergy-intolerance/view/${allergy.snomedCode}`);
+    };
+    const handleAllergyIntoleranceEdit = (allergy: SnomedAllergyIntolerance) => {
+        onSelectAllergyIntolerance?.(allergy);
+        handleNavigation(`/snomed/allergy-intolerance/edit/${allergy.snomedCode}`);
+    };
+
     return (
         <AppLayout
             sidebar={{
@@ -90,14 +129,14 @@ const SNOMEDScreen: React.FC<SNOMEDScreenProps> = ({
                 onClinicalConditionView={handleClinicalConditionView}
                 onClinicalConditionEdit={handleClinicalConditionEdit}
                 onClinicalEventAdd={() => handleNavigation('/snomed/clinical-event/add')}
-                onClinicalEventEdit={(event) => console.log('Edit clinical event:', event)}
-                onClinicalEventView={(event) => console.log('View clinical event:', event)}
+                onClinicalEventEdit={handleClinicalEventEdit}
+                onClinicalEventView={handleClinicalEventView}
                 onMedicationAdd={() => handleNavigation('/snomed/medication/add')}
-                onMedicationEdit={(medication) => console.log('Edit medication:', medication)}
-                onMedicationView={(medication) => console.log('View medication:', medication)}
+                onMedicationEdit={handleMedicationEdit}
+                onMedicationView={handleMedicationView}
                 onAllergyIntoleranceAdd={() => handleNavigation('/snomed/allergy-intolerance/add')}
-                onAllergyIntoleranceEdit={(allergy) => console.log('Edit allergy:', allergy)}
-                onAllergyIntoleranceView={(allergy) => console.log('View allergy:', allergy)}
+                onAllergyIntoleranceEdit={handleAllergyIntoleranceEdit}
+                onAllergyIntoleranceView={handleAllergyIntoleranceView}
             />
         </AppLayout>
     );

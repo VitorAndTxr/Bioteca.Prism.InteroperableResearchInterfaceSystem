@@ -4,6 +4,8 @@ import Login from "@/screens/Login/Login";
 import AddBodyRegionForm from "@/screens/SNOMED/AddBodyRegionForm";
 import AddBodyStructureForm from "@/screens/SNOMED/AddBodyStructureForm";
 import AddClinicalConditionForm from "@/screens/SNOMED/AddClinicalConditionForm";
+import AddClinicalEventForm from "@/screens/SNOMED/AddClinicalEventForm";
+import AddMedicationForm from "@/screens/SNOMED/AddMedicationForm";
 import AddTopographicModifierForm from "@/screens/SNOMED/AddTopographicModifierForm";
 import SNOMEDScreen from "@/screens/SNOMED/SnomedScreen";
 import AddResearcherForm from "@/screens/UsersAndResearcheres/AddResearcherForm";
@@ -16,6 +18,7 @@ import VolunteersScreen from "@/screens/Volunteers/VolunteersScreen";
 import CreateVolunteerForm from "@/screens/Volunteers/CreateVolunteerForm";
 import NodeConnectionsScreen from "@/screens/NodeConnections/NodeConnectionsScreen";
 import AddConnectionForm from "@/screens/NodeConnections/AddConnectionForm";
+import AddAllergyIntoleranceForm from "@/screens/SNOMED/AddAllergyIntoleranceForm";
 import {
     ResearchNodeConnection,
     User,
@@ -23,7 +26,10 @@ import {
     SnomedBodyRegion,
     SnomedBodyStructure,
     SnomedTopographicalModifier,
-    ClinicalCondition
+    ClinicalCondition,
+    SnomedClinicalEvent,
+    SnomedMedication,
+    SnomedAllergyIntolerance
 } from "@iris/domain";
 import { useState, useEffect } from "react";
 
@@ -45,6 +51,9 @@ function AppRouter() {
     const [selectedBodyStructure, setSelectedBodyStructure] = useState<SnomedBodyStructure | null>(null);
     const [selectedTopographicModifier, setSelectedTopographicModifier] = useState<SnomedTopographicalModifier | null>(null);
     const [selectedClinicalCondition, setSelectedClinicalCondition] = useState<ClinicalCondition | null>(null);
+    const [selectedClinicalEvent, setSelectedClinicalEvent] = useState<SnomedClinicalEvent | null>(null);
+    const [selectedMedication, setSelectedMedication] = useState<SnomedMedication | null>(null);
+    const [selectedAllergyIntolerance, setSelectedAllergyIntolerance] = useState<SnomedAllergyIntolerance | null>(null);
 
     useEffect(() => {
         // Get app version from Electron
@@ -149,6 +158,36 @@ function AppRouter() {
             return;
         }
 
+        // SNOMED Clinical Event routes
+        if (path.startsWith('/snomed/clinical-event/view/')) {
+            setCurrentPage('view-clinical-event');
+            return;
+        }
+        if (path.startsWith('/snomed/clinical-event/edit/')) {
+            setCurrentPage('edit-clinical-event');
+            return;
+        }
+
+        // SNOMED Medication routes
+        if (path.startsWith('/snomed/medication/view/')) {
+            setCurrentPage('view-medication');
+            return;
+        }
+        if (path.startsWith('/snomed/medication/edit/')) {
+            setCurrentPage('edit-medication');
+            return;
+        }
+
+        // SNOMED Allergy/Intolerance routes
+        if (path.startsWith('/snomed/allergy-intolerance/view/')) {
+            setCurrentPage('view-allergy-intolerance');
+            return;
+        }
+        if (path.startsWith('/snomed/allergy-intolerance/edit/')) {
+            setCurrentPage('edit-allergy-intolerance');
+            return;
+        }
+
         // Navigate to appropriate page based on path
         switch (path) {
             case '/nodeConnections':
@@ -177,6 +216,9 @@ function AppRouter() {
                 setSelectedBodyStructure(null);
                 setSelectedTopographicModifier(null);
                 setSelectedClinicalCondition(null);
+                setSelectedClinicalEvent(null);
+                setSelectedMedication(null);
+                setSelectedAllergyIntolerance(null);
                 break;
             case '/snomed/body-region/add':
                 setCurrentPage('add-body-region');
@@ -189,6 +231,15 @@ function AppRouter() {
                 break;
             case '/snomed/clinical-condition/add':
                 setCurrentPage('add-clinical-condition');
+                break;
+            case '/snomed/clinical-event/add':
+                setCurrentPage('add-clinical-event');
+                break;
+            case '/snomed/medication/add':
+                setCurrentPage('add-medication');
+                break;
+            case '/snomed/allergy-intolerance/add':
+                setCurrentPage('add-allergy-intolerance');
                 break;
             case '/users':
                 setCurrentPage('users');
@@ -279,6 +330,9 @@ function AppRouter() {
                         onSelectBodyStructure={setSelectedBodyStructure}
                         onSelectTopographicModifier={setSelectedTopographicModifier}
                         onSelectClinicalCondition={setSelectedClinicalCondition}
+                        onSelectClinicalEvent={setSelectedClinicalEvent}
+                        onSelectMedication={setSelectedMedication}
+                        onSelectAllergyIntolerance={setSelectedAllergyIntolerance}
                     />
                 );
             case 'add-body-region':
@@ -371,6 +425,75 @@ function AppRouter() {
                         handleNavigation={handleNavigation}
                         mode="edit"
                         clinicalCondition={selectedClinicalCondition ?? undefined}
+                    />
+                );
+            case 'add-clinical-event':
+                return (
+                    <AddClinicalEventForm
+                        handleNavigation={handleNavigation}
+                        mode="add"
+                    />
+                );
+            case 'view-clinical-event':
+                return (
+                    <AddClinicalEventForm
+                        handleNavigation={handleNavigation}
+                        mode="view"
+                        clinicalEvent={selectedClinicalEvent ?? undefined}
+                    />
+                );
+            case 'edit-clinical-event':
+                return (
+                    <AddClinicalEventForm
+                        handleNavigation={handleNavigation}
+                        mode="edit"
+                        clinicalEvent={selectedClinicalEvent ?? undefined}
+                    />
+                );
+            case 'add-medication':
+                return (
+                    <AddMedicationForm
+                        handleNavigation={handleNavigation}
+                        mode="add"
+                    />
+                );
+            case 'view-medication':
+                return (
+                    <AddMedicationForm
+                        handleNavigation={handleNavigation}
+                        mode="view"
+                        medication={selectedMedication ?? undefined}
+                    />
+                );
+            case 'edit-medication':
+                return (
+                    <AddMedicationForm
+                        handleNavigation={handleNavigation}
+                        mode="edit"
+                        medication={selectedMedication ?? undefined}
+                    />
+                );
+            case 'add-allergy-intolerance':
+                return (
+                    <AddAllergyIntoleranceForm
+                        handleNavigation={handleNavigation}
+                        mode="add"
+                    />
+                );
+            case 'view-allergy-intolerance':
+                return (
+                    <AddAllergyIntoleranceForm
+                        handleNavigation={handleNavigation}
+                        mode="view"
+                        allergyIntolerance={selectedAllergyIntolerance ?? undefined}
+                    />
+                );
+            case 'edit-allergy-intolerance':
+                return (
+                    <AddAllergyIntoleranceForm
+                        handleNavigation={handleNavigation}
+                        mode="edit"
+                        allergyIntolerance={selectedAllergyIntolerance ?? undefined}
                     />
                 );
             case 'users':
@@ -471,7 +594,16 @@ type Pages =
     | 'edit-topographic-modifier'
     | 'add-clinical-condition'
     | 'view-clinical-condition'
-    | 'edit-clinical-condition';
+    | 'edit-clinical-condition'
+    | 'add-clinical-event'
+    | 'view-clinical-event'
+    | 'edit-clinical-event'
+    | 'add-medication'
+    | 'view-medication'
+    | 'edit-medication'
+    | 'add-allergy-intolerance'
+    | 'view-allergy-intolerance'
+    | 'edit-allergy-intolerance';
 
 
 export default AppRouter;

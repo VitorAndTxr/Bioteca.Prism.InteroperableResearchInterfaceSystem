@@ -410,16 +410,19 @@ export class ResearcherService extends BaseService {
 
     /**
      * Convert middleware ResearcherDTO to domain Researcher type
+     * Handles both camelCase and PascalCase responses from backend
      */
     private convertToResearcher(dto: ResearcherDTO): Researcher {
+        // Handle both camelCase and PascalCase responses
+        const dtoAny = dto as Record<string, unknown>;
         return {
-            researcherId: dto.researcherId,
-            researchNodeId: dto.researchNodeId,
-            name: dto.name,
-            email: dto.email,
-            institution: dto.institution,
-            role: this.mapRole(dto.role),
-            orcid: dto.orcid
+            researcherId: (dtoAny.researcherId ?? dtoAny.ResearcherId) as string,
+            researchNodeId: (dtoAny.researchNodeId ?? dtoAny.ResearchNodeId) as string,
+            name: (dtoAny.name ?? dtoAny.Name) as string,
+            email: (dtoAny.email ?? dtoAny.Email) as string,
+            institution: (dtoAny.institution ?? dtoAny.Institution) as string,
+            role: this.mapRole((dtoAny.role ?? dtoAny.Role) as string),
+            orcid: (dtoAny.orcid ?? dtoAny.Orcid) as string
         };
     }
 

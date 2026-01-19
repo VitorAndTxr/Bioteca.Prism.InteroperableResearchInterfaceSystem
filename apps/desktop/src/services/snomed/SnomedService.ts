@@ -13,8 +13,11 @@ import type {
     ClinicalCondition,
     UpdateSnomedClinicalConditionPayload,
     SnomedClinicalEvent,
+    UpdateSnomedClinicalEventPayload,
     SnomedMedication,
-    SnomedAllergyIntolerance
+    UpdateSnomedMedicationPayload,
+    SnomedAllergyIntolerance,
+    UpdateSnomedAllergyIntolerancePayload
 } from '@iris/domain';
 
 
@@ -878,6 +881,86 @@ export class SnomedService extends BaseService {
         });
     }
 
+    async getActiveClinicalEvents(): Promise<SnomedClinicalEvent[]> {
+        if (this.USE_MOCK) {
+            return new Promise(resolve => {
+                setTimeout(() => {
+                    resolve([
+                        { snomedCode: 'CE-001', displayName: 'Mock Event 1', description: 'Desc 1' },
+                        { snomedCode: 'CE-002', displayName: 'Mock Event 2', description: 'Desc 2' }
+                    ]);
+                }, 500);
+            });
+        }
+
+        return this.handleMiddlewareError(async () => {
+            this.log('Fetching active clinical events');
+            await this.ensureSession();
+            const response = await this.middleware.invoke<Record<string, unknown>, SnomedClinicalEvent[]>({
+                path: `/api/SNOMED/ClinicalEvent/GetActiveClinicalEvents`,
+                method: 'GET',
+                payload: {}
+            });
+            this.log(`Retrieved ${response.length} active clinical events`);
+            return response;
+        });
+    }
+
+    async getClinicalEventByCode(snomedCode: string): Promise<SnomedClinicalEvent> {
+        if (this.USE_MOCK) {
+            return new Promise(resolve => {
+                setTimeout(() => {
+                    resolve({
+                        snomedCode,
+                        displayName: `Mock Event ${snomedCode}`,
+                        description: `Description for Mock Event ${snomedCode}`
+                    });
+                }, 500);
+            });
+        }
+
+        return this.handleMiddlewareError(async () => {
+            this.log(`Fetching clinical event by code: ${snomedCode}`);
+            await this.ensureSession();
+            const response = await this.middleware.invoke<Record<string, unknown>, SnomedClinicalEvent>({
+                path: `/api/SNOMED/ClinicalEvent/${snomedCode}`,
+                method: 'GET',
+                payload: {}
+            });
+            this.log(`Retrieved clinical event: ${response.displayName}`);
+            return response;
+        });
+    }
+
+    async updateClinicalEvent(
+        snomedCode: string,
+        payload: UpdateSnomedClinicalEventPayload
+    ): Promise<SnomedClinicalEvent> {
+        if (this.USE_MOCK) {
+            return new Promise(resolve => {
+                setTimeout(() => {
+                    resolve({
+                        snomedCode,
+                        displayName: payload.displayName,
+                        description: payload.description
+                    });
+                }, 500);
+            });
+        }
+
+        return this.handleMiddlewareError(async () => {
+            this.log(`Updating clinical event with code: ${snomedCode}`);
+            await this.ensureSession();
+            const response = await this.middleware.invoke<UpdateSnomedClinicalEventPayload, SnomedClinicalEvent>({
+                path: `/api/SNOMED/ClinicalEvent/Update/${snomedCode}`,
+                method: 'PUT',
+                payload
+            });
+            this.log(`Updated clinical event: ${response.snomedCode}`);
+            return response;
+        });
+    }
+
     async getMedicationsPaginated(
         page: number = 1,
         pageSize: number = 10
@@ -887,8 +970,9 @@ export class SnomedService extends BaseService {
                 setTimeout(() => {
                     const mockData: SnomedMedication[] = Array(pageSize).fill(null).map((_, i) => ({
                         snomedCode: `MED-${page}-${i}`,
-                        displayName: `Mock Medication ${page}-${i}`,
-                        description: `Description for Mock Medication ${page}-${i}`
+                        medicationName: `Mock Medication ${page}-${i}`,
+                        activeIngredient: `Active Ingredient ${page}-${i}`,
+                        anvisaCode: `ANVISA-${page}-${i}`
                     }));
                     resolve({
                         data: mockData,
@@ -941,6 +1025,88 @@ export class SnomedService extends BaseService {
         });
     }
 
+    async getActiveMedications(): Promise<SnomedMedication[]> {
+        if (this.USE_MOCK) {
+            return new Promise(resolve => {
+                setTimeout(() => {
+                    resolve([
+                        { snomedCode: 'MED-001', medicationName: 'Paracetamol', activeIngredient: 'Paracetamol 500mg', anvisaCode: 'ANVISA-001' },
+                        { snomedCode: 'MED-002', medicationName: 'Ibuprofeno', activeIngredient: 'Ibuprofeno 400mg', anvisaCode: 'ANVISA-002' }
+                    ]);
+                }, 500);
+            });
+        }
+
+        return this.handleMiddlewareError(async () => {
+            this.log('Fetching active medications');
+            await this.ensureSession();
+            const response = await this.middleware.invoke<Record<string, unknown>, SnomedMedication[]>({
+                path: `/api/SNOMED/Medication/GetActiveMedications`,
+                method: 'GET',
+                payload: {}
+            });
+            this.log(`Retrieved ${response.length} active medications`);
+            return response;
+        });
+    }
+
+    async getMedicationByCode(snomedCode: string): Promise<SnomedMedication> {
+        if (this.USE_MOCK) {
+            return new Promise(resolve => {
+                setTimeout(() => {
+                    resolve({
+                        snomedCode,
+                        medicationName: `Mock Medication ${snomedCode}`,
+                        activeIngredient: `Active Ingredient for ${snomedCode}`,
+                        anvisaCode: `ANVISA-${snomedCode}`
+                    });
+                }, 500);
+            });
+        }
+
+        return this.handleMiddlewareError(async () => {
+            this.log(`Fetching medication by code: ${snomedCode}`);
+            await this.ensureSession();
+            const response = await this.middleware.invoke<Record<string, unknown>, SnomedMedication>({
+                path: `/api/SNOMED/Medication/${snomedCode}`,
+                method: 'GET',
+                payload: {}
+            });
+            this.log(`Retrieved medication: ${response.medicationName}`);
+            return response;
+        });
+    }
+
+    async updateMedication(
+        snomedCode: string,
+        payload: UpdateSnomedMedicationPayload
+    ): Promise<SnomedMedication> {
+        if (this.USE_MOCK) {
+            return new Promise(resolve => {
+                setTimeout(() => {
+                    resolve({
+                        snomedCode,
+                        medicationName: payload.medicationName,
+                        activeIngredient: payload.activeIngredient,
+                        anvisaCode: payload.anvisaCode
+                    });
+                }, 500);
+            });
+        }
+
+        return this.handleMiddlewareError(async () => {
+            this.log(`Updating medication with code: ${snomedCode}`);
+            await this.ensureSession();
+            const response = await this.middleware.invoke<UpdateSnomedMedicationPayload, SnomedMedication>({
+                path: `/api/SNOMED/Medication/Update/${snomedCode}`,
+                method: 'PUT',
+                payload
+            });
+            this.log(`Updated medication: ${response.snomedCode}`);
+            return response;
+        });
+    }
+
     async getAllergyIntolerancesPaginated(
         page: number = 1,
         pageSize: number = 10
@@ -950,8 +1116,9 @@ export class SnomedService extends BaseService {
                 setTimeout(() => {
                     const mockData: SnomedAllergyIntolerance[] = Array(pageSize).fill(null).map((_, i) => ({
                         snomedCode: `AI-${page}-${i}`,
-                        displayName: `Mock Allergy ${page}-${i}`,
-                        description: `Description for Mock Allergy ${page}-${i}`
+                        category: i % 2 === 0 ? 'medication' : 'food',
+                        substanceName: `Substance ${page}-${i}`,
+                        type: i % 2 === 0 ? 'allergy' : 'intolerance'
                     }));
                     resolve({
                         data: mockData,
@@ -1000,6 +1167,88 @@ export class SnomedService extends BaseService {
                 payload: allergyIntolerance
             });
             this.log(`Created allergy/intolerance with SNOMED code: ${response.snomedCode}`);
+            return response;
+        });
+    }
+
+    async getActiveAllergyIntolerances(): Promise<SnomedAllergyIntolerance[]> {
+        if (this.USE_MOCK) {
+            return new Promise(resolve => {
+                setTimeout(() => {
+                    resolve([
+                        { snomedCode: 'AI-001', category: 'medication', substanceName: 'Penicilina', type: 'allergy' },
+                        { snomedCode: 'AI-002', category: 'food', substanceName: 'Lactose', type: 'intolerance' }
+                    ]);
+                }, 500);
+            });
+        }
+
+        return this.handleMiddlewareError(async () => {
+            this.log('Fetching active allergy/intolerances');
+            await this.ensureSession();
+            const response = await this.middleware.invoke<Record<string, unknown>, SnomedAllergyIntolerance[]>({
+                path: `/api/SNOMED/AllergyIntolerance/GetActiveAllergyIntolerances`,
+                method: 'GET',
+                payload: {}
+            });
+            this.log(`Retrieved ${response.length} active allergy/intolerances`);
+            return response;
+        });
+    }
+
+    async getAllergyIntoleranceByCode(snomedCode: string): Promise<SnomedAllergyIntolerance> {
+        if (this.USE_MOCK) {
+            return new Promise(resolve => {
+                setTimeout(() => {
+                    resolve({
+                        snomedCode,
+                        category: 'medication',
+                        substanceName: `Mock Substance ${snomedCode}`,
+                        type: 'allergy'
+                    });
+                }, 500);
+            });
+        }
+
+        return this.handleMiddlewareError(async () => {
+            this.log(`Fetching allergy/intolerance by code: ${snomedCode}`);
+            await this.ensureSession();
+            const response = await this.middleware.invoke<Record<string, unknown>, SnomedAllergyIntolerance>({
+                path: `/api/SNOMED/AllergyIntolerance/${snomedCode}`,
+                method: 'GET',
+                payload: {}
+            });
+            this.log(`Retrieved allergy/intolerance: ${response.substanceName}`);
+            return response;
+        });
+    }
+
+    async updateAllergyIntolerance(
+        snomedCode: string,
+        payload: UpdateSnomedAllergyIntolerancePayload
+    ): Promise<SnomedAllergyIntolerance> {
+        if (this.USE_MOCK) {
+            return new Promise(resolve => {
+                setTimeout(() => {
+                    resolve({
+                        snomedCode,
+                        category: payload.category,
+                        substanceName: payload.substanceName,
+                        type: payload.type
+                    });
+                }, 500);
+            });
+        }
+
+        return this.handleMiddlewareError(async () => {
+            this.log(`Updating allergy/intolerance with code: ${snomedCode}`);
+            await this.ensureSession();
+            const response = await this.middleware.invoke<UpdateSnomedAllergyIntolerancePayload, SnomedAllergyIntolerance>({
+                path: `/api/SNOMED/AllergyIntolerance/Update/${snomedCode}`,
+                method: 'PUT',
+                payload
+            });
+            this.log(`Updated allergy/intolerance: ${response.snomedCode}`);
             return response;
         });
     }

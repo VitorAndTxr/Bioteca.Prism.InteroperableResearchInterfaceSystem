@@ -75,6 +75,20 @@ type SnomedTabs =
   | 'medication'
   | 'allergy-intolerance';
 
+// Friendly name mappings for AllergyIntolerance
+const categoryDisplayNames: Record<string, string> = {
+  food: 'Alimento',
+  medication: 'Medicamento',
+  environment: 'Ambiental',
+  biologic: 'Biológico',
+  other: 'Outro',
+};
+
+const typeDisplayNames: Record<string, string> = {
+  allergy: 'Alergia',
+  intolerance: 'Intolerância',
+};
+
 export function SNOMEDList({
   onBodyRegionAdd,
   onBodyRegionEdit,
@@ -640,27 +654,34 @@ export function SNOMEDList({
         label: 'Código SNOMED',
         accessor: 'snomedCode',
         sortable: true,
-        width: '20%',
+        width: '15%',
       },
       {
-        id: 'displayName',
+        id: 'medicationName',
         label: 'Nome',
-        accessor: 'displayName',
+        accessor: 'medicationName',
         sortable: true,
-        width: '30%',
+        width: '25%',
       },
       {
-        id: 'description',
-        label: 'Descrição',
-        accessor: 'description',
+        id: 'activeIngredient',
+        label: 'Princípio Ativo',
+        accessor: 'activeIngredient',
         sortable: true,
-        width: '40%',
+        width: '25%',
+      },
+      {
+        id: 'anvisaCode',
+        label: 'Código ANVISA',
+        accessor: 'anvisaCode',
+        sortable: true,
+        width: '20%',
       },
       {
         id: 'actions',
         label: 'Ações',
         accessor: 'snomedCode',
-        width: '10%',
+        width: '15%',
         align: 'center',
         render: (_, medication) => (
           <div className="list-actions">
@@ -701,27 +722,36 @@ export function SNOMEDList({
         label: 'Código SNOMED',
         accessor: 'snomedCode',
         sortable: true,
+        width: '15%',
+      },
+      {
+        id: 'substanceName',
+        label: 'Substância',
+        accessor: 'substanceName',
+        sortable: true,
+        width: '25%',
+      },
+      {
+        id: 'category',
+        label: 'Categoria',
+        accessor: 'category',
+        sortable: true,
         width: '20%',
+        render: (value) => categoryDisplayNames[value as string] || value,
       },
       {
-        id: 'displayName',
-        label: 'Nome',
-        accessor: 'displayName',
+        id: 'type',
+        label: 'Tipo',
+        accessor: 'type',
         sortable: true,
-        width: '30%',
-      },
-      {
-        id: 'description',
-        label: 'Descrição',
-        accessor: 'description',
-        sortable: true,
-        width: '40%',
+        width: '15%',
+        render: (value) => typeDisplayNames[value as string] || value,
       },
       {
         id: 'actions',
         label: 'Ações',
         accessor: 'snomedCode',
-        width: '10%',
+        width: '15%',
         align: 'center',
         render: (_, allergy) => (
           <div className="list-actions">
@@ -875,13 +905,22 @@ export function SNOMEDList({
   );
 
   // Custom search filter
-  const searchFilter = (item: any, query: string) => {
+  const searchFilter = (item: Record<string, unknown>, query: string) => {
     const lowerQuery = query.toLowerCase();
     return (
-      item.displayName?.toLowerCase().includes(lowerQuery) ||
-      item.description?.toLowerCase().includes(lowerQuery) ||
-      item.snomedCode?.includes(query) ||
-      item.code?.includes(query)
+      // Common fields
+      (item.displayName as string)?.toLowerCase().includes(lowerQuery) ||
+      (item.description as string)?.toLowerCase().includes(lowerQuery) ||
+      (item.snomedCode as string)?.includes(query) ||
+      (item.code as string)?.includes(query) ||
+      // Medication-specific fields
+      (item.medicationName as string)?.toLowerCase().includes(lowerQuery) ||
+      (item.activeIngredient as string)?.toLowerCase().includes(lowerQuery) ||
+      (item.anvisaCode as string)?.includes(query) ||
+      // AllergyIntolerance-specific fields
+      (item.substanceName as string)?.toLowerCase().includes(lowerQuery) ||
+      (item.category as string)?.toLowerCase().includes(lowerQuery) ||
+      (item.type as string)?.toLowerCase().includes(lowerQuery)
     );
   };
 

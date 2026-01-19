@@ -28,6 +28,29 @@ export interface UsersListProps {
 
 type UsersTabs = 'users' | 'researchers';
 
+// Friendly name mappings for Researcher role
+const researcherRoleDisplayNames: Record<string, string> = {
+    chief_researcher: 'Pesquisador Chefe',
+    researcher: 'Pesquisador',
+    CHIEF_RESEARCHER: 'Pesquisador Chefe',
+    RESEARCHER: 'Pesquisador',
+    ChiefResearcher: 'Pesquisador Chefe',
+    Researcher: 'Pesquisador',
+};
+
+// Format ORCID with mask (0000-0000-0000-0000)
+const formatOrcid = (orcid: string): string => {
+    if (!orcid) return '-';
+    // Remove any existing dashes
+    const clean = orcid.replace(/-/g, '');
+    // Apply mask if we have 16 characters
+    if (clean.length === 16) {
+        return `${clean.slice(0, 4)}-${clean.slice(4, 8)}-${clean.slice(8, 12)}-${clean.slice(12, 16)}`;
+    }
+    // Return as-is if already formatted or different length
+    return orcid;
+};
+
 export function UsersList({
     onUserAdd,
     onUserEdit,
@@ -232,13 +255,15 @@ export function UsersList({
         accessor: 'role',
         sortable: true,
         width: '10%',
+        render: (value) => researcherRoleDisplayNames[value as string] || value,
     },
-        {
+    {
         id: 'orcid',
-        label: 'Orcid',
+        label: 'ORCID',
         accessor: 'orcid',
         sortable: true,
-        width: '10%',
+        width: '15%',
+        render: (value) => formatOrcid(value as string),
     },
     {
         id: 'actions',
@@ -308,12 +333,16 @@ export function UsersList({
     ], [userColumns, researcherColumns, users, researchers, onUserAdd, onResearcherAdd]);
 
     // Custom search filter
-    const searchFilter = (user: any, query: string) => {
+    const searchFilter = (item: Record<string, unknown>, query: string) => {
         const lowerQuery = query.toLowerCase();
         return (
-            user.name.toLowerCase().includes(lowerQuery) ||
-            user.email.toLowerCase().includes(lowerQuery) ||
-            user.id.includes(query)
+            (item.name as string)?.toLowerCase().includes(lowerQuery) ||
+            (item.email as string)?.toLowerCase().includes(lowerQuery) ||
+            (item.id as string)?.includes(query) ||
+            (item.login as string)?.toLowerCase().includes(lowerQuery) ||
+            // Researcher-specific fields
+            (item.institution as string)?.toLowerCase().includes(lowerQuery) ||
+            (item.orcid as string)?.includes(query)
         );
     };
 
