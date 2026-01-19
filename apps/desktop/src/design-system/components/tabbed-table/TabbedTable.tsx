@@ -82,10 +82,7 @@ export function TabbedTable({
         if (typeof title === 'function') {
             return title(selectedTab);
         }
-        if (typeof title === 'string') {
-            return title.replace('{tab}', currentTab?.label || '');
-        }
-        return currentTab?.title || currentTab?.label || '';
+        return currentTab?.title ||  '';
     }, [title, selectedTab, currentTab]);
 
     // Get action button (tab-specific overrides global)

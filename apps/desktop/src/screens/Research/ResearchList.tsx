@@ -2,16 +2,17 @@
  * ResearchList Component
  *
  * Displays a list of research projects with pagination and CRUD operations.
+ * Uses TabbedTable with single tab for consistency with application style.
  * Integrated with ResearchService to fetch data from IRN backend.
  */
 
 import { useMemo, useState, useEffect } from 'react';
 import { Research, ResearchStatus } from '@iris/domain';
-import { DataTable } from '../../design-system/components/data-table';
+import { TabbedTable } from '../../design-system/components/tabbed-table';
+import type { TabbedTableTab } from '../../design-system/components/tabbed-table';
 import type { DataTableColumn } from '../../design-system/components/data-table/DataTable.types';
 import { EyeIcon, PencilIcon as EditIcon, PlusIcon } from '@heroicons/react/24/outline';
 import { researchService } from '../../services/middleware';
-import { Button } from '@/design-system/components/button';
 import Pagination from '@/design-system/components/pagination/Pagination';
 import '../../styles/shared/List.css';
 
@@ -67,16 +68,6 @@ export function ResearchList({
         }
     };
 
-    // Format date helper
-    const formatDate = (date?: Date | null) => {
-        if (!date) return '-';
-        return new Intl.DateTimeFormat('pt-BR', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric',
-        }).format(date);
-    };
-
     // Format status helper
     const formatStatus = (status: ResearchStatus) => {
         const statusMap = {
@@ -119,7 +110,7 @@ export function ResearchList({
             label: 'Descrição',
             accessor: 'description',
             sortable: false,
-            width: '25%',
+            width: '30%',
             render: (value) => (
                 <span title={value as string}>
                     {truncateText(value as string, 50)}
@@ -147,18 +138,10 @@ export function ResearchList({
             render: (value) => value || '-',
         },
         {
-            id: 'endDate',
-            label: 'Data Final',
-            accessor: 'endDate',
-            sortable: true,
-            width: '10%',
-            render: (value) => formatDate(value as Date | null),
-        },
-        {
             id: 'actions',
             label: 'Ações',
             accessor: 'id',
-            width: '10%',
+            width: '15%',
             align: 'center',
             render: (_, research) => (
                 <div className="list-actions">
@@ -189,6 +172,32 @@ export function ResearchList({
         },
     ], [onResearchEdit, onResearchView]);
 
+    // Tab configuration (single tab for style consistency)
+    const tabs: TabbedTableTab<Research>[] = useMemo(() => [
+        {
+            value: 'researches',
+            label: 'Todas as Pesquisas',
+            data: researches,
+            columns: columns,
+            action: {
+                label: 'Adicionar Pesquisa',
+                icon: <PlusIcon />,
+                onClick: onResearchAdd || (() => console.log('Add research clicked')),
+                variant: 'primary',
+            },
+        },
+    ], [columns, researches, onResearchAdd]);
+
+    // Search filter
+    const searchFilter = (item: Record<string, unknown>, query: string) => {
+        const lowerQuery = query.toLowerCase();
+        return (
+            (item.title as string)?.toLowerCase().includes(lowerQuery) ||
+            (item.description as string)?.toLowerCase().includes(lowerQuery) ||
+            (item.status as string)?.toLowerCase().includes(lowerQuery)
+        );
+    };
+
     // Show error if loading failed
     if (error) {
         return (
@@ -217,44 +226,19 @@ export function ResearchList({
 
     return (
         <div className="list-screen">
-            {/* Header with title and add button */}
-            <div className="list-header" style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginBottom: '20px',
-                padding: '0 16px'
-            }}>
-                <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 600 }}>
-                    Todos os projetos de pesquisa
-                </h2>
-                <Button
-                    variant="primary"
-                    icon={<PlusIcon />}
-                    iconPosition="left"
-                    onClick={onResearchAdd}
-                >
-                    Adicionar Pesquisa
-                </Button>
-            </div>
+            <TabbedTable
+                tabs={tabs}
+                search={{
+                    placeholder: 'Buscar pesquisa...',
+                    filter: searchFilter,
+                }}
+                emptyMessage="Nenhum projeto de pesquisa cadastrado."
+                emptySearchMessage="Nenhuma pesquisa encontrada com os critérios de busca."
+                striped
+                hoverable
+                loading={loading}
+            />
 
-            {loading && (
-                <div style={{ padding: '20px', textAlign: 'center' }}>
-                    Carregando projetos de pesquisa...
-                </div>
-            )}
-
-            {!loading && (
-                <DataTable
-                    columns={columns}
-                    data={researches}
-                    emptyMessage="Nenhum projeto de pesquisa cadastrado."
-                    striped
-                    hoverable
-                />
-            )}
-
-            {/* Pagination */}
             {!loading && pagination.totalRecords > pageSize &&
                 <Pagination
                     setPagination={setPagination}
