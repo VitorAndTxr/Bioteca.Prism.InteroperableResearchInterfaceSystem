@@ -2,7 +2,7 @@
 
 **Project**: IRIS (Interoperable Research Interface System)
 **Version**: 0.1.0
-**Last Updated**: 2025-11-20T06:15:00Z
+**Last Updated**: 2026-01-19T12:00:00Z
 
 This document provides a comprehensive overview of all implementation activities in the IRIS project, tracking completed features, in-progress work, and pending tasks.
 
@@ -630,58 +630,57 @@ The following tasks are queued for implementation, ordered by priority:
 
 | Metric | Value |
 |--------|-------|
-| **Total Implementations** | 6 |
+| **Total Implementations** | 6 major milestones |
 | **Completed** | 6 (100%) |
 | **In Progress** | 0 |
-| **Pending** | 7 tasks queued |
-| **Desktop Components** | 16/30 (53%) ✅ |
-| **Desktop Services** | 7 (Base, User, Researcher, Research, Snomed, NodeConnection, Volunteer) ✅ |
+| **Pending** | 2 tasks queued |
+| **Desktop Components** | 14/30 (47%) ✅ |
+| **Desktop Services** | 8 (Base, Auth, User, Researcher, Research, Snomed, NodeConnection, Volunteer) ✅ |
 | **Domain Models** | 14+ (Auth, User, Researcher, Pagination, Snomed, Research, Volunteer, etc.) ✅ |
 | **Mobile Screens** | 3/18 (17%) |
-| **Desktop Screens** | 9/18 (50%) ✅ |
+| **Desktop Screens** | 8/18 (44%) ✅ |
 | **Tests Written** | 0 |
-| **Storybook Stories** | 8 ✅ |
+| **Storybook Stories** | 9 ✅ |
 
 ### Task Queue Statistics
 
 | Metric | Value |
 |--------|-------|
-| **Total Queued Tasks** | 12 |
-| **Pending** | 7 |
+| **Total Queued Tasks** | 17 |
+| **Pending** | 2 |
 | **In Progress** | 0 |
-| **Completed** | 6 |
-| **Estimated Hours Remaining** | 35 hours |
-| **Average Completion Time** | 3.5 hours |
+| **Completed** | 15 |
+| **Estimated Hours Remaining** | 12 hours |
+| **Average Completion Time** | 2.3 hours |
 
 ### Platform Breakdown
 
 | Platform | Components | Screens | Features | Storybook |
 |----------|------------|---------|----------|-----------|
 | **Mobile** | 1 (SEMGChart) | 3 (Home, Streaming, Config) | 1 (sEMG Streaming) | 0 stories |
-| **Desktop** | 16 (Design System) ✅ | 9 (Login, Home, Users, NodeConn, SNOMED, Research, Volunteers) ✅ | 4 (Auth, Mocking, Research, Volunteers) | 8 stories ✅ |
+| **Desktop** | 14 (Design System) ✅ | 8 (Login, Home, Users, NodeConn, SNOMED, Research, ResearchDetails, Volunteers) ✅ | 4 (Auth, Mocking, Research, Volunteers) | 9 stories ✅ |
 | **Shared** | 0 (future: packages/ui-components) | - | - | - |
 
-### Desktop Components (16/30 Complete)
+### Desktop Components (14/30 Complete - Verified 2026-01-19)
 
-**Completed Components:**
+**Verified Components:**
 1. ✅ app-layout (AppLayout)
 2. ✅ avatar (Avatar - 4 sizes, custom images)
 3. ✅ button (Button - 3 variants, 3 sizes, icons)
 4. ✅ button-group (ButtonGroup - horizontal/vertical)
 5. ✅ data-table (DataTable - sorting, pagination)
-6. ✅ datepicker (DatePicker - basic)
-7. ✅ dropdown (Dropdown - multi-select, search)
-8. ✅ header (Header - user profile, notifications)
-9. ✅ input (Input - validation, error states)
-10. ✅ modal (Modal - dialogs)
+6. ✅ dropdown (Dropdown - multi-select, search)
+7. ✅ header (Header - user profile, notifications)
+8. ✅ input (Input - validation, error states)
+9. ✅ modal (Modal - dialogs)
+10. ✅ pagination (Pagination - page navigation)
 11. ✅ password (Password - strength indicator)
 12. ✅ search-bar (SearchBar - autocomplete)
 13. ✅ sidebar (Sidebar - navigation)
-14. ✅ toast (Toast - notifications)
-15. ✅ typography (Typography - design system fonts)
-16. ⚠️ Storybook examples (8 stories in src/stories/)
+14. ✅ tabbed-table (TabbedTable - table with tabs)
 
-**Pending Components (14 remaining):**
+**Pending Components (16 remaining):**
+- Toast, DatePicker, Typography (not yet implemented)
 - Tabs, Breadcrumb, Context Menu, Dialog Window
 - Stepper, Phone Number, Tooltip, Progress
 - Tags, Accordion, Popover, Mobile Elements
