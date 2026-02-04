@@ -1,53 +1,38 @@
+/**
+ * IRIS Mobile App
+ *
+ * Main application entry point.
+ * Wraps the app with necessary providers and navigation.
+ *
+ * Provider hierarchy:
+ * 1. BluetoothContextProvider - Device communication
+ * 2. AuthProvider - Authentication state
+ * 3. SessionProvider - Clinical session management
+ * 4. SyncProvider - Data synchronization (starts when authenticated)
+ * 5. NavigationContainer - React Navigation
+ * 6. RootNavigator - Auth-gated navigation
+ */
+
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { BluetoothContextProvider } from './src/context/BluetoothContext';
-import HomeScreen from './src/screens/HomeScreen';
-import { StreamConfigScreen } from './src/screens/StreamConfigScreen';
-import { StreamingScreen } from './src/screens/StreamingScreen';
-
-// Define navigation parameter list
-export type RootStackParamList = {
-  Home: undefined;
-  StreamConfig: undefined;
-  Streaming: undefined;
-};
-
-const Stack = createNativeStackNavigator<RootStackParamList>();
+import { AuthProvider } from './src/context/AuthContext';
+import { SessionProvider } from './src/context/SessionContext';
+import { SyncProvider } from './src/context/SyncContext';
+import { RootNavigator } from './src/navigation';
 
 export default function App() {
   return (
     <BluetoothContextProvider>
-      <NavigationContainer>
-        <Stack.Navigator
-          initialRouteName="Home"
-          screenOptions={{
-            headerStyle: {
-              backgroundColor: '#2196F3',
-            },
-            headerTintColor: '#fff',
-            headerTitleStyle: {
-              fontWeight: 'bold',
-            },
-          }}
-        >
-          <Stack.Screen
-            name="Home"
-            component={HomeScreen}
-            options={{ title: 'PRISM - IRIS' }}
-          />
-          <Stack.Screen
-            name="StreamConfig"
-            component={StreamConfigScreen}
-            options={{ title: 'Stream Configuration' }}
-          />
-          <Stack.Screen
-            name="Streaming"
-            component={StreamingScreen}
-            options={{ title: 'sEMG Streaming' }}
-          />
-        </Stack.Navigator>
-      </NavigationContainer>
+      <AuthProvider>
+        <SessionProvider>
+          <SyncProvider syncIntervalMs={60000} maxRetries={5}>
+            <NavigationContainer>
+              <RootNavigator />
+            </NavigationContainer>
+          </SyncProvider>
+        </SessionProvider>
+      </AuthProvider>
     </BluetoothContextProvider>
   );
 }

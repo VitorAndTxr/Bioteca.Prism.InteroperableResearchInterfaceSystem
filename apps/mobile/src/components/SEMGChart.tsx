@@ -8,6 +8,7 @@ interface SEMGChartProps {
     sampleRate: number;
     dataType: StreamType;
     autoScroll?: boolean; // Enable auto-scroll for new data
+    darkTheme?: boolean; // Enable dark theme styling
 }
 
 /**
@@ -21,7 +22,7 @@ interface SEMGChartProps {
  * - Memoized to prevent unnecessary re-renders
  * - Red zero-line (X-axis) for clear reference
  */
-export const SEMGChart = React.memo(function SEMGChart({ data, sampleRate, dataType, autoScroll = true }: SEMGChartProps) {
+export const SEMGChart = React.memo(function SEMGChart({ data, sampleRate, dataType, autoScroll = true, darkTheme = false }: SEMGChartProps) {
     const scrollViewRef = useRef<ScrollView>(null);
     const previousDataLength = useRef(0);
     const lastScrollTime = useRef(0);
@@ -89,14 +90,18 @@ export const SEMGChart = React.memo(function SEMGChart({ data, sampleRate, dataT
         return Math.max(screenWidth - 80, data.length * spacing);
     }, [data.length, spacing, screenWidth]);
 
+    const containerStyle = darkTheme ? [styles.container, styles.containerDark] : styles.container;
+    const headerTextStyle = darkTheme ? [styles.headerText, styles.textDark] : styles.headerText;
+    const subHeaderTextStyle = darkTheme ? [styles.subHeaderText, styles.textMutedDark] : styles.subHeaderText;
+
     return (
-        <View style={styles.container}>
+        <View style={containerStyle}>
             {/* Chart Header */}
             <View style={styles.header}>
-                <Text style={styles.headerText}>
+                <Text style={headerTextStyle}>
                     sEMG Signal - {dataType === 'raw' ? 'Raw ADC' : dataType === 'filtered' ? 'Filtered' : 'RMS Envelope'}
                 </Text>
-                <Text style={styles.subHeaderText}>
+                <Text style={subHeaderTextStyle}>
                     {sampleRate} Hz | Continuous streaming {autoScroll ? '(auto-scroll)' : ''}
                 </Text>
             </View>
@@ -117,42 +122,41 @@ export const SEMGChart = React.memo(function SEMGChart({ data, sampleRate, dataT
                     mostNegativeValue={-100}
                     noOfSections={10}
                     spacing={spacing}
-                    thickness={1}
-                    color="#2196F3"
+                    thickness={darkTheme ? 2 : 1}
+                    color={darkTheme ? "#49A2A8" : "#2196F3"}
                     curved={false}
                     rulesType="solid"
-                    rulesColor="#e0e0e0"
+                    rulesColor={darkTheme ? "#374151" : "#e0e0e0"}
                     showVerticalLines={false}
-                    verticalLinesColor="#f0f0f0"
-                    yAxisColor="#999"
+                    verticalLinesColor={darkTheme ? "#4B5563" : "#f0f0f0"}
+                    yAxisColor={darkTheme ? "#6B7280" : "#999"}
                     yAxisThickness={1}
-                    yAxisTextStyle={{ color: '#666', fontSize: 11 }}
+                    yAxisTextStyle={{ color: darkTheme ? '#9CA3AF' : '#666', fontSize: 11 }}
                     yAxisLabelWidth={40}
-                    xAxisColor="#FF0000"
-                    xAxisThickness={2}
+                    xAxisColor={darkTheme ? "#49A2A8" : "#FF0000"}
+                    xAxisThickness={darkTheme ? 1 : 2}
                     animateOnDataChange={false}
                     hideDataPoints={true}
                     areaChart={false}
                     isAnimated={false}
                     startOpacity={1}
                     endOpacity={1}
-                    allowNegativeValues={true}
                 />
             </ScrollView>
 
             {/* Axis Labels */}
             <View style={styles.axisLabels}>
-                <Text style={styles.xAxisLabel}>Time (seconds)</Text>
-                <Text style={styles.yAxisLabel}>Amplitude (-500 to +500, zero-centered)</Text>
+                <Text style={darkTheme ? [styles.xAxisLabel, styles.textMutedDark] : styles.xAxisLabel}>Time (seconds)</Text>
+                <Text style={darkTheme ? [styles.yAxisLabel, styles.textMutedDark] : styles.yAxisLabel}>Amplitude (-500 to +500, zero-centered)</Text>
             </View>
 
             {/* Grid Info */}
             <View style={styles.gridInfo}>
-                <Text style={styles.gridInfoText}>
+                <Text style={darkTheme ? [styles.gridInfoText, styles.textMutedDark] : styles.gridInfoText}>
                     Grid: {(1 / sampleRate * 1000).toFixed(1)}ms per sample | {data.length} samples displayed
                 </Text>
                 {autoScroll && (
-                    <Text style={styles.gridInfoText}>
+                    <Text style={darkTheme ? [styles.gridInfoText, styles.textMutedDark] : styles.gridInfoText}>
                         📊 Auto-scrolling to show latest data
                     </Text>
                 )}
@@ -171,6 +175,9 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.1,
         shadowRadius: 4,
         elevation: 3,
+    },
+    containerDark: {
+        backgroundColor: '#252538',
     },
     header: {
         marginBottom: 12,
@@ -216,5 +223,11 @@ const styles = StyleSheet.create({
         fontSize: 10,
         color: '#999',
         fontStyle: 'italic',
+    },
+    textDark: {
+        color: '#FFFFFF',
+    },
+    textMutedDark: {
+        color: '#9CA3AF',
     },
 });

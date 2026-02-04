@@ -1,3 +1,6 @@
+// Polyfills must be imported before anything else
+import './src/polyfills/crypto';
+
 import { registerRootComponent } from 'expo';
 
 import App from './App';

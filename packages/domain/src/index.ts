@@ -31,3 +31,15 @@ export * from './models/Research';
 export * from './models/Pagination';
 
 export * from './models/Volunteer';
+
+// Sync Status
+export * from './models/SyncStatus';
+
+// Clinical Sessions
+export * from './models/ClinicalSession';
+
+// Recordings
+export * from './models/Recording';
+
+// Annotations
+export * from './models/Annotation';

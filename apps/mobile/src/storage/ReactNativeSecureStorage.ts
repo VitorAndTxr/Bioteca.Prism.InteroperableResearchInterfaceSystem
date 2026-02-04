@@ -23,7 +23,9 @@ export class ReactNativeSecureStorage implements SecureStorage {
      * Get scoped key with prefix
      */
     private scopedKey(key: string): string {
-        return `${this.prefix}:${key}`;
+        // Expo SecureStore only allows alphanumeric characters, ".", "-", and "_".
+        // Replace any other characters (e.g. ":") with "_".
+        return `${this.prefix}_${key}`.replace(/[^a-zA-Z0-9._-]/g, '_');
     }
 
     /**

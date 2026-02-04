@@ -36,6 +36,8 @@ export function BluetoothContextProvider(props: BluetoothContextProviderProps) {
     const [reload, callReload] = useState(false);
 
     const [neuraDevices, setNeuraDevices] = useState<ActivableBluetoothDevice[]>([]);
+    const [pairedDevices, setPairedDevices] = useState<ActivableBluetoothDevice[]>([]);
+    const [isScanning, setIsScanning] = useState(false);
     const [selectedDevice, setSelectedDevice] = useState<BluetoothDevice>();
     const [btDataRecieveSubscription, setBtDataRecieveSubscription] = useState<BluetoothEventSubscription>();
     const [btDeviceDisconnectSubscription, setBtDeviceDisconnectSubscription] = useState<BluetoothEventSubscription>();
@@ -208,9 +210,22 @@ export function BluetoothContextProvider(props: BluetoothContextProviderProps) {
     async function updatePairedDevices() {
         try {
             let processedNeuraDevices: ActivableBluetoothDevice[] = [];
+            let processedAllDevices: ActivableBluetoothDevice[] = [];
             let boundedDevices = await RNBluetoothClassic.getBondedDevices();
             let boundedNeuraDevices = boundedDevices.filter(item => item.name === 'NeuroEstimulator');
 
+            // Process all paired devices
+            for (let index = 0; index < boundedDevices.length; index++) {
+                const boundedDevice = boundedDevices[index];
+                let isConnectedResponse = await boundedDevice.isConnected();
+
+                processedAllDevices.push({
+                    active: isConnectedResponse,
+                    ...boundedDevice
+                } as ActivableBluetoothDevice);
+            }
+
+            // Process NeuroEstimulator devices
             for (let index = 0; index < boundedNeuraDevices.length; index++) {
                 const boundedNeuraDevice = boundedNeuraDevices[index];
                 let isConnectedResponse = await boundedNeuraDevice.isConnected();
@@ -222,6 +237,7 @@ export function BluetoothContextProvider(props: BluetoothContextProviderProps) {
             }
 
             setNeuraDevices(processedNeuraDevices);
+            setPairedDevices(processedAllDevices);
             callReload(!reload);
 
             if (boundedNeuraDevices.length === 0) {
@@ -573,10 +589,44 @@ export function BluetoothContextProvider(props: BluetoothContextProviderProps) {
         }
     }
 
+    async function scanForDevices(): Promise<void> {
+        try {
+            setIsScanning(true);
+            await updatePairedDevices();
+            console.log('Device scan completed');
+        } catch (error) {
+            console.error('Error scanning for devices:', error);
+        } finally {
+            setIsScanning(false);
+        }
+    }
+
+    async function connectToDevice(address: string): Promise<void> {
+        await connectBluetooth(address);
+    }
+
+    async function disconnectDevice(): Promise<void> {
+        if (selectedDevice) {
+            await disconnect(selectedDevice.address);
+        }
+    }
+
+    function getSignalStrength(): number | null {
+        // Mock signal strength since RSSI is not reliably available via BT Classic
+        // In a production app, this could query device RSSI if available
+        if (selectedDevice) {
+            return 75; // Mock 75% signal strength when connected
+        }
+        return null;
+    }
+
     return (
         <BluetoothContext.Provider value={{
             bluetoothOn,
             neuraDevices,
+            pairedDevices,
+            isScanning,
+            signalStrength: getSignalStrength(),
             showConnectionErrorModal,
             setShowConnectionErrorModal,
             writeToBluetooth,
@@ -606,7 +656,10 @@ export function BluetoothContextProvider(props: BluetoothContextProviderProps) {
             resumeSession,
             sendFesParams,
             singleStimulation,
-            readGyroscope
+            readGyroscope,
+            scanForDevices,
+            connectToDevice,
+            disconnectDevice
         }}>
             {props.children}
         </BluetoothContext.Provider>
@@ -620,6 +673,9 @@ export function useBluetoothContext() {
 interface BluetoothContextData {
     bluetoothOn: boolean;
     neuraDevices: ActivableBluetoothDevice[];
+    pairedDevices: ActivableBluetoothDevice[];
+    isScanning: boolean;
+    signalStrength: number | null;
     selectedDevice: BluetoothDevice | undefined;
     setSelectedDevice: React.Dispatch<React.SetStateAction<BluetoothDevice | undefined>>;
     showConnectionErrorModal: boolean;
@@ -650,4 +706,7 @@ interface BluetoothContextData {
     sendFesParams: () => Promise<void>;
     singleStimulation: () => Promise<void>;
     readGyroscope: () => Promise<void>;
+    scanForDevices: () => Promise<void>;
+    connectToDevice: (address: string) => Promise<void>;
+    disconnectDevice: () => Promise<void>;
 }
