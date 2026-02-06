@@ -3,16 +3,17 @@
  *
  * Represents a volunteer (patient) participating in research studies.
  * Part of the PRISM federated research framework.
+ *
+ * Aligned with backend entity: InteroperableResearchNode Volunteer
  */
 
 /**
- * Volunteer status enumeration
+ * Volunteer consent status
  */
-export enum VolunteerStatus {
-    ACTIVE = 'active',
-    INACTIVE = 'inactive',
-    SUSPENDED = 'suspended',
-    COMPLETED = 'completed'
+export enum ConsentStatus {
+    PENDING = 'Pending',
+    GRANTED = 'Granted',
+    REVOKED = 'Revoked'
 }
 
 /**
@@ -26,17 +27,41 @@ export enum VolunteerGender {
 }
 
 /**
+ * Blood type enumeration
+ */
+export enum BloodType {
+    A_POSITIVE = 'A+',
+    A_NEGATIVE = 'A-',
+    B_POSITIVE = 'B+',
+    B_NEGATIVE = 'B-',
+    AB_POSITIVE = 'AB+',
+    AB_NEGATIVE = 'AB-',
+    O_POSITIVE = 'O+',
+    O_NEGATIVE = 'O-',
+    UNKNOWN = 'Unknown'
+}
+
+/**
  * Volunteer entity
+ *
+ * Matches backend fields: VolunteerId, ResearchNodeId, VolunteerCode,
+ * Name, Email, BirthDate, Gender, BloodType, Height, Weight,
+ * MedicalHistory, ConsentStatus, EnrolledAt, UpdatedAt
  */
 export interface Volunteer {
     id: string;
+    researchNodeId: string;
+    volunteerCode: string;
     name: string;
     email: string;
     birthDate: Date;
     gender: VolunteerGender;
-    phone?: string;
-    status: VolunteerStatus;
-    createdAt?: Date;
+    bloodType?: BloodType;
+    height?: number;
+    weight?: number;
+    medicalHistory?: string;
+    consentStatus: ConsentStatus;
+    enrolledAt?: Date;
     updatedAt?: Date;
 }
 
@@ -46,7 +71,27 @@ export interface Volunteer {
 export interface NewVolunteerData {
     name: string;
     email: string;
-    birthDate: string; // ISO 8601 format
+    birthDate: string;
     gender: VolunteerGender;
-    phone?: string;
+    volunteerCode?: string;
+    bloodType?: BloodType;
+    height?: number;
+    weight?: number;
+    medicalHistory?: string;
+    consentStatus?: ConsentStatus;
+}
+
+/**
+ * Data required to update an existing volunteer
+ */
+export interface UpdateVolunteerData {
+    name?: string;
+    email?: string;
+    birthDate?: string;
+    gender?: VolunteerGender;
+    bloodType?: BloodType;
+    height?: number;
+    weight?: number;
+    medicalHistory?: string;
+    consentStatus?: ConsentStatus;
 }

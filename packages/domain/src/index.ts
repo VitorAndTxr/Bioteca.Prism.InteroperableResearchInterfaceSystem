@@ -32,6 +32,12 @@ export * from './models/Pagination';
 
 export * from './models/Volunteer';
 
+// Application Management
+export * from './models/Application';
+
+// Sensor Management
+export * from './models/Sensor';
+
 // Sync Status
 export * from './models/SyncStatus';
 

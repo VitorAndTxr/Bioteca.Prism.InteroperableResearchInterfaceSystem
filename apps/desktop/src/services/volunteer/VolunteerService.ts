@@ -2,37 +2,46 @@
  * Volunteer Service
  *
  * Handles volunteer (patient) management operations with the InteroperableResearchNode backend.
- * Implements pagination support for volunteer listing and volunteer creation functionality.
+ * Implements pagination support for volunteer listing and full CRUD functionality.
  *
  * Endpoints:
- * - GET /api/Volunteer/GetAllPaginatedAsync - Get paginated list of volunteers
+ * - GET /api/Volunteer/GetAllPaginated - Get paginated list of volunteers
+ * - GET /api/Volunteer/{id} - Get volunteer by ID
  * - POST /api/Volunteer/New - Create new volunteer
+ * - PUT /api/Volunteer/Update/{id} - Update existing volunteer
+ * - DELETE /api/Volunteer/{id} - Delete volunteer
  */
 
 import { BaseService, type MiddlewareServices } from '../BaseService';
 import {
-    VolunteerStatus,
     VolunteerGender,
+    ConsentStatus,
+    BloodType,
     type Volunteer,
     type NewVolunteerData,
+    type UpdateVolunteerData,
     type PaginatedResponse,
-    type AuthError,
     type AuthErrorCode
 } from '@iris/domain';
 
 /**
  * Middleware Volunteer DTO (camelCase - matches backend JSON serialization)
- * Backend returns Volunteer entity with these fields
  */
 interface VolunteerDTO {
     id: string;
+    volunteerId?: string;
+    researchNodeId: string;
+    volunteerCode: string;
     name: string;
     email: string;
     birthDate: string;
     gender: string;
-    phone?: string;
-    status: string;
-    createdAt?: string;
+    bloodType?: string;
+    height?: number;
+    weight?: number;
+    medicalHistory?: string;
+    consentStatus: string;
+    enrolledAt?: string;
     updatedAt?: string;
 }
 
@@ -44,7 +53,28 @@ interface AddVolunteerPayload extends Record<string, unknown> {
     Email: string;
     BirthDate: string;
     Gender: string;
-    Phone?: string;
+    ResearchNodeId: string;
+    VolunteerCode?: string;
+    BloodType?: string;
+    Height?: number;
+    Weight?: number;
+    MedicalHistory?: string;
+    ConsentStatus?: string;
+}
+
+/**
+ * Middleware Update Volunteer Payload (PascalCase - matches backend)
+ */
+interface UpdateVolunteerPayload extends Record<string, unknown> {
+    Name?: string;
+    Email?: string;
+    BirthDate?: string;
+    Gender?: string;
+    BloodType?: string;
+    Height?: number;
+    Weight?: number;
+    MedicalHistory?: string;
+    ConsentStatus?: string;
 }
 
 /**
@@ -56,7 +86,7 @@ export class VolunteerService extends BaseService {
     constructor(services: MiddlewareServices) {
         super(services, {
             serviceName: 'VolunteerService',
-            debug: true // Enable for development
+            debug: true
         });
     }
 
@@ -74,12 +104,27 @@ export class VolunteerService extends BaseService {
         this.log('Service disposed');
     }
 
+    // ==================== Mock Data ====================
+
+    private static readonly MOCK_VOLUNTEERS: Volunteer[] = [
+        { id: 'vol-001', researchNodeId: 'node-1', volunteerCode: 'VC-001', name: 'Ana Clara Mendes', email: 'ana.mendes@gmail.com', birthDate: new Date(1985, 2, 14), gender: VolunteerGender.FEMALE, bloodType: BloodType.A_POSITIVE, height: 1.65, weight: 58, consentStatus: ConsentStatus.GRANTED, enrolledAt: new Date('2025-06-10'), updatedAt: new Date('2025-06-10') },
+        { id: 'vol-002', researchNodeId: 'node-1', volunteerCode: 'VC-002', name: 'Carlos Eduardo Ferreira', email: 'carlos.ferreira@outlook.com', birthDate: new Date(1978, 7, 22), gender: VolunteerGender.MALE, bloodType: BloodType.O_POSITIVE, height: 1.78, weight: 82, consentStatus: ConsentStatus.GRANTED, enrolledAt: new Date('2025-06-12'), updatedAt: new Date('2025-06-12') },
+        { id: 'vol-003', researchNodeId: 'node-1', volunteerCode: 'VC-003', name: 'Beatriz Oliveira Santos', email: 'bia.santos@hotmail.com', birthDate: new Date(1992, 0, 5), gender: VolunteerGender.FEMALE, bloodType: BloodType.B_NEGATIVE, height: 1.60, weight: 55, consentStatus: ConsentStatus.GRANTED, enrolledAt: new Date('2025-06-15'), updatedAt: new Date('2025-07-01') },
+        { id: 'vol-004', researchNodeId: 'node-1', volunteerCode: 'VC-004', name: 'Rafael Almeida Costa', email: 'rafael.costa@gmail.com', birthDate: new Date(1990, 10, 30), gender: VolunteerGender.MALE, bloodType: BloodType.AB_POSITIVE, height: 1.82, weight: 88, consentStatus: ConsentStatus.REVOKED, enrolledAt: new Date('2025-05-20'), updatedAt: new Date('2025-09-15') },
+        { id: 'vol-005', researchNodeId: 'node-1', volunteerCode: 'VC-005', name: 'Juliana Pereira Lima', email: 'juliana.lima@usp.br', birthDate: new Date(1988, 5, 18), gender: VolunteerGender.FEMALE, bloodType: BloodType.O_NEGATIVE, height: 1.70, weight: 62, consentStatus: ConsentStatus.GRANTED, enrolledAt: new Date('2025-07-01'), updatedAt: new Date('2025-07-01') },
+        { id: 'vol-006', researchNodeId: 'node-1', volunteerCode: 'VC-006', name: 'Fernando Henrique Souza', email: 'fernando.souza@unicamp.br', birthDate: new Date(1975, 3, 8), gender: VolunteerGender.MALE, bloodType: BloodType.A_NEGATIVE, height: 1.75, weight: 78, consentStatus: ConsentStatus.PENDING, enrolledAt: new Date('2025-04-10'), updatedAt: new Date('2025-08-20') },
+        { id: 'vol-007', researchNodeId: 'node-1', volunteerCode: 'VC-007', name: 'Mariana Rodrigues Silva', email: 'mariana.silva@gmail.com', birthDate: new Date(1995, 8, 25), gender: VolunteerGender.FEMALE, bloodType: BloodType.B_POSITIVE, height: 1.68, weight: 60, consentStatus: ConsentStatus.GRANTED, enrolledAt: new Date('2025-07-15'), updatedAt: new Date('2025-07-15') },
+        { id: 'vol-008', researchNodeId: 'node-1', volunteerCode: 'VC-008', name: 'Lucas Gabriel Martins', email: 'lucas.martins@outlook.com', birthDate: new Date(1982, 1, 12), gender: VolunteerGender.MALE, bloodType: BloodType.AB_NEGATIVE, height: 1.80, weight: 85, consentStatus: ConsentStatus.REVOKED, enrolledAt: new Date('2025-06-01'), updatedAt: new Date('2025-10-05') },
+        { id: 'vol-009', researchNodeId: 'node-1', volunteerCode: 'VC-009', name: 'Camila Nascimento Rocha', email: 'camila.rocha@gmail.com', birthDate: new Date(1998, 11, 3), gender: VolunteerGender.FEMALE, bloodType: BloodType.O_POSITIVE, height: 1.62, weight: 52, consentStatus: ConsentStatus.GRANTED, enrolledAt: new Date('2025-08-01'), updatedAt: new Date('2025-08-01') },
+        { id: 'vol-010', researchNodeId: 'node-1', volunteerCode: 'VC-010', name: 'Thiago Barbosa Nunes', email: 'thiago.nunes@hotmail.com', birthDate: new Date(1987, 6, 19), gender: VolunteerGender.MALE, bloodType: BloodType.A_POSITIVE, height: 1.76, weight: 80, consentStatus: ConsentStatus.GRANTED, enrolledAt: new Date('2025-08-10'), updatedAt: new Date('2025-08-10') },
+        { id: 'vol-011', researchNodeId: 'node-1', volunteerCode: 'VC-011', name: 'Larissa Campos Teixeira', email: 'larissa.teixeira@unifesp.br', birthDate: new Date(1993, 4, 27), gender: VolunteerGender.FEMALE, height: 1.64, weight: 57, consentStatus: ConsentStatus.GRANTED, enrolledAt: new Date('2025-03-15'), updatedAt: new Date('2025-07-30') },
+        { id: 'vol-012', researchNodeId: 'node-1', volunteerCode: 'VC-012', name: 'Gabriel Santos Araujo', email: 'gabriel.araujo@gmail.com', birthDate: new Date(1980, 9, 15), gender: VolunteerGender.MALE, height: 1.85, weight: 90, consentStatus: ConsentStatus.GRANTED, enrolledAt: new Date('2025-09-01'), updatedAt: new Date('2025-09-01') },
+    ];
+
+    // ==================== CRUD Operations ====================
+
     /**
      * Get paginated list of volunteers
-     *
-     * @param page - Page number (1-indexed, default: 1)
-     * @param pageSize - Items per page (default: 10, max: 100)
-     * @returns Paginated volunteer list with metadata
      */
     async getVolunteersPaginated(
         page: number = 1,
@@ -88,28 +133,15 @@ export class VolunteerService extends BaseService {
         if (this.USE_MOCK) {
             return new Promise(resolve => {
                 setTimeout(() => {
-                    const mockVolunteers: Volunteer[] = Array(pageSize).fill(null).map((_, i) => {
-                        const birthYear = 1960 + Math.floor(Math.random() * 40);
-                        const birthMonth = Math.floor(Math.random() * 12);
-                        const birthDay = 1 + Math.floor(Math.random() * 28);
+                    const all = VolunteerService.MOCK_VOLUNTEERS;
+                    const start = (page - 1) * pageSize;
+                    const data = all.slice(start, start + pageSize);
 
-                        return {
-                            id: `mock-volunteer-${page}-${i}`,
-                            name: `Voluntário ${page}-${i}`,
-                            email: `voluntario${page}${i}@email.com`,
-                            birthDate: new Date(birthYear, birthMonth, birthDay),
-                            gender: [VolunteerGender.MALE, VolunteerGender.FEMALE, VolunteerGender.OTHER][i % 3],
-                            phone: `(11) 9${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`,
-                            status: [VolunteerStatus.ACTIVE, VolunteerStatus.INACTIVE, VolunteerStatus.COMPLETED][i % 3],
-                            createdAt: new Date(),
-                            updatedAt: new Date()
-                        };
-                    });
                     resolve({
-                        data: mockVolunteers,
+                        data,
                         currentPage: page,
                         pageSize: pageSize,
-                        totalRecords: 50
+                        totalRecords: all.length
                     });
                 }, 500);
             });
@@ -118,28 +150,21 @@ export class VolunteerService extends BaseService {
         return this.handleMiddlewareError(async () => {
             this.log(`Fetching volunteers (page: ${page}, pageSize: ${pageSize})`);
 
-            // Ensure we have an authenticated session
             await this.ensureSession();
 
-            // Prepare pagination query parameters
             const queryParams = new URLSearchParams({
                 page: page.toString(),
                 pageSize: pageSize.toString()
             });
 
-            // Call backend API with pagination
             const response = await this.middleware.invoke<Record<string, unknown>, PaginatedResponse<VolunteerDTO>>({
-                path: `/api/Volunteer/GetAllPaginatedAsync?${queryParams.toString()}`,
+                path: `/api/Volunteer/GetAllPaginated?${queryParams.toString()}`,
                 method: 'GET',
                 payload: {}
             });
 
-            // Debug: Log full decrypted response
-            console.log('[VolunteerService] 🔍 Full decrypted response:', JSON.stringify(response, null, 2));
-
             this.log(`Retrieved ${response.data?.length || 0} volunteers`);
 
-            // Convert middleware response to domain types
             const volunteers = (response.data || []).map(this.convertToVolunteer.bind(this));
 
             return {
@@ -152,10 +177,39 @@ export class VolunteerService extends BaseService {
     }
 
     /**
+     * Get volunteer by ID
+     */
+    async getVolunteerById(id: string): Promise<Volunteer> {
+        if (this.USE_MOCK) {
+            return new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    const volunteer = VolunteerService.MOCK_VOLUNTEERS.find(v => v.id === id);
+                    if (volunteer) {
+                        resolve(volunteer);
+                    } else {
+                        reject(new Error('Volunteer not found'));
+                    }
+                }, 300);
+            });
+        }
+
+        return this.handleMiddlewareError(async () => {
+            this.log(`Fetching volunteer by ID: ${id}`);
+
+            await this.ensureSession();
+
+            const response = await this.middleware.invoke<Record<string, unknown>, VolunteerDTO>({
+                path: `/api/Volunteer/${id}`,
+                method: 'GET',
+                payload: {}
+            });
+
+            return this.convertToVolunteer(response);
+        });
+    }
+
+    /**
      * Create new volunteer
-     *
-     * @param volunteerData - Volunteer data (name, email, birthDate, gender, phone)
-     * @returns Created volunteer
      */
     async createVolunteer(volunteerData: NewVolunteerData): Promise<Volunteer> {
         if (this.USE_MOCK) {
@@ -163,13 +217,18 @@ export class VolunteerService extends BaseService {
                 setTimeout(() => {
                     resolve({
                         id: `mock-volunteer-new-${Date.now()}`,
+                        researchNodeId: 'node-1',
+                        volunteerCode: volunteerData.volunteerCode || `VC-${Date.now()}`,
                         name: volunteerData.name,
                         email: volunteerData.email,
                         birthDate: new Date(volunteerData.birthDate),
                         gender: volunteerData.gender,
-                        phone: volunteerData.phone,
-                        status: VolunteerStatus.ACTIVE,
-                        createdAt: new Date(),
+                        bloodType: volunteerData.bloodType,
+                        height: volunteerData.height,
+                        weight: volunteerData.weight,
+                        medicalHistory: volunteerData.medicalHistory,
+                        consentStatus: volunteerData.consentStatus || ConsentStatus.PENDING,
+                        enrolledAt: new Date(),
                         updatedAt: new Date()
                     });
                 }, 500);
@@ -179,31 +238,118 @@ export class VolunteerService extends BaseService {
         return this.handleMiddlewareError(async () => {
             this.log('Creating new volunteer:', volunteerData.name);
 
-            // Validate input
             this.validateVolunteerData(volunteerData);
 
-            // Ensure session
             await this.ensureSession();
 
-            // Convert to middleware format (PascalCase)
             const middlewarePayload: AddVolunteerPayload = {
                 Name: volunteerData.name,
                 Email: volunteerData.email,
                 BirthDate: volunteerData.birthDate,
                 Gender: volunteerData.gender,
-                Phone: volunteerData.phone
+                ResearchNodeId: import.meta.env.VITE_IRN_MIDDLEWARE_RESEARCH_NODE_ID || '',
+                VolunteerCode: volunteerData.volunteerCode,
+                BloodType: volunteerData.bloodType,
+                Height: volunteerData.height,
+                Weight: volunteerData.weight,
+                MedicalHistory: volunteerData.medicalHistory,
+                ConsentStatus: volunteerData.consentStatus
             };
 
-            // Call backend API
             const response = await this.middleware.invoke<AddVolunteerPayload, VolunteerDTO>({
                 path: '/api/Volunteer/New',
                 method: 'POST',
                 payload: middlewarePayload
             });
 
-            this.log('✅ Volunteer created:', response.id);
+            this.log('Volunteer created:', response.id || response.volunteerId);
 
             return this.convertToVolunteer(response);
+        });
+    }
+
+    /**
+     * Update existing volunteer
+     */
+    async updateVolunteer(id: string, data: UpdateVolunteerData): Promise<Volunteer> {
+        if (this.USE_MOCK) {
+            return new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    const existing = VolunteerService.MOCK_VOLUNTEERS.find(v => v.id === id);
+                    if (!existing) {
+                        reject(new Error('Volunteer not found'));
+                        return;
+                    }
+                    resolve({
+                        ...existing,
+                        ...data,
+                        birthDate: data.birthDate ? new Date(data.birthDate) : existing.birthDate,
+                        gender: data.gender || existing.gender,
+                        consentStatus: data.consentStatus || existing.consentStatus,
+                        updatedAt: new Date()
+                    });
+                }, 500);
+            });
+        }
+
+        return this.handleMiddlewareError(async () => {
+            this.log(`Updating volunteer: ${id}`);
+
+            await this.ensureSession();
+
+            const middlewarePayload: UpdateVolunteerPayload = {
+                Name: data.name,
+                Email: data.email,
+                BirthDate: data.birthDate,
+                Gender: data.gender,
+                BloodType: data.bloodType,
+                Height: data.height,
+                Weight: data.weight,
+                MedicalHistory: data.medicalHistory,
+                ConsentStatus: data.consentStatus
+            };
+
+            const response = await this.middleware.invoke<UpdateVolunteerPayload, VolunteerDTO>({
+                path: `/api/Volunteer/Update/${id}`,
+                method: 'PUT',
+                payload: middlewarePayload
+            });
+
+            this.log('Volunteer updated:', id);
+
+            return this.convertToVolunteer(response);
+        });
+    }
+
+    /**
+     * Delete volunteer
+     */
+    async deleteVolunteer(id: string): Promise<void> {
+        if (this.USE_MOCK) {
+            return new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    const index = VolunteerService.MOCK_VOLUNTEERS.findIndex(v => v.id === id);
+                    if (index === -1) {
+                        reject(new Error('Volunteer not found'));
+                        return;
+                    }
+                    resolve();
+                }, 500);
+            });
+        }
+
+        return this.handleMiddlewareError(async () => {
+            this.log(`Deleting volunteer: ${id}`);
+
+            await this.ensureSession();
+
+            await this.middleware.invoke<Record<string, unknown>, void>({
+                path: `/api/Volunteer/${id}`,
+                method: 'DELETE',
+                payload: {}
+            });
+
+            this.log('Volunteer deleted:', id);
         });
     }
 
@@ -214,38 +360,40 @@ export class VolunteerService extends BaseService {
      */
     private convertToVolunteer(dto: VolunteerDTO): Volunteer {
         return {
-            id: dto.id,
+            id: dto.volunteerId || dto.id,
+            researchNodeId: dto.researchNodeId,
+            volunteerCode: dto.volunteerCode,
             name: dto.name,
             email: dto.email,
             birthDate: new Date(dto.birthDate),
             gender: this.mapGender(dto.gender),
-            phone: dto.phone,
-            status: this.mapStatus(dto.status),
-            createdAt: dto.createdAt ? new Date(dto.createdAt) : undefined,
+            bloodType: dto.bloodType ? this.mapBloodType(dto.bloodType) : undefined,
+            height: dto.height,
+            weight: dto.weight,
+            medicalHistory: dto.medicalHistory,
+            consentStatus: this.mapConsentStatus(dto.consentStatus),
+            enrolledAt: dto.enrolledAt ? new Date(dto.enrolledAt) : undefined,
             updatedAt: dto.updatedAt ? new Date(dto.updatedAt) : undefined
         };
     }
 
     /**
-     * Map backend status string to domain VolunteerStatus enum
+     * Map backend consent status string to domain ConsentStatus enum
      */
-    private mapStatus(status: string): VolunteerStatus {
-        const statusMap: Record<string, VolunteerStatus> = {
-            'active': VolunteerStatus.ACTIVE,
-            'inactive': VolunteerStatus.INACTIVE,
-            'suspended': VolunteerStatus.SUSPENDED,
-            'completed': VolunteerStatus.COMPLETED,
-            'ACTIVE': VolunteerStatus.ACTIVE,
-            'INACTIVE': VolunteerStatus.INACTIVE,
-            'SUSPENDED': VolunteerStatus.SUSPENDED,
-            'COMPLETED': VolunteerStatus.COMPLETED,
-            'Active': VolunteerStatus.ACTIVE,
-            'Inactive': VolunteerStatus.INACTIVE,
-            'Suspended': VolunteerStatus.SUSPENDED,
-            'Completed': VolunteerStatus.COMPLETED
+    private mapConsentStatus(status: string): ConsentStatus {
+        const statusMap: Record<string, ConsentStatus> = {
+            'Pending': ConsentStatus.PENDING,
+            'pending': ConsentStatus.PENDING,
+            'PENDING': ConsentStatus.PENDING,
+            'Granted': ConsentStatus.GRANTED,
+            'granted': ConsentStatus.GRANTED,
+            'GRANTED': ConsentStatus.GRANTED,
+            'Revoked': ConsentStatus.REVOKED,
+            'revoked': ConsentStatus.REVOKED,
+            'REVOKED': ConsentStatus.REVOKED
         };
 
-        return statusMap[status] || VolunteerStatus.ACTIVE;
+        return statusMap[status] || ConsentStatus.PENDING;
     }
 
     /**
@@ -268,6 +416,25 @@ export class VolunteerService extends BaseService {
         };
 
         return genderMap[gender] || VolunteerGender.NOT_INFORMED;
+    }
+
+    /**
+     * Map backend blood type string to domain BloodType enum
+     */
+    private mapBloodType(bloodType: string): BloodType {
+        const bloodTypeMap: Record<string, BloodType> = {
+            'A+': BloodType.A_POSITIVE,
+            'A-': BloodType.A_NEGATIVE,
+            'B+': BloodType.B_POSITIVE,
+            'B-': BloodType.B_NEGATIVE,
+            'AB+': BloodType.AB_POSITIVE,
+            'AB-': BloodType.AB_NEGATIVE,
+            'O+': BloodType.O_POSITIVE,
+            'O-': BloodType.O_NEGATIVE,
+            'Unknown': BloodType.UNKNOWN
+        };
+
+        return bloodTypeMap[bloodType] || BloodType.UNKNOWN;
     }
 
     /**
@@ -298,7 +465,6 @@ export class VolunteerService extends BaseService {
             );
         }
 
-        // Basic email validation
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(data.email)) {
             throw this.createAuthError(
@@ -328,11 +494,10 @@ export class VolunteerService extends BaseService {
     /**
      * Override error conversion for service-specific errors
      */
-    protected convertToAuthError(error: unknown): AuthError {
+    protected convertToAuthError(error: unknown): import('@iris/domain').AuthError {
         if (error instanceof Error) {
             const message = error.message.toLowerCase();
 
-            // Map specific backend errors
             if (message.includes('volunteer not found')) {
                 return this.createAuthError(
                     'not_found' as AuthErrorCode,
@@ -355,7 +520,6 @@ export class VolunteerService extends BaseService {
             }
         }
 
-        // Fall back to base error conversion
         return super.convertToAuthError(error);
     }
 }

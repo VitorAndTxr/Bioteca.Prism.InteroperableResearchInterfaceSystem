@@ -16,6 +16,10 @@ import CreateResearchForm from "@/screens/Research/CreateResearchForm";
 import ResearchDetailsScreen from "@/screens/Research/ResearchDetailsScreen";
 import VolunteersScreen from "@/screens/Volunteers/VolunteersScreen";
 import CreateVolunteerForm from "@/screens/Volunteers/CreateVolunteerForm";
+import VolunteerForm from "@/screens/Volunteers/VolunteerForm";
+import CreateApplicationForm from "@/screens/Research/CreateApplicationForm";
+import CreateDeviceForm from "@/screens/Research/CreateDeviceForm";
+import CreateSensorForm from "@/screens/Research/CreateSensorForm";
 import NodeConnectionsScreen from "@/screens/NodeConnections/NodeConnectionsScreen";
 import AddConnectionForm from "@/screens/NodeConnections/AddConnectionForm";
 import AddAllergyIntoleranceForm from "@/screens/SNOMED/AddAllergyIntoleranceForm";
@@ -23,6 +27,7 @@ import {
     ResearchNodeConnection,
     User,
     Researcher,
+    Volunteer,
     SnomedBodyRegion,
     SnomedBodyStructure,
     SnomedTopographicalModifier,
@@ -45,6 +50,9 @@ function AppRouter() {
     // User and Researcher selection states
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
     const [selectedResearcher, setSelectedResearcher] = useState<Researcher | null>(null);
+
+    // Volunteer selection state
+    const [selectedVolunteer, setSelectedVolunteer] = useState<Volunteer | null>(null);
 
     // SNOMED selection states
     const [selectedBodyRegion, setSelectedBodyRegion] = useState<SnomedBodyRegion | null>(null);
@@ -88,6 +96,27 @@ function AppRouter() {
             return;
         }
 
+        if (path.startsWith('/research/add-application/')) {
+            const id = path.replace('/research/add-application/', '');
+            setSelectedResearchId(id);
+            setCurrentPage('add-application');
+            return;
+        }
+
+        if (path.startsWith('/research/add-device/')) {
+            const id = path.replace('/research/add-device/', '');
+            setSelectedResearchId(id);
+            setCurrentPage('add-device');
+            return;
+        }
+
+        if (path.startsWith('/research/add-sensor/')) {
+            const id = path.replace('/research/add-sensor/', '');
+            setSelectedResearchId(id);
+            setCurrentPage('add-sensor');
+            return;
+        }
+
         if (path.startsWith('/nodeConnections/view/')) {
             setCurrentPage('view-connection');
             return;
@@ -105,6 +134,16 @@ function AppRouter() {
         }
         if (path.startsWith('/users/edit/')) {
             setCurrentPage('edit-user');
+            return;
+        }
+
+        // Volunteer routes
+        if (path.startsWith('/volunteers/view/')) {
+            setCurrentPage('view-volunteer');
+            return;
+        }
+        if (path.startsWith('/volunteers/edit/')) {
+            setCurrentPage('edit-volunteer');
             return;
         }
 
@@ -206,6 +245,7 @@ function AppRouter() {
                 break;
             case '/volunteers':
                 setCurrentPage('volunteers');
+                setSelectedVolunteer(null);
                 break;
             case '/volunteers/add':
                 setCurrentPage('add-volunteer');
@@ -310,16 +350,54 @@ function AppRouter() {
                         researchId={selectedResearchId}
                     />
                 );
+            case 'add-application':
+                return (
+                    <CreateApplicationForm
+                        handleNavigation={handleNavigation}
+                        researchId={selectedResearchId}
+                    />
+                );
+            case 'add-device':
+                return (
+                    <CreateDeviceForm
+                        handleNavigation={handleNavigation}
+                        researchId={selectedResearchId}
+                    />
+                );
+            case 'add-sensor':
+                return (
+                    <CreateSensorForm
+                        handleNavigation={handleNavigation}
+                        researchId={selectedResearchId}
+                    />
+                );
             case 'volunteers':
                 return (
                     <VolunteersScreen
                         handleNavigation={handleNavigation}
+                        onSelectVolunteer={setSelectedVolunteer}
                     />
                 );
             case 'add-volunteer':
                 return (
                     <CreateVolunteerForm
                         handleNavigation={handleNavigation}
+                    />
+                );
+            case 'view-volunteer':
+                return (
+                    <VolunteerForm
+                        handleNavigation={handleNavigation}
+                        mode="view"
+                        volunteer={selectedVolunteer ?? undefined}
+                    />
+                );
+            case 'edit-volunteer':
+                return (
+                    <VolunteerForm
+                        handleNavigation={handleNavigation}
+                        mode="edit"
+                        volunteer={selectedVolunteer ?? undefined}
                     />
                 );
             case 'snomed':
@@ -573,8 +651,13 @@ type Pages =
     | 'research'
     | 'add-research'
     | 'view-research'
+    | 'add-application'
+    | 'add-device'
+    | 'add-sensor'
     | 'volunteers'
     | 'add-volunteer'
+    | 'view-volunteer'
+    | 'edit-volunteer'
     | 'snomed'
     | 'users'
     | 'add-user'

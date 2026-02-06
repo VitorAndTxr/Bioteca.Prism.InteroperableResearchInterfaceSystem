@@ -10,6 +10,7 @@
  * Represents the current status of a research project
  */
 export enum ResearchStatus {
+    PLANNING = 'planning',
     ACTIVE = 'active',
     COMPLETED = 'completed',
     SUSPENDED = 'suspended',
@@ -82,6 +83,7 @@ export interface NewResearchData {
     title: string;
     description: string;
     researchNodeId: string;
+    startDate: string;
 }
 
 /**

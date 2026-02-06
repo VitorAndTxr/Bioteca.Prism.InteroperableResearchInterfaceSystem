@@ -1,25 +1,35 @@
 /**
- * CreateVolunteerForm Component
+ * VolunteerForm Component
  *
- * Form for creating a new volunteer (patient).
- * Uses the VolunteerService to create volunteers in the IRN backend.
+ * Form for viewing and editing volunteer (patient) details.
+ * Supports view mode (read-only) and edit mode (editable).
+ * Follows the same pattern as AddUserForm with mode prop.
  */
 
-import { useState, useEffect, FormEvent } from 'react';
+import { useState, FormEvent, useEffect } from 'react';
 import { AppLayout } from '../../design-system/components/app-layout';
 import { Input } from '../../design-system/components/input';
 import { Dropdown } from '../../design-system/components/dropdown';
 import { Button } from '../../design-system/components/button';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { mainMenuItems } from '../../config/menu';
-import { VolunteerGender, BloodType, ConsentStatus, type NewVolunteerData, type ClinicalCondition } from '@iris/domain';
+import {
+    VolunteerGender,
+    BloodType,
+    ConsentStatus,
+    type Volunteer,
+    type UpdateVolunteerData,
+    type ClinicalCondition
+} from '@iris/domain';
 import { volunteerService, snomedService } from '../../services/middleware';
 import '../../styles/shared/AddForm.css';
 
-export interface CreateVolunteerFormProps {
+type FormMode = 'view' | 'edit';
+
+export interface VolunteerFormProps {
     handleNavigation: (path: string) => void;
-    onSave?: (volunteerData: NewVolunteerData) => void;
-    onCancel?: () => void;
+    mode: FormMode;
+    volunteer?: Volunteer;
 }
 
 const genderOptions = [
@@ -47,7 +57,26 @@ const consentStatusOptions = [
     { value: ConsentStatus.REVOKED, label: 'Revogado' },
 ];
 
-export function CreateVolunteerForm({ handleNavigation, onSave, onCancel }: CreateVolunteerFormProps) {
+function formatDateForInput(date: Date): string {
+    const d = new Date(date);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
+export function VolunteerForm({ handleNavigation, mode, volunteer }: VolunteerFormProps) {
+    const isReadOnly = mode === 'view';
+
+    const getHeaderTitle = (): string => {
+        switch (mode) {
+            case 'view':
+                return 'Detalhes do Voluntário';
+            case 'edit':
+                return 'Editar Voluntário';
+        }
+    };
+
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [birthDate, setBirthDate] = useState('');
@@ -57,7 +86,7 @@ export function CreateVolunteerForm({ handleNavigation, onSave, onCancel }: Crea
     const [height, setHeight] = useState('');
     const [weight, setWeight] = useState('');
     const [selectedConditions, setSelectedConditions] = useState<string[]>([]);
-    const [consentStatus, setConsentStatus] = useState<string>(ConsentStatus.PENDING);
+    const [consentStatus, setConsentStatus] = useState<string>('');
 
     const [clinicalConditions, setClinicalConditions] = useState<ClinicalCondition[]>([]);
     const [loadingConditions, setLoadingConditions] = useState(false);
@@ -82,6 +111,21 @@ export function CreateVolunteerForm({ handleNavigation, onSave, onCancel }: Crea
 
     const [submitting, setSubmitting] = useState(false);
     const [submitError, setSubmitError] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (volunteer) {
+            setName(volunteer.name);
+            setEmail(volunteer.email);
+            setBirthDate(formatDateForInput(volunteer.birthDate));
+            setGender(volunteer.gender);
+            setVolunteerCode(volunteer.volunteerCode);
+            setBloodType(volunteer.bloodType || '');
+            setHeight(volunteer.height?.toString() || '');
+            setWeight(volunteer.weight?.toString() || '');
+            setSelectedConditions(volunteer.medicalHistory ? volunteer.medicalHistory.split(';').filter(Boolean) : []);
+            setConsentStatus(volunteer.consentStatus);
+        }
+    }, [volunteer]);
 
     const handleBlur = (field: string) => {
         setTouched(prev => ({ ...prev, [field]: true }));
@@ -134,6 +178,10 @@ export function CreateVolunteerForm({ handleNavigation, onSave, onCancel }: Crea
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
 
+        if (isReadOnly || !volunteer) {
+            return;
+        }
+
         setTouched({
             name: true,
             email: true,
@@ -145,12 +193,11 @@ export function CreateVolunteerForm({ handleNavigation, onSave, onCancel }: Crea
             return;
         }
 
-        const volunteerData: NewVolunteerData = {
+        const updateData: UpdateVolunteerData = {
             name: name.trim(),
             email: email.trim(),
             birthDate: birthDate,
             gender: gender as VolunteerGender,
-            volunteerCode: volunteerCode.trim() || undefined,
             bloodType: bloodType ? bloodType as BloodType : undefined,
             height: height ? Number(height) : undefined,
             weight: weight ? Number(weight) : undefined,
@@ -158,33 +205,24 @@ export function CreateVolunteerForm({ handleNavigation, onSave, onCancel }: Crea
             consentStatus: consentStatus as ConsentStatus,
         };
 
-        if (onSave) {
-            onSave(volunteerData);
-            return;
-        }
-
         try {
             setSubmitting(true);
             setSubmitError(null);
 
-            await volunteerService.createVolunteer(volunteerData);
+            await volunteerService.updateVolunteer(volunteer.id, updateData);
 
             handleNavigation('/volunteers');
         } catch (err) {
-            console.error('Failed to create volunteer:', err);
-            const errorMessage = err instanceof Error ? err.message : 'Failed to create volunteer';
+            console.error('Failed to update volunteer:', err);
+            const errorMessage = err instanceof Error ? err.message : 'Falha ao atualizar voluntário';
             setSubmitError(errorMessage);
         } finally {
             setSubmitting(false);
         }
     };
 
-    const handleCancel = () => {
-        if (onCancel) {
-            onCancel();
-        } else {
-            handleNavigation('/volunteers');
-        }
+    const handleBack = () => {
+        handleNavigation('/volunteers');
     };
 
     return (
@@ -196,7 +234,7 @@ export function CreateVolunteerForm({ handleNavigation, onSave, onCancel }: Crea
                 logo: 'I.R.I.S.',
             }}
             header={{
-                title: 'Novo Voluntário',
+                title: getHeaderTitle(),
                 showUserMenu: true,
             }}
         >
@@ -218,25 +256,27 @@ export function CreateVolunteerForm({ handleNavigation, onSave, onCancel }: Crea
                     <div className="add-form__fields">
                         <Input
                             label="Nome Completo"
-                            placeholder="Digite o nome completo do voluntário"
+                            placeholder="Nome completo do voluntário"
                             value={name}
                             onChange={(e) => setName(e.target.value)}
                             onBlur={() => handleBlur('name')}
                             validationStatus={touched.name && errors.name ? 'error' : 'none'}
                             errorMessage={touched.name ? errors.name : undefined}
-                            helperText={`${name.length}/200 caracteres`}
+                            helperText={!isReadOnly ? `${name.length}/200 caracteres` : undefined}
+                            disabled={isReadOnly}
                             required
                         />
 
                         <Input
                             label="Email"
                             type="email"
-                            placeholder="Digite o email do voluntário"
+                            placeholder="Email do voluntário"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             onBlur={() => handleBlur('email')}
                             validationStatus={touched.email && errors.email ? 'error' : 'none'}
                             errorMessage={touched.email ? errors.email : undefined}
+                            disabled={isReadOnly}
                             required
                         />
 
@@ -248,6 +288,7 @@ export function CreateVolunteerForm({ handleNavigation, onSave, onCancel }: Crea
                             onBlur={() => handleBlur('birthDate')}
                             validationStatus={touched.birthDate && errors.birthDate ? 'error' : 'none'}
                             errorMessage={touched.birthDate ? errors.birthDate : undefined}
+                            disabled={isReadOnly}
                             required
                         />
 
@@ -261,15 +302,16 @@ export function CreateVolunteerForm({ handleNavigation, onSave, onCancel }: Crea
                             validation={touched.gender && errors.gender ? 'error' : 'none'}
                             errorMessage={touched.gender ? errors.gender : undefined}
                             fullWidth
+                            disabled={isReadOnly}
                             required
                         />
 
                         <Input
                             label="Código do Voluntário"
-                            placeholder="Hash do CPF (opcional, gerado automaticamente)"
                             value={volunteerCode}
                             onChange={(e) => setVolunteerCode(e.target.value)}
-                            helperText="Se não informado, será gerado automaticamente"
+                            disabled
+                            helperText="Gerado automaticamente"
                         />
 
                         <Dropdown
@@ -279,6 +321,7 @@ export function CreateVolunteerForm({ handleNavigation, onSave, onCancel }: Crea
                             value={bloodType}
                             onChange={(value) => setBloodType(value as string)}
                             fullWidth
+                            disabled={isReadOnly}
                         />
 
                         <Input
@@ -290,7 +333,7 @@ export function CreateVolunteerForm({ handleNavigation, onSave, onCancel }: Crea
                             onBlur={() => handleBlur('height')}
                             validationStatus={touched.height && errors.height ? 'error' : 'none'}
                             errorMessage={touched.height ? errors.height : undefined}
-                            helperText="Campo opcional"
+                            disabled={isReadOnly}
                         />
 
                         <Input
@@ -302,7 +345,7 @@ export function CreateVolunteerForm({ handleNavigation, onSave, onCancel }: Crea
                             onBlur={() => handleBlur('weight')}
                             validationStatus={touched.weight && errors.weight ? 'error' : 'none'}
                             errorMessage={touched.weight ? errors.weight : undefined}
-                            helperText="Campo opcional"
+                            disabled={isReadOnly}
                         />
 
                         <Dropdown
@@ -312,6 +355,7 @@ export function CreateVolunteerForm({ handleNavigation, onSave, onCancel }: Crea
                             value={consentStatus}
                             onChange={(value) => setConsentStatus(value as string)}
                             fullWidth
+                            disabled={isReadOnly}
                         />
 
                         <div className="add-form__full-width">
@@ -327,7 +371,7 @@ export function CreateVolunteerForm({ handleNavigation, onSave, onCancel }: Crea
                                 mode="multiple"
                                 searchable
                                 fullWidth
-                                disabled={loadingConditions}
+                                disabled={isReadOnly || loadingConditions}
                             />
                         </div>
                     </div>
@@ -336,21 +380,23 @@ export function CreateVolunteerForm({ handleNavigation, onSave, onCancel }: Crea
                         <Button
                             variant="outline"
                             size="medium"
-                            onClick={handleCancel}
+                            onClick={handleBack}
                             icon={<ArrowLeftIcon className="w-5 h-5" />}
                             iconPosition="left"
                             disabled={submitting}
                         >
                             Voltar
                         </Button>
-                        <Button
-                            type="submit"
-                            variant="primary"
-                            size="big"
-                            disabled={submitting}
-                        >
-                            {submitting ? 'Salvando...' : 'Salvar Voluntário'}
-                        </Button>
+                        {!isReadOnly && (
+                            <Button
+                                type="submit"
+                                variant="primary"
+                                size="big"
+                                disabled={submitting}
+                            >
+                                {submitting ? 'Salvando...' : 'Atualizar Voluntário'}
+                            </Button>
+                        )}
                     </div>
                 </form>
             </div>
@@ -358,4 +404,4 @@ export function CreateVolunteerForm({ handleNavigation, onSave, onCancel }: Crea
     );
 }
 
-export default CreateVolunteerForm;
+export default VolunteerForm;

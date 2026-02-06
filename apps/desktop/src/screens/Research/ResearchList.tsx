@@ -71,6 +71,7 @@ export function ResearchList({
     // Format status helper
     const formatStatus = (status: ResearchStatus) => {
         const statusMap = {
+            [ResearchStatus.PLANNING]: 'Planejamento',
             [ResearchStatus.ACTIVE]: 'Ativo',
             [ResearchStatus.COMPLETED]: 'Concluído',
             [ResearchStatus.SUSPENDED]: 'Suspenso',
@@ -82,6 +83,7 @@ export function ResearchList({
     // Get status badge class
     const getStatusClass = (status: ResearchStatus) => {
         const classMap = {
+            [ResearchStatus.PLANNING]: 'status-planning',
             [ResearchStatus.ACTIVE]: 'status-active',
             [ResearchStatus.COMPLETED]: 'status-completed',
             [ResearchStatus.SUSPENDED]: 'status-suspended',

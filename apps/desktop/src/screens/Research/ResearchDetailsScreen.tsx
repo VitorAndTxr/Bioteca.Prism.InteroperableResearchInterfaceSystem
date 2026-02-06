@@ -349,6 +349,12 @@ export function ResearchDetailsScreen({ handleNavigation, researchId }: Research
             title: research?.title || 'Pesquisa',
             data: applications,
             columns: applicationColumns as DataTableColumn<unknown>[],
+            action: {
+                label: 'Adicionar',
+                icon: <PlusIcon />,
+                onClick: () => handleNavigation(`/research/add-application/${researchId}`),
+                variant: 'primary',
+            },
         },
         {
             value: 'devices',
@@ -356,6 +362,12 @@ export function ResearchDetailsScreen({ handleNavigation, researchId }: Research
             title: research?.title || 'Pesquisa',
             data: devices,
             columns: deviceColumns as DataTableColumn<unknown>[],
+            action: {
+                label: 'Adicionar',
+                icon: <PlusIcon />,
+                onClick: () => handleNavigation(`/research/add-device/${researchId}`),
+                variant: 'primary',
+            },
         },
         {
             value: 'sensors',
@@ -363,6 +375,12 @@ export function ResearchDetailsScreen({ handleNavigation, researchId }: Research
             title: research?.title || 'Pesquisa',
             data: sensors,
             columns: sensorColumns as DataTableColumn<unknown>[],
+            action: {
+                label: 'Adicionar',
+                icon: <PlusIcon />,
+                onClick: () => handleNavigation(`/research/add-sensor/${researchId}`),
+                variant: 'primary',
+            },
         },
     ], [research, researchers, volunteers, applications, devices, sensors,
         researcherColumns, volunteerColumns, applicationColumns, deviceColumns, sensorColumns]);

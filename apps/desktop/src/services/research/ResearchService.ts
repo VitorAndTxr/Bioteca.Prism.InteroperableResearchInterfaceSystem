@@ -55,6 +55,7 @@ interface AddResearchPayload extends Record<string, unknown> {
     Title: string;
     Description: string;
     ResearchNodeId: string;
+    StartDate: string;
 }
 
 /**
@@ -203,7 +204,8 @@ export class ResearchService extends BaseService {
             const middlewarePayload: AddResearchPayload = {
                 Title: researchData.title,
                 Description: researchData.description,
-                ResearchNodeId: researchData.researchNodeId
+                ResearchNodeId: researchData.researchNodeId,
+                StartDate: researchData.startDate
             };
 
             // Call backend API
@@ -260,21 +262,24 @@ export class ResearchService extends BaseService {
      */
     private mapStatus(status: string): ResearchStatus {
         const statusMap: Record<string, ResearchStatus> = {
+            'planning': ResearchStatus.PLANNING,
             'active': ResearchStatus.ACTIVE,
             'completed': ResearchStatus.COMPLETED,
             'suspended': ResearchStatus.SUSPENDED,
             'archived': ResearchStatus.ARCHIVED,
+            'PLANNING': ResearchStatus.PLANNING,
             'ACTIVE': ResearchStatus.ACTIVE,
             'COMPLETED': ResearchStatus.COMPLETED,
             'SUSPENDED': ResearchStatus.SUSPENDED,
             'ARCHIVED': ResearchStatus.ARCHIVED,
+            'Planning': ResearchStatus.PLANNING,
             'Active': ResearchStatus.ACTIVE,
             'Completed': ResearchStatus.COMPLETED,
             'Suspended': ResearchStatus.SUSPENDED,
             'Archived': ResearchStatus.ARCHIVED
         };
 
-        return statusMap[status] || ResearchStatus.ACTIVE;
+        return statusMap[status] || ResearchStatus.PLANNING;
     }
 
     /**
@@ -351,6 +356,14 @@ export class ResearchService extends BaseService {
                 'invalid_request' as AuthErrorCode,
                 'Research description must be less than 2000 characters',
                 { field: 'description', maxLength: 2000 }
+            );
+        }
+
+        if (!data.startDate || data.startDate.trim().length === 0) {
+            throw this.createAuthError(
+                'invalid_request' as AuthErrorCode,
+                'Research start date is required',
+                { field: 'startDate' }
             );
         }
 

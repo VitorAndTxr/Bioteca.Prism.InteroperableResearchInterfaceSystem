@@ -32,6 +32,7 @@ export function CreateResearchForm({ handleNavigation, onSave, onCancel }: Creat
     // Form state
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
+    const [startDate, setStartDate] = useState('');
     const [researchNodeId, setResearchNodeId] = useState<string>('');
     const [nodeOptions, setNodeOptions] = useState<{ value: string; label: string }[]>([]);
 
@@ -87,6 +88,10 @@ export function CreateResearchForm({ handleNavigation, onSave, onCancel }: Creat
             newErrors.description = 'Descrição deve ter no máximo 2000 caracteres';
         }
 
+        if (!startDate) {
+            newErrors.startDate = 'Data de início é obrigatória';
+        }
+
         if (!researchNodeId) {
             newErrors.researchNodeId = 'Nó de pesquisa é obrigatório';
         }
@@ -103,6 +108,7 @@ export function CreateResearchForm({ handleNavigation, onSave, onCancel }: Creat
         setTouched({
             title: true,
             description: true,
+            startDate: true,
             researchNodeId: true,
         });
 
@@ -114,6 +120,7 @@ export function CreateResearchForm({ handleNavigation, onSave, onCancel }: Creat
             title: title.trim(),
             description: description.trim(),
             researchNodeId,
+            startDate,
         };
 
         // If custom save handler provided, use it
@@ -226,6 +233,19 @@ export function CreateResearchForm({ handleNavigation, onSave, onCancel }: Creat
                                 {description.length}/2000 caracteres
                             </span>
                         </div>
+
+                        {/* Start Date */}
+                        <Input
+                            label="Data de Início"
+                            type="date"
+                            placeholder="Selecione a data de início"
+                            value={startDate}
+                            onChange={(e) => setStartDate(e.target.value)}
+                            onBlur={() => handleBlur('startDate')}
+                            validationStatus={touched.startDate && errors.startDate ? 'error' : 'none'}
+                            errorMessage={touched.startDate ? errors.startDate : undefined}
+                            required
+                        />
 
                         {/* Research Node */}
                         <Dropdown

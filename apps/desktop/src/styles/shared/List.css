@@ -86,6 +86,17 @@
     color: #7B6FDB; /* Secondary purple */
 }
 
+/* Delete action button - Red theme */
+.action-button.delete:hover {
+    color: #EF4444; /* Red */
+}
+
+/* Inactive status badge */
+.status-badge.status-inactive {
+    background-color: #fee2e2;
+    color: #991b1b;
+}
+
 /* Status badge styles */
 .status-badge {
     display: inline-block;
@@ -94,6 +105,11 @@
     font-size: 12px;
     font-weight: 500;
     text-transform: capitalize;
+}
+
+.status-badge.status-planning {
+    background-color: #ede9fe;
+    color: #5b21b6;
 }
 
 .status-badge.status-active {

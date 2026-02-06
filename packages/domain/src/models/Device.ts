@@ -83,6 +83,16 @@ export interface DeviceConnectionStatus {
 }
 
 /**
+ * Data required to create a new device
+ */
+export interface NewDeviceData {
+    name: string;
+    manufacturer: string;
+    model: string;
+    additionalInfo?: string;
+}
+
+/**
  * Device Calibration
  */
 export interface DeviceCalibration {
