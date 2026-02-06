@@ -24,6 +24,7 @@ import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { AnnotationRepository } from '@/data/repositories/AnnotationRepository';
 import type { Annotation } from '@iris/domain';
+import { ChevronLeft, Plus, MoreVertical } from 'lucide-react-native';
 
 type Props = NativeStackScreenProps<HomeStackParamList, 'AnnotationsList'>;
 
@@ -87,7 +88,10 @@ export const AnnotationsListScreen: FC<Props> = ({ route, navigation }) => {
 
   const renderAnnotationItem = ({ item }: ListRenderItemInfo<Annotation>) => (
     <Card style={styles.annotationCard}>
-      <Text style={styles.timestamp}>{formatTimestamp(item.createdAt)}</Text>
+      <View style={styles.annotationHeader}>
+        <Text style={styles.timestamp}>{formatTimestamp(item.createdAt)}</Text>
+        <MoreVertical size={16} color={theme.colors.textMuted} />
+      </View>
       <Text style={styles.annotationText}>{item.text}</Text>
     </Card>
   );
@@ -108,11 +112,11 @@ export const AnnotationsListScreen: FC<Props> = ({ route, navigation }) => {
       {/* Header */}
       <View style={styles.header}>
         <Pressable onPress={handleBack} style={styles.backButton}>
-          <Text style={styles.backButtonText}>←</Text>
+          <ChevronLeft size={24} color={theme.colors.textBody} />
         </Pressable>
         <Text style={styles.headerTitle}>Annotations</Text>
         <Pressable onPress={handleNewAnnotation} style={styles.addButton}>
-          <Text style={styles.addButtonText}>+</Text>
+          <Plus size={24} color={theme.colors.primary} />
         </Pressable>
       </View>
 
@@ -162,11 +166,6 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
 
-  backButtonText: {
-    fontSize: 24,
-    color: theme.colors.textBody,
-  },
-
   headerTitle: {
     ...theme.typography.title2,
     color: theme.colors.textTitle,
@@ -179,12 +178,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 20,
     backgroundColor: theme.colors.primaryLight,
-  },
-
-  addButtonText: {
-    fontSize: 24,
-    color: theme.colors.primary,
-    fontWeight: 'bold',
   },
 
   listContent: {
@@ -210,11 +203,17 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.md,
   },
 
+  annotationHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: theme.spacing.sm,
+  },
+
   timestamp: {
     ...theme.typography.bodyExtraSmall,
     color: theme.colors.textMuted,
     fontWeight: '700',
-    marginBottom: theme.spacing.sm,
   },
 
   annotationText: {

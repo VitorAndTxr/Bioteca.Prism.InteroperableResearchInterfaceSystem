@@ -223,20 +223,33 @@ function getUser(id: any): any { /* ... */ }
 
 ### 2. Icon Usage
 
-**ALL icons MUST use Heroicons library (@heroicons/react). NO custom SVG files.**
+**NO custom SVG files.** Use the platform-appropriate icon library:
+
+#### Desktop App (`apps/desktop`)
+
+Uses **Heroicons** (`@heroicons/react`):
 
 ```typescript
 // ✅ CORRECT: Import from Heroicons
 import { UserIcon } from '@heroicons/react/24/outline';
 
-// ❌ INCORRECT: Custom SVG
-import CustomIcon from './assets/icon.svg';
+// Variants:
+// @heroicons/react/24/outline - Outlined icons (default)
+// @heroicons/react/24/solid - Filled icons
+// @heroicons/react/20/solid - Mini icons (tight spaces)
 ```
 
-**Variants**:
-- `@heroicons/react/24/outline` - Outlined icons (default)
-- `@heroicons/react/24/solid` - Filled icons
-- `@heroicons/react/20/solid` - Mini icons (tight spaces)
+#### Mobile App (`apps/mobile`)
+
+Uses **Lucide** (`lucide-react-native`):
+
+```typescript
+// ✅ CORRECT: Import from Lucide
+import { User, Home, Settings } from 'lucide-react-native';
+
+// Usage:
+<User size={20} color={theme.colors.textBody} />
+```
 
 **Reference**: `docs/development/ICON_USAGE.md`
 

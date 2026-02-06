@@ -41,6 +41,7 @@ import {
   type RecordingForExport,
   type RecordingDataPoint,
 } from '@/utils/csvExport';
+import { Search, Calendar, ChevronRight, FileDown } from 'lucide-react-native';
 
 type Props = CompositeScreenProps<
   BottomTabScreenProps<MainTabParamList, 'History'>,
@@ -216,9 +217,12 @@ export const HistoryScreen: FC<Props> = ({ navigation }) => {
         <View style={styles.card}>
           <View style={styles.cardHeader}>
             <View style={styles.dateTimeContainer}>
-              <Text style={styles.dateTime}>
-                {formatDateShort(session.startedAt)} • {formatTime(session.startedAt)}
-              </Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                <Calendar size={12} color={theme.colors.textMuted} />
+                <Text style={styles.dateTime}>
+                  {formatDateShort(session.startedAt)} • {formatTime(session.startedAt)}
+                </Text>
+              </View>
             </View>
             <View
               style={[
@@ -237,6 +241,7 @@ export const HistoryScreen: FC<Props> = ({ navigation }) => {
                 {session.clinicalData?.bodyStructureName ?? 'Unknown Body Structure'}
               </Text>
             </View>
+            <ChevronRight size={20} color={theme.colors.textMuted} />
           </View>
 
           <View style={styles.cardFooter}>
@@ -248,7 +253,10 @@ export const HistoryScreen: FC<Props> = ({ navigation }) => {
               {isExporting ? (
                 <ActivityIndicator size="small" color={theme.colors.primary} />
               ) : (
-                <Text style={styles.exportButtonText}>Export CSV</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                  <FileDown size={14} color={theme.colors.primary} />
+                  <Text style={styles.exportButtonText}>Export CSV</Text>
+                </View>
               )}
             </Pressable>
           </View>
@@ -300,15 +308,18 @@ export const HistoryScreen: FC<Props> = ({ navigation }) => {
         <Text style={styles.title}>Session History</Text>
 
         <View style={styles.searchContainer}>
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Search by volunteer or date..."
-            placeholderTextColor={theme.colors.textMuted}
-            value={searchText}
-            onChangeText={setSearchText}
-            autoCapitalize="none"
-            autoCorrect={false}
-          />
+          <View style={styles.searchInputWrapper}>
+            <Search size={18} color={theme.colors.textMuted} />
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Search by volunteer or date..."
+              placeholderTextColor={theme.colors.textMuted}
+              value={searchText}
+              onChangeText={setSearchText}
+              autoCapitalize="none"
+              autoCorrect={false}
+            />
+          </View>
         </View>
       </View>
 
@@ -360,13 +371,20 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.sm,
   },
 
-  searchInput: {
-    ...theme.typography.bodyBase,
+  searchInputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
     backgroundColor: theme.colors.backgroundAlt,
     borderWidth: 1,
     borderColor: theme.colors.border,
     borderRadius: theme.borderRadius.lg,
     paddingHorizontal: theme.spacing.md,
+  },
+
+  searchInput: {
+    ...theme.typography.bodyBase,
+    flex: 1,
     paddingVertical: theme.spacing.sm,
     color: theme.colors.textBody,
   },
@@ -435,6 +453,9 @@ const styles = StyleSheet.create({
   },
 
   cardBody: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     marginBottom: theme.spacing.md,
   },
 

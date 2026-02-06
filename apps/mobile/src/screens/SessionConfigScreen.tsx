@@ -36,6 +36,7 @@ import { useBluetoothContext } from '@/context/BluetoothContext';
 import { useSession } from '@/context/SessionContext';
 import { useAuth } from '@/context/AuthContext';
 import { Volunteer, Laterality, SnomedBodyStructure, SnomedTopographicalModifier } from '@iris/domain';
+import { Search, Plus } from 'lucide-react-native';
 
 type Props = NativeStackScreenProps<HomeStackParamList, 'SessionConfig'>;
 
@@ -211,7 +212,7 @@ export const SessionConfigScreen: FC<Props> = ({ navigation }) => {
                 isSearching ? (
                   <ActivityIndicator size="small" color={theme.colors.primary} />
                 ) : (
-                  <Text style={styles.searchIcon}>🔍</Text>
+                  <Search size={20} color={theme.colors.textMuted} />
                 )
               }
             />
@@ -287,7 +288,10 @@ export const SessionConfigScreen: FC<Props> = ({ navigation }) => {
                 style={styles.chipAdd}
                 onPress={() => setShowTopographyDropdown(!showTopographyDropdown)}
               >
-                <Text style={styles.chipAddText}>+ Add</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                  <Plus size={14} color={theme.colors.textMuted} />
+                  <Text style={styles.chipAddText}>Add</Text>
+                </View>
               </TouchableOpacity>
             </View>
 
@@ -400,9 +404,6 @@ const styles = StyleSheet.create({
   },
   volunteerSearchContainer: {
     position: 'relative',
-  },
-  searchIcon: {
-    fontSize: 20,
   },
   dropdownCard: {
     marginTop: theme.spacing.sm,

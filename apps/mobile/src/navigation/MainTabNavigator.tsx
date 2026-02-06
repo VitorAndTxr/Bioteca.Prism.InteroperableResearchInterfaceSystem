@@ -10,13 +10,13 @@
  * Features:
  * - Tab bar hidden on Login screen
  * - Tab bar hidden on Capture screen (controlled by nested stack)
- * - Unicode icons as placeholders (will be replaced with Heroicons later)
+ * - Lucide icons for navigation
  * - Theme-based styling
  */
 
 import React, { FC } from 'react';
-import { Text } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { Home, History, Bluetooth, Settings } from 'lucide-react-native';
 import type { MainTabParamList } from './types';
 import { theme } from '@/theme';
 
@@ -55,7 +55,7 @@ export const MainTabNavigator: FC = () => {
         options={{
           title: 'Home',
           tabBarIcon: ({ color }) => (
-            <TabIcon icon="🏠" color={color} />
+            <Home size={24} color={color} />
           ),
         }}
       />
@@ -65,7 +65,7 @@ export const MainTabNavigator: FC = () => {
         options={{
           title: 'History',
           tabBarIcon: ({ color }) => (
-            <TabIcon icon="📋" color={color} />
+            <History size={24} color={color} />
           ),
         }}
       />
@@ -75,7 +75,7 @@ export const MainTabNavigator: FC = () => {
         options={{
           title: 'Bluetooth',
           tabBarIcon: ({ color }) => (
-            <TabIcon icon="📶" color={color} />
+            <Bluetooth size={24} color={color} />
           ),
         }}
       />
@@ -85,23 +85,10 @@ export const MainTabNavigator: FC = () => {
         options={{
           title: 'Settings',
           tabBarIcon: ({ color }) => (
-            <TabIcon icon="⚙️" color={color} />
+            <Settings size={24} color={color} />
           ),
         }}
       />
     </Tab.Navigator>
   );
-};
-
-/**
- * Temporary TabIcon component using Unicode emoji
- * TODO: Replace with Heroicons when available
- */
-interface TabIconProps {
-  icon: string;
-  color: string;
-}
-
-const TabIcon: FC<TabIconProps> = ({ icon, color }) => {
-  return <Text style={{ fontSize: 24, color }}>{icon}</Text>;
 };

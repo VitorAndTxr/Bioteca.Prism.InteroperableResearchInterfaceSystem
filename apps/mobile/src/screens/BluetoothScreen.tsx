@@ -29,6 +29,7 @@ import type { MainTabParamList, RootStackParamList } from '@/navigation/types';
 import { theme } from '@/theme';
 import { useBluetoothContext } from '@/context/BluetoothContext';
 import { BluetoothDevice } from 'react-native-bluetooth-classic';
+import { RefreshCw, Smartphone, CheckCircle2, Bluetooth, AlertTriangle, HelpCircle, Search, ShieldOff, Settings } from 'lucide-react-native';
 
 type Props = CompositeScreenProps<
   BottomTabScreenProps<MainTabParamList, 'Bluetooth'>,
@@ -40,6 +41,8 @@ type DeviceWithStatus = BluetoothDevice & { active: boolean };
 export const BluetoothScreen: FC<Props> = ({ navigation }) => {
   const {
     bluetoothOn,
+    permissionGranted,
+    permissionPermanentlyDenied,
     pairedDevices,
     isScanning,
     selectedDevice,
@@ -48,6 +51,8 @@ export const BluetoothScreen: FC<Props> = ({ navigation }) => {
     connectToDevice,
     disconnectDevice,
     openBluetoothSettings,
+    openAppSettings,
+    requestPermissions,
   } = useBluetoothContext();
 
   const [showTroubleshooting, setShowTroubleshooting] = useState(false);
@@ -57,6 +62,7 @@ export const BluetoothScreen: FC<Props> = ({ navigation }) => {
       scanForDevices();
     }
   }, []);
+
 
   const handleRefresh = async () => {
     if (!bluetoothOn) {
@@ -163,7 +169,7 @@ export const BluetoothScreen: FC<Props> = ({ navigation }) => {
             styles.deviceIcon,
             item.active ? styles.deviceIconConnected : styles.deviceIconInactive,
           ]}>
-            <Text style={styles.deviceIconText}>📱</Text>
+            <Smartphone size={20} color={item.active ? theme.colors.success : theme.colors.textMuted} />
           </View>
           <View style={styles.deviceDetails}>
             <Text style={styles.deviceName}>{item.name}</Text>
@@ -173,6 +179,7 @@ export const BluetoothScreen: FC<Props> = ({ navigation }) => {
           </View>
         </View>
         <View style={[styles.statusBadge, badge.style]}>
+          {status === 'connected' && <CheckCircle2 size={12} color={theme.colors.success} />}
           <Text style={badge.textStyle}>{badge.text}</Text>
         </View>
       </TouchableOpacity>
@@ -188,16 +195,43 @@ export const BluetoothScreen: FC<Props> = ({ navigation }) => {
           disabled={isScanning}
           style={styles.refreshButton}
         >
-          <Text style={[styles.refreshIcon, isScanning && styles.refreshIconAnimated]}>
-            ↻
-          </Text>
+          <RefreshCw size={24} color={isScanning ? theme.colors.primary : theme.colors.textMuted} />
         </TouchableOpacity>
       </View>
 
       <View style={styles.content}>
-        {!bluetoothOn && (
+        {permissionGranted === false && (
+          <View style={styles.permissionCard}>
+            <ShieldOff size={40} color={theme.colors.error} />
+            <Text style={styles.permissionTitle}>Bluetooth Permission Required</Text>
+            <Text style={styles.permissionText}>
+              {permissionPermanentlyDenied
+                ? 'Bluetooth permission was permanently denied. Please enable it in app settings.'
+                : 'IRIS needs Bluetooth permission to scan and connect to sEMG devices.'}
+            </Text>
+            {permissionPermanentlyDenied ? (
+              <TouchableOpacity
+                style={styles.permissionButton}
+                onPress={openAppSettings}
+              >
+                <Settings size={18} color={theme.colors.surface} />
+                <Text style={styles.permissionButtonText}>Open Settings</Text>
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity
+                style={styles.permissionButton}
+                onPress={requestPermissions}
+              >
+                <Bluetooth size={18} color={theme.colors.surface} />
+                <Text style={styles.permissionButtonText}>Grant Permission</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        )}
+
+        {permissionGranted !== false && !bluetoothOn && (
           <View style={styles.warningCard}>
-            <Text style={styles.warningIcon}>⚠️</Text>
+            <AlertTriangle size={24} color={theme.colors.primaryDark} />
             <View style={styles.warningContent}>
               <Text style={styles.warningTitle}>Bluetooth is disabled</Text>
               <Text style={styles.warningText}>
@@ -215,6 +249,7 @@ export const BluetoothScreen: FC<Props> = ({ navigation }) => {
 
         {isScanning && (
           <View style={styles.scanningCard}>
+            <Bluetooth size={18} color={theme.colors.primary} />
             <ActivityIndicator size="small" color={theme.colors.primary} />
             <Text style={styles.scanningText}>Searching for devices...</Text>
           </View>
@@ -222,7 +257,7 @@ export const BluetoothScreen: FC<Props> = ({ navigation }) => {
 
         {bluetoothOn && !isScanning && pairedDevices.length === 0 && (
           <View style={styles.emptyState}>
-            <Text style={styles.emptyStateIcon}>🔍</Text>
+            <Search size={64} color={theme.colors.textMuted} />
             <Text style={styles.emptyStateText}>No paired devices found</Text>
             <Text style={styles.emptyStateSubtext}>
               Pair a device in system Bluetooth settings, then refresh this screen.
@@ -247,9 +282,10 @@ export const BluetoothScreen: FC<Props> = ({ navigation }) => {
             style={styles.troubleshootingHeader}
             onPress={() => setShowTroubleshooting(!showTroubleshooting)}
           >
-            <Text style={styles.troubleshootingTitle}>
-              ❌ Connection Problems?
-            </Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <HelpCircle size={16} color={theme.colors.textBody} />
+              <Text style={styles.troubleshootingTitle}>Connection Problems?</Text>
+            </View>
             <Text style={styles.troubleshootingToggle}>
               {showTroubleshooting ? '▼' : '▶'}
             </Text>
@@ -323,16 +359,45 @@ const styles = StyleSheet.create({
     padding: theme.spacing.sm,
     borderRadius: theme.borderRadius.full,
   },
-  refreshIcon: {
-    fontSize: 24,
-    color: theme.colors.textMuted,
-  },
-  refreshIconAnimated: {
-    color: theme.colors.primary,
-  },
   content: {
     flex: 1,
     padding: theme.spacing['2xl'],
+  },
+  permissionCard: {
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.borderRadius.xl,
+    padding: theme.spacing['2xl'],
+    alignItems: 'center' as const,
+    marginBottom: theme.spacing['2xl'],
+    borderWidth: 1,
+    borderColor: theme.colors.error + '33',
+    ...theme.shadow.sm,
+  },
+  permissionTitle: {
+    ...theme.typography.uiLarge,
+    color: theme.colors.textTitle,
+    marginTop: theme.spacing.lg,
+    marginBottom: theme.spacing.sm,
+    textAlign: 'center' as const,
+  },
+  permissionText: {
+    ...theme.typography.bodyBase,
+    color: theme.colors.textBody,
+    textAlign: 'center' as const,
+    marginBottom: theme.spacing.lg,
+  },
+  permissionButton: {
+    backgroundColor: theme.colors.primary,
+    paddingVertical: theme.spacing.md,
+    paddingHorizontal: theme.spacing['2xl'],
+    borderRadius: theme.borderRadius.md,
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    gap: theme.spacing.sm,
+  },
+  permissionButtonText: {
+    ...theme.typography.uiBase,
+    color: theme.colors.surface,
   },
   warningCard: {
     backgroundColor: theme.colors.primaryLight,
@@ -340,13 +405,10 @@ const styles = StyleSheet.create({
     padding: theme.spacing.lg,
     flexDirection: 'row',
     alignItems: 'flex-start',
+    gap: theme.spacing.md,
     marginBottom: theme.spacing['2xl'],
     borderWidth: 1,
     borderColor: theme.colors.primary + '33',
-  },
-  warningIcon: {
-    fontSize: 24,
-    marginRight: theme.spacing.md,
   },
   warningContent: {
     flex: 1,
@@ -393,10 +455,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: theme.spacing['2xl'],
-  },
-  emptyStateIcon: {
-    fontSize: 64,
-    marginBottom: theme.spacing.lg,
   },
   emptyStateText: {
     ...theme.typography.bodyLarge,
@@ -451,9 +509,6 @@ const styles = StyleSheet.create({
   deviceIconInactive: {
     backgroundColor: theme.colors.backgroundAlt,
   },
-  deviceIconText: {
-    fontSize: 20,
-  },
   deviceDetails: {
     flex: 1,
   },
@@ -471,6 +526,9 @@ const styles = StyleSheet.create({
     paddingVertical: theme.spacing.xs,
     paddingHorizontal: theme.spacing.sm,
     borderRadius: theme.borderRadius.full,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
   },
   statusConnected: {
     backgroundColor: theme.colors.success + '1A',

@@ -35,6 +35,7 @@ import { useSession } from '@/context/SessionContext';
 import { useSessionTimer } from '@/hooks/useSessionTimer';
 import { Recording } from '@iris/domain';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Clock, FileText, XCircle } from 'lucide-react-native';
 
 type Props = NativeStackScreenProps<HomeStackParamList, 'ActiveSession'>;
 
@@ -138,6 +139,7 @@ export const ActiveSessionScreen: FC<Props> = ({ navigation }) => {
         <View style={styles.headerTop}>
           <Text style={styles.headerTitle}>Active Session</Text>
           <View style={styles.timerContainer}>
+            <Clock size={16} color={theme.colors.primary} />
             <Text style={styles.timerText}>{formattedTime}</Text>
           </View>
         </View>
@@ -208,18 +210,14 @@ export const ActiveSessionScreen: FC<Props> = ({ navigation }) => {
       {/* Footer Actions */}
       <View style={styles.footer}>
         <View style={styles.footerButtons}>
-          <Button
-            title="Annotations"
-            variant="secondary"
-            onPress={handleAnnotations}
-            style={styles.footerButton}
-          />
-          <Button
-            title="End Session"
-            variant="danger"
-            onPress={handleEndSession}
-            style={styles.footerButton}
-          />
+          <Pressable style={[styles.footerButton, styles.footerButtonSecondary]} onPress={handleAnnotations}>
+            <FileText size={18} color={theme.colors.primary} />
+            <Text style={styles.footerButtonSecondaryText}>Annotations</Text>
+          </Pressable>
+          <Pressable style={[styles.footerButton, styles.footerButtonDanger]} onPress={handleEndSession}>
+            <XCircle size={18} color={theme.colors.surface} />
+            <Text style={styles.footerButtonDangerText}>End Session</Text>
+          </Pressable>
         </View>
       </View>
     </SafeAreaView>
@@ -267,6 +265,9 @@ const styles = StyleSheet.create({
   },
 
   timerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
     backgroundColor: theme.colors.primaryLight,
     paddingHorizontal: theme.spacing.md,
     paddingVertical: theme.spacing.xs,
@@ -476,5 +477,31 @@ const styles = StyleSheet.create({
 
   footerButton: {
     flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: theme.spacing.md,
+    borderRadius: theme.borderRadius.lg,
+  },
+
+  footerButtonSecondary: {
+    backgroundColor: theme.colors.primaryLight,
+    borderWidth: 1,
+    borderColor: theme.colors.primary,
+  },
+
+  footerButtonSecondaryText: {
+    ...theme.typography.uiBase,
+    color: theme.colors.primary,
+  },
+
+  footerButtonDanger: {
+    backgroundColor: theme.colors.error,
+  },
+
+  footerButtonDangerText: {
+    ...theme.typography.uiBase,
+    color: theme.colors.surface,
   },
 });

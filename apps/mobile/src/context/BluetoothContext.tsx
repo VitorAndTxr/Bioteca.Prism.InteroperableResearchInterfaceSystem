@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { ReactNode, createContext, useContext } from "react";
-import { PermissionsAndroid, Platform } from 'react-native';
+import { PermissionsAndroid, Platform, Linking } from 'react-native';
 import RNBluetoothClassic, { BluetoothDevice, BluetoothEventSubscription } from 'react-native-bluetooth-classic';
 
 // Import shared domain types
@@ -33,6 +33,8 @@ export function BluetoothContextProvider(props: BluetoothContextProviderProps) {
     const triggerUpTimems = 5000;
 
     const [bluetoothOn, setBluetoothOn] = useState(false);
+    const [permissionGranted, setPermissionGranted] = useState<boolean | null>(null);
+    const [permissionPermanentlyDenied, setPermissionPermanentlyDenied] = useState(false);
     const [reload, callReload] = useState(false);
 
     const [neuraDevices, setNeuraDevices] = useState<ActivableBluetoothDevice[]>([]);
@@ -73,6 +75,11 @@ export function BluetoothContextProvider(props: BluetoothContextProviderProps) {
     useEffect(() => {
         initBluetooth();
     }, []);
+
+    
+    useEffect(() => {
+        updatePairedDevices();
+    }, [selectedDevice]);
 
     // Flush buffer function - updates UI with batched packets
     const flushStreamBuffer = React.useCallback(() => {
@@ -127,9 +134,10 @@ export function BluetoothContextProvider(props: BluetoothContextProviderProps) {
         try {
             console.log("Initializing Bluetooth...");
 
-            const permissionGranted = await requestBluetoothPermissions();
+            const granted = await requestBluetoothPermissions();
+            setPermissionGranted(granted);
 
-            if (!permissionGranted) {
+            if (!granted) {
                 console.log("Bluetooth permissions not granted");
                 setBluetoothOn(false);
                 return;
@@ -165,11 +173,24 @@ export function BluetoothContextProvider(props: BluetoothContextProviderProps) {
                         granted['android.permission.BLUETOOTH_CONNECT'] === PermissionsAndroid.RESULTS.GRANTED &&
                         granted['android.permission.ACCESS_FINE_LOCATION'] === PermissionsAndroid.RESULTS.GRANTED;
 
+                    const anyPermanentlyDenied =
+                        granted['android.permission.BLUETOOTH_SCAN'] === PermissionsAndroid.RESULTS.NEVER_ASK_AGAIN ||
+                        granted['android.permission.BLUETOOTH_CONNECT'] === PermissionsAndroid.RESULTS.NEVER_ASK_AGAIN ||
+                        granted['android.permission.ACCESS_FINE_LOCATION'] === PermissionsAndroid.RESULTS.NEVER_ASK_AGAIN;
+
+                    if (anyPermanentlyDenied) {
+                        setPermissionPermanentlyDenied(true);
+                    }
+
                     return allGranted;
                 } else {
                     const granted = await PermissionsAndroid.request(
                         PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
                     );
+
+                    if (granted === PermissionsAndroid.RESULTS.NEVER_ASK_AGAIN) {
+                        setPermissionPermanentlyDenied(true);
+                    }
 
                     return granted === PermissionsAndroid.RESULTS.GRANTED;
                 }
@@ -180,6 +201,28 @@ export function BluetoothContextProvider(props: BluetoothContextProviderProps) {
             console.error("Error requesting Bluetooth permissions:", error);
             return false;
         }
+    }
+
+    async function requestPermissions(): Promise<void> {
+        setPermissionPermanentlyDenied(false);
+        const granted = await requestBluetoothPermissions();
+        setPermissionGranted(granted);
+
+        if (granted) {
+            try {
+                const BTEnabled = await RNBluetoothClassic.requestBluetoothEnabled();
+                setBluetoothOn(BTEnabled);
+                if (BTEnabled) {
+                    updatePairedDevices();
+                }
+            } catch (error) {
+                console.error("Error enabling Bluetooth after permission grant:", error);
+            }
+        }
+    }
+
+    function openAppSettings(): void {
+        Linking.openSettings();
     }
 
     async function verifyCurrentConnection(address: string) {
@@ -623,6 +666,8 @@ export function BluetoothContextProvider(props: BluetoothContextProviderProps) {
     return (
         <BluetoothContext.Provider value={{
             bluetoothOn,
+            permissionGranted,
+            permissionPermanentlyDenied,
             neuraDevices,
             pairedDevices,
             isScanning,
@@ -644,6 +689,8 @@ export function BluetoothContextProvider(props: BluetoothContextProviderProps) {
             connectBluetooth,
             initBluetooth,
             openBluetoothSettings,
+            openAppSettings,
+            requestPermissions,
             disconnect,
             configureStream,
             startStream,
@@ -672,6 +719,8 @@ export function useBluetoothContext() {
 
 interface BluetoothContextData {
     bluetoothOn: boolean;
+    permissionGranted: boolean | null;
+    permissionPermanentlyDenied: boolean;
     neuraDevices: ActivableBluetoothDevice[];
     pairedDevices: ActivableBluetoothDevice[];
     isScanning: boolean;
@@ -691,6 +740,8 @@ interface BluetoothContextData {
     isSessionActive: boolean;
     disconnect: (address: string) => void;
     openBluetoothSettings: () => void;
+    openAppSettings: () => void;
+    requestPermissions: () => Promise<void>;
     initBluetooth: () => void;
     connectBluetooth: (address: string) => void;
     writeToBluetooth: (payload: string) => void;

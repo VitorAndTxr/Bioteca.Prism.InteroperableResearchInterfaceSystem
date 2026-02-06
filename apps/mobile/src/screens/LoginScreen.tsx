@@ -23,12 +23,14 @@ import {
   ScrollView,
   Pressable,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@/navigation/types';
 import { Button } from '@/components/ui/Button/Button';
 import { Input } from '@/components/ui/Input/Input';
 import { theme } from '@/theme';
 import { useAuth } from '@/context/AuthContext';
+import { Activity, Eye, EyeOff } from 'lucide-react-native';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Login'>;
 
@@ -93,7 +95,12 @@ export const LoginScreen: FC<Props> = ({ route }) => {
         keyboardShouldPersistTaps="handled"
       >
         {/* Background Gradient */}
-        <View style={styles.gradientBackground} />
+        <LinearGradient
+          colors={['#C8F3F6', '#6BE6EF']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.gradientBackground}
+        />
         <View style={styles.overlay} />
 
         {/* Content */}
@@ -102,7 +109,7 @@ export const LoginScreen: FC<Props> = ({ route }) => {
           <View style={styles.branding}>
             <View style={styles.logoContainer}>
               <View style={styles.logoCircle}>
-                <Text style={styles.logoText}>IRIS</Text>
+                <Activity size={40} strokeWidth={2.5} color={theme.colors.primary} />
               </View>
             </View>
             <Text style={styles.title}>IRIS MOBILE</Text>
@@ -137,9 +144,11 @@ export const LoginScreen: FC<Props> = ({ route }) => {
                 editable={!isLoading}
                 rightElement={
                   <Pressable onPress={togglePasswordVisibility} disabled={isLoading}>
-                    <Text style={styles.passwordToggle}>
-                      {showPassword ? '🙈' : '👁️'}
-                    </Text>
+                    {showPassword ? (
+                      <EyeOff size={20} color={theme.colors.textMuted} />
+                    ) : (
+                      <Eye size={20} color={theme.colors.textMuted} />
+                    )}
                   </Pressable>
                 }
               />
@@ -193,7 +202,6 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: theme.colors.primary,
   },
   overlay: {
     position: 'absolute',
@@ -228,11 +236,6 @@ const styles = StyleSheet.create({
     ...theme.shadow.xl,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  logoText: {
-    ...theme.typography.title2,
-    color: theme.colors.primary,
-    letterSpacing: 2,
   },
   title: {
     ...theme.typography.title2,
@@ -291,10 +294,5 @@ const styles = StyleSheet.create({
     opacity: 0.6,
     textAlign: 'center',
     marginTop: theme.spacing['3xl'],
-  },
-
-  // Password toggle
-  passwordToggle: {
-    fontSize: 20,
   },
 });

@@ -21,6 +21,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { HomeStackParamList } from '@/navigation/types';
 import { theme } from '@/theme';
 import { AnnotationRepository } from '@/data/repositories/AnnotationRepository';
+import { X } from 'lucide-react-native';
 
 type Props = NativeStackScreenProps<HomeStackParamList, 'NewAnnotation'>;
 
@@ -96,9 +97,7 @@ export const NewAnnotationScreen: FC<Props> = ({ route, navigation }) => {
         {/* Header */}
         <View style={styles.header}>
           <Pressable onPress={handleCancel} disabled={isSaving}>
-            <Text style={[styles.cancelButton, isSaving && styles.disabledButton]}>
-              Cancel
-            </Text>
+            <X size={24} color={isSaving ? theme.colors.textMuted : theme.colors.textBody} />
           </Pressable>
           <Text style={styles.headerTitle}>New Annotation</Text>
           <Pressable onPress={handleSave} disabled={!canSave}>
@@ -150,12 +149,6 @@ const styles = StyleSheet.create({
     paddingVertical: theme.spacing.md,
     borderBottomWidth: 1,
     borderBottomColor: theme.colors.borderLight,
-  },
-
-  cancelButton: {
-    ...theme.typography.bodyBase,
-    color: theme.colors.textBody,
-    fontWeight: '500',
   },
 
   headerTitle: {

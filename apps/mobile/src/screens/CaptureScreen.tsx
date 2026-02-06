@@ -33,6 +33,7 @@ import { SavingModal } from '@/components/SavingModal';
 import { useStreamData } from '@/hooks/useStreamData';
 import { useRecordingTimer } from '@/hooks/useRecordingTimer';
 import type { StreamDataPacket, ChartDataPoint, NewRecordingData } from '@iris/domain';
+import { Square, Activity, Zap, Signal } from 'lucide-react-native';
 
 type Props = NativeStackScreenProps<HomeStackParamList, 'Capture'>;
 
@@ -296,6 +297,7 @@ export const CaptureScreen: FC<Props> = ({ route, navigation }) => {
           <View style={styles.metricsGrid}>
             {/* RMS Card */}
             <View style={styles.metricCard}>
+              <Activity size={20} color={TEAL_LINE} />
               <Text style={styles.metricLabel}>RMS</Text>
               <Text style={styles.metricValue}>{metrics.rms.toFixed(0)}</Text>
               <Text style={styles.metricUnit}>µV</Text>
@@ -303,6 +305,7 @@ export const CaptureScreen: FC<Props> = ({ route, navigation }) => {
 
             {/* Frequency Card */}
             <View style={styles.metricCard}>
+              <Zap size={20} color={TEAL_LINE} />
               <Text style={styles.metricLabel}>Frequency</Text>
               <Text style={styles.metricValue}>{metrics.frequency}</Text>
               <Text style={styles.metricUnit}>Hz</Text>
@@ -310,6 +313,7 @@ export const CaptureScreen: FC<Props> = ({ route, navigation }) => {
 
             {/* Signal Quality Card */}
             <View style={styles.metricCard}>
+              <Signal size={20} color={TEAL_LINE} />
               <Text style={styles.metricLabel}>Signal Quality</Text>
               <View style={styles.signalQualityDots}>
                 {[1, 2, 3].map((dotIndex) => (
@@ -327,7 +331,10 @@ export const CaptureScreen: FC<Props> = ({ route, navigation }) => {
 
           {/* Stop Recording Button */}
           <TouchableOpacity style={styles.stopButton} onPress={handleStopRecording}>
-            <Text style={styles.stopButtonText}>Stop Recording</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <Square size={20} color="#FFFFFF" fill="#FFFFFF" />
+              <Text style={styles.stopButtonText}>Stop Recording</Text>
+            </View>
           </TouchableOpacity>
         </View>
       </SafeAreaView>

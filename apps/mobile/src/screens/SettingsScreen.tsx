@@ -20,8 +20,10 @@ import {
   SafeAreaView,
   ScrollView,
   TouchableOpacity,
+  Pressable,
   Alert,
 } from 'react-native';
+import { User, Moon, Download, Shield, ChevronRight, LogOut } from 'lucide-react-native';
 import type { CompositeScreenProps } from '@react-navigation/native';
 import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -122,15 +124,6 @@ export const SettingsScreen: FC<Props> = ({ navigation }) => {
     ? 'Researcher'
     : 'User';
 
-  // Get initials for avatar
-  const getInitials = (name: string): string => {
-    const parts = name.split(' ');
-    if (parts.length >= 2) {
-      return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
-    }
-    return name.substring(0, 2).toUpperCase();
-  };
-
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
@@ -143,7 +136,7 @@ export const SettingsScreen: FC<Props> = ({ navigation }) => {
         <Card style={styles.profileCard}>
           <View style={styles.profileContent}>
             <View style={styles.avatar}>
-              <Text style={styles.avatarText}>{getInitials(displayName)}</Text>
+              <User size={32} color={theme.colors.primary} />
             </View>
             <View style={styles.profileInfo}>
               <Text style={styles.profileName}>{displayName}</Text>
@@ -162,11 +155,13 @@ export const SettingsScreen: FC<Props> = ({ navigation }) => {
               value={appearance === 'light' ? 'Light' : 'Dark'}
               onPress={handleAppearanceToggle}
               showBorder
+              icon={<Moon size={20} color={theme.colors.textBody} />}
             />
             <SettingRow
               label="Export Preferences"
               value={exportFormat.toUpperCase()}
               onPress={handleExportFormatToggle}
+              icon={<Download size={20} color={theme.colors.textBody} />}
             />
           </Card>
         </View>
@@ -179,18 +174,17 @@ export const SettingsScreen: FC<Props> = ({ navigation }) => {
               label="App Version"
               value={APP_VERSION}
               onPress={undefined}
+              icon={<Shield size={20} color={theme.colors.textBody} />}
             />
           </Card>
         </View>
 
         {/* Logout Button */}
         <View style={styles.logoutContainer}>
-          <Button
-            title="Logout"
-            variant="outline"
-            fullWidth
-            onPress={handleLogout}
-          />
+          <Pressable style={styles.logoutButton} onPress={handleLogout}>
+            <LogOut size={18} color={theme.colors.error} />
+            <Text style={styles.logoutButtonText}>Logout</Text>
+          </Pressable>
           <Text style={styles.copyright}>
             IRIS Mobile v{APP_VERSION}{'\n'}
             © 2026 PRISM Framework
@@ -207,16 +201,20 @@ interface SettingRowProps {
   value?: string;
   onPress?: () => void;
   showBorder?: boolean;
+  icon?: React.ReactNode;
 }
 
-const SettingRow: FC<SettingRowProps> = ({ label, value, onPress, showBorder }) => {
+const SettingRow: FC<SettingRowProps> = ({ label, value, onPress, showBorder, icon }) => {
   const content = (
     <>
-      <Text style={styles.settingLabel}>{label}</Text>
+      <View style={styles.settingLabelContainer}>
+        {icon}
+        <Text style={styles.settingLabel}>{label}</Text>
+      </View>
       {value && (
         <View style={styles.settingValueContainer}>
           <Text style={styles.settingValue}>{value}</Text>
-          {onPress && <Text style={styles.chevron}>›</Text>}
+          {onPress && <ChevronRight size={16} color={theme.colors.textMuted} />}
         </View>
       )}
     </>
@@ -277,10 +275,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  avatarText: {
-    ...theme.typography.title3,
-    color: theme.colors.primary,
-  },
   profileInfo: {
     flex: 1,
     gap: theme.spacing.xs,
@@ -328,6 +322,11 @@ const styles = StyleSheet.create({
   settingRowDisabled: {
     opacity: 1,
   },
+  settingLabelContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.md,
+  },
   settingLabel: {
     ...theme.typography.uiBase,
     color: theme.colors.textBody,
@@ -342,16 +341,25 @@ const styles = StyleSheet.create({
     fontWeight: theme.fontWeight.medium,
     color: theme.colors.primary,
   },
-  chevron: {
-    ...theme.typography.title3,
-    color: theme.colors.textMuted,
-    lineHeight: theme.lineHeight['2xl'],
-  },
 
   // Logout
   logoutContainer: {
     marginTop: theme.spacing.lg,
     gap: theme.spacing.lg,
+  },
+  logoutButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: theme.spacing.sm,
+    paddingVertical: theme.spacing.md,
+    borderWidth: 1,
+    borderColor: theme.colors.error,
+    borderRadius: theme.borderRadius.lg,
+  },
+  logoutButtonText: {
+    ...theme.typography.uiBase,
+    color: theme.colors.error,
   },
   copyright: {
     ...theme.typography.bodyExtraSmall,

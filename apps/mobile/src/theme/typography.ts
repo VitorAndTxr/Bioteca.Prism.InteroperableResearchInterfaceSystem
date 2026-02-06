@@ -12,9 +12,9 @@
 
 // Font families
 export const fontFamily = {
-  title: 'System', // Will be 'Overpass' when loaded
-  ui: 'System',    // Will be 'Inter' when loaded
-  body: 'System',  // Will be 'Nunito' when loaded
+  title: 'Overpass-ExtraBold',
+  ui: 'Inter-SemiBold',
+  body: 'Nunito-Regular',
 } as const;
 
 // Font weights
