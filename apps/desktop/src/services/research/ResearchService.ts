@@ -45,6 +45,7 @@ import {
     type AssignDevicePayload,
     type UpdateResearchDevicePayload,
     type NewApplicationData,
+    type UpdateSensorData,
     type PaginatedResponse,
     type AuthError,
     type AuthErrorCode,
@@ -231,6 +232,16 @@ interface CreateSensorMWPayload extends Record<string, unknown> {
     MinRange: number;
     MaxRange: number;
     Accuracy: number;
+    AdditionalInfo?: string;
+}
+
+interface UpdateSensorMWPayload extends Record<string, unknown> {
+    SensorName?: string;
+    MaxSamplingRate?: number;
+    Unit?: string;
+    MinRange?: number;
+    MaxRange?: number;
+    Accuracy?: number;
     AdditionalInfo?: string;
 }
 
@@ -848,6 +859,43 @@ export class ResearchService extends BaseService {
             });
 
             return this.convertToSensor(response);
+        });
+    }
+
+    async updateSensor(sensorId: string, payload: UpdateSensorData): Promise<Sensor> {
+        return this.handleMiddlewareError(async () => {
+            this.log(`Updating sensor: ${sensorId}`);
+            await this.ensureSession();
+
+            const middlewarePayload: UpdateSensorMWPayload = {};
+            if (payload.name !== undefined) middlewarePayload.SensorName = payload.name;
+            if (payload.maxSamplingRate !== undefined) middlewarePayload.MaxSamplingRate = payload.maxSamplingRate;
+            if (payload.unit !== undefined) middlewarePayload.Unit = payload.unit;
+            if (payload.minRange !== undefined) middlewarePayload.MinRange = payload.minRange;
+            if (payload.maxRange !== undefined) middlewarePayload.MaxRange = payload.maxRange;
+            if (payload.accuracy !== undefined) middlewarePayload.Accuracy = payload.accuracy;
+            if (payload.additionalInfo !== undefined) middlewarePayload.AdditionalInfo = payload.additionalInfo;
+
+            const response = await this.middleware.invoke<UpdateSensorMWPayload, SensorDTO>({
+                path: `/api/Sensor/${sensorId}`,
+                method: 'PUT',
+                payload: middlewarePayload
+            });
+
+            return this.convertToSensor(response);
+        });
+    }
+
+    async deleteSensor(sensorId: string): Promise<void> {
+        return this.handleMiddlewareError(async () => {
+            this.log(`Deleting sensor: ${sensorId}`);
+            await this.ensureSession();
+
+            await this.middleware.invoke<Record<string, unknown>, void>({
+                path: `/api/Sensor/${sensorId}`,
+                method: 'DELETE',
+                payload: {}
+            });
         });
     }
 

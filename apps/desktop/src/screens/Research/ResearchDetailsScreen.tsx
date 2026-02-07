@@ -11,7 +11,7 @@ import { AppLayout } from '@/design-system/components/app-layout';
 import { Button } from '@/design-system/components/button';
 import { TabbedTable, TabbedTableTab } from '@/design-system/components/tabbed-table';
 import { DataTableColumn } from '@/design-system/components/data-table/DataTable.types';
-import { ArrowLeftIcon, PlusIcon, PencilSquareIcon, NoSymbolIcon } from '@heroicons/react/24/outline';
+import { ArrowLeftIcon, PlusIcon, PencilSquareIcon, NoSymbolIcon, EyeIcon } from '@heroicons/react/24/outline';
 import { mainMenuItems } from '@/config/menu';
 import {
     type ResearchDetail,
@@ -34,15 +34,23 @@ export interface ResearchDetailsScreenProps {
 type ResearchDetailsTabs = 'researchers' | 'volunteers' | 'applications' | 'devices' | 'sensors';
 
 function StatusBadge({ label, color }: { label: string; color: 'green' | 'blue' | 'yellow' | 'red' | 'gray' }) {
-    const colorClasses = {
-        green: 'bg-green-100 text-green-800',
-        blue: 'bg-blue-100 text-blue-800',
-        yellow: 'bg-yellow-100 text-yellow-800',
-        red: 'bg-red-100 text-red-800',
-        gray: 'bg-gray-100 text-gray-800',
+    const colorStyles: Record<string, React.CSSProperties> = {
+        green: { backgroundColor: '#dcfce7', color: '#166534' },
+        blue: { backgroundColor: '#dbeafe', color: '#1e40af' },
+        yellow: { backgroundColor: '#fef9c3', color: '#854d0e' },
+        red: { backgroundColor: '#fee2e2', color: '#991b1b' },
+        gray: { backgroundColor: '#f3f4f6', color: '#1f2937' },
     };
     return (
-        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${colorClasses[color]}`}>
+        <span style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            padding: '2px 8px',
+            borderRadius: '9999px',
+            fontSize: '12px',
+            fontWeight: 500,
+            ...colorStyles[color],
+        }}>
             {label}
         </span>
     );
@@ -239,6 +247,20 @@ export function ResearchDetailsScreen({ handleNavigation, researchId }: Research
         }
     };
 
+    const handleDeleteSensor = async (sensorId: string) => {
+        if (!window.confirm('Remover sensor?')) return;
+        try {
+            await researchService.deleteSensor(sensorId);
+            invalidateTab('sensors');
+            loadTabData('sensors');
+        } catch (err) {
+            setTabErrors(prev => ({
+                ...prev,
+                sensors: err instanceof Error ? err.message : 'Failed to delete sensor'
+            }));
+        }
+    };
+
     const handleVolunteerEnrollmentComplete = () => {
         setVolunteerModalOpen(false);
         invalidateTab('volunteers');
@@ -294,20 +316,14 @@ export function ResearchDetailsScreen({ handleNavigation, researchId }: Research
             width: '15%',
             align: 'center',
             render: (_val: unknown, row: ResearchResearcher) => (
-                <div className="flex justify-center gap-2">
+                <div className="actions-wrapper">
                     <button
-                        className="p-1 text-gray-500 hover:text-blue-600 transition-colors"
-                        title={row.isPrincipal ? 'Remover principal' : 'Tornar principal'}
-                        onClick={() => handleTogglePrincipal(row)}
-                    >
-                        <PencilSquareIcon className="w-5 h-5" />
-                    </button>
-                    <button
-                        className="p-1 text-gray-500 hover:text-red-600 transition-colors"
+                        className="action-button"
                         title="Remover"
                         onClick={() => handleRemoveResearcher(row.researcherId)}
+                        style={{ color: '#ef4444' }}
                     >
-                        <NoSymbolIcon className="w-5 h-5" />
+                        <NoSymbolIcon />
                     </button>
                 </div>
             ),
@@ -359,13 +375,14 @@ export function ResearchDetailsScreen({ handleNavigation, researchId }: Research
             width: '15%',
             align: 'center',
             render: (_val: unknown, row: ResearchVolunteer) => (
-                <div className="flex justify-center gap-2">
+                <div className="actions-wrapper">
                     <button
-                        className="p-1 text-gray-500 hover:text-red-600 transition-colors"
+                        className="action-button"
                         title="Remover"
                         onClick={() => handleRemoveVolunteer(row.volunteerId)}
+                        style={{ color: '#ef4444' }}
                     >
-                        <NoSymbolIcon className="w-5 h-5" />
+                        <NoSymbolIcon />
                     </button>
                 </div>
             ),
@@ -390,7 +407,7 @@ export function ResearchDetailsScreen({ handleNavigation, researchId }: Research
                     href={val as string}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-blue-600 hover:underline truncate block"
+                    style={{ color: '#2563eb', textDecoration: 'none', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
                 >
                     {val as string}
                 </a>
@@ -402,7 +419,7 @@ export function ResearchDetailsScreen({ handleNavigation, researchId }: Research
             accessor: 'description',
             width: '25%',
             render: (val: unknown) => (
-                <span className="truncate block max-w-xs" title={val as string}>
+                <span style={{ display: 'block', maxWidth: '320px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={val as string}>
                     {val as string}
                 </span>
             ),
@@ -421,13 +438,30 @@ export function ResearchDetailsScreen({ handleNavigation, researchId }: Research
             width: '10%',
             align: 'center',
             render: (_val: unknown, row: Application) => (
-                <div className="flex justify-center gap-2">
+                <div className="actions-wrapper">
                     <button
-                        className="p-1 text-gray-500 hover:text-red-600 transition-colors"
+                        className="action-button"
+                        title="Visualizar"
+                        onClick={() => handleNavigation(`/research/view-application/${researchId}/${row.id}`)}
+                        style={{ color: '#6b7280' }}
+                    >
+                        <EyeIcon />
+                    </button>
+                    <button
+                        className="action-button"
+                        title="Editar"
+                        onClick={() => handleNavigation(`/research/edit-application/${researchId}/${row.id}`)}
+                        style={{ color: '#2563eb' }}
+                    >
+                        <PencilSquareIcon />
+                    </button>
+                    <button
+                        className="action-button"
                         title="Remover"
                         onClick={() => handleDeleteApplication(row.id)}
+                        style={{ color: '#ef4444' }}
                     >
-                        <NoSymbolIcon className="w-5 h-5" />
+                        <NoSymbolIcon />
                     </button>
                 </div>
             ),
@@ -477,13 +511,30 @@ export function ResearchDetailsScreen({ handleNavigation, researchId }: Research
             width: '15%',
             align: 'center',
             render: (_val: unknown, row: ResearchDevice) => (
-                <div className="flex justify-center gap-2">
+                <div className="actions-wrapper">
                     <button
-                        className="p-1 text-gray-500 hover:text-red-600 transition-colors"
+                        className="action-button"
+                        title="Visualizar"
+                        onClick={() => handleNavigation(`/research/view-device/${researchId}/${row.deviceId}`)}
+                        style={{ color: '#6b7280' }}
+                    >
+                        <EyeIcon />
+                    </button>
+                    <button
+                        className="action-button"
+                        title="Editar"
+                        onClick={() => handleNavigation(`/research/edit-device/${researchId}/${row.deviceId}`)}
+                        style={{ color: '#2563eb' }}
+                    >
+                        <PencilSquareIcon />
+                    </button>
+                    <button
+                        className="action-button"
                         title="Remover"
                         onClick={() => handleRemoveDevice(row.deviceId)}
+                        style={{ color: '#ef4444' }}
                     >
-                        <NoSymbolIcon className="w-5 h-5" />
+                        <NoSymbolIcon />
                     </button>
                 </div>
             ),
@@ -528,11 +579,46 @@ export function ResearchDetailsScreen({ handleNavigation, researchId }: Research
             id: 'additionalInfo',
             label: 'Info Adicional',
             accessor: 'additionalInfo',
-            width: '20%',
+            width: '15%',
             render: (val: unknown) => (
-                <span className="truncate block max-w-xs" title={val as string}>
+                <span style={{ display: 'block', maxWidth: '320px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={val as string}>
                     {val as string || '-'}
                 </span>
+            ),
+        },
+        {
+            id: 'actions',
+            label: 'Acoes',
+            accessor: 'id',
+            width: '15%',
+            align: 'center',
+            render: (_val: unknown, row: Sensor) => (
+                <div className="actions-wrapper">
+                    <button
+                        className="action-button"
+                        title="Visualizar"
+                        onClick={() => handleNavigation(`/research/view-sensor/${researchId}/${row.id}`)}
+                        style={{ color: '#6b7280' }}
+                    >
+                        <EyeIcon />
+                    </button>
+                    <button
+                        className="action-button"
+                        title="Editar"
+                        onClick={() => handleNavigation(`/research/edit-sensor/${researchId}/${row.id}`)}
+                        style={{ color: '#2563eb' }}
+                    >
+                        <PencilSquareIcon />
+                    </button>
+                    <button
+                        className="action-button"
+                        title="Remover"
+                        onClick={() => handleDeleteSensor(row.id)}
+                        style={{ color: '#ef4444' }}
+                    >
+                        <NoSymbolIcon />
+                    </button>
+                </div>
             ),
         },
     ], []);
@@ -631,17 +717,17 @@ export function ResearchDetailsScreen({ handleNavigation, researchId }: Research
                 primaryAction: {
                     label: 'Voltar',
                     onClick: () => handleNavigation('/research'),
-                    icon: <ArrowLeftIcon className="w-5 h-5" />,
+                    icon: <ArrowLeftIcon style={{ width: 20, height: 20 }} />,
                 },
             }}
         >
-            <div className="p-6">
+            <div style={{ padding: '24px' }}>
                 {error && (
-                    <div className="mb-4 p-4 bg-red-50 text-red-700 rounded-md border border-red-200">
+                    <div style={{ marginBottom: '16px', padding: '16px', backgroundColor: '#fef2f2', color: '#b91c1c', borderRadius: '6px', border: '1px solid #fecaca' }}>
                         {error}
                         <button
                             onClick={loadResearchDetails}
-                            className="ml-4 text-sm underline hover:text-red-800"
+                            style={{ marginLeft: '16px', fontSize: '14px', textDecoration: 'underline', background: 'none', border: 'none', color: 'inherit', cursor: 'pointer' }}
                         >
                             Tentar novamente
                         </button>
@@ -649,14 +735,14 @@ export function ResearchDetailsScreen({ handleNavigation, researchId }: Research
                 )}
 
                 {tabErrors[activeTab] && (
-                    <div className="mb-4 p-4 bg-yellow-50 text-yellow-700 rounded-md border border-yellow-200">
+                    <div style={{ marginBottom: '16px', padding: '16px', backgroundColor: '#fefce8', color: '#a16207', borderRadius: '6px', border: '1px solid #fde68a' }}>
                         {tabErrors[activeTab]}
                         <button
                             onClick={() => {
                                 invalidateTab(activeTab);
                                 loadTabData(activeTab);
                             }}
-                            className="ml-4 text-sm underline hover:text-yellow-800"
+                            style={{ marginLeft: '16px', fontSize: '14px', textDecoration: 'underline', background: 'none', border: 'none', color: 'inherit', cursor: 'pointer' }}
                         >
                             Tentar novamente
                         </button>

@@ -34,3 +34,16 @@ export interface NewSensorData {
     maxRange: string;
     additionalInfo?: string;
 }
+
+/**
+ * Data for updating an existing sensor (all fields optional)
+ */
+export interface UpdateSensorData {
+    name?: string;
+    maxSamplingRate?: number;
+    unit?: string;
+    accuracy?: number;
+    minRange?: number;
+    maxRange?: number;
+    additionalInfo?: string;
+}

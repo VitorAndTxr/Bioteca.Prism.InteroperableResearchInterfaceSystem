@@ -20,6 +20,9 @@ import VolunteerForm from "@/screens/Volunteers/VolunteerForm";
 import CreateApplicationForm from "@/screens/Research/CreateApplicationForm";
 import CreateDeviceForm from "@/screens/Research/CreateDeviceForm";
 import CreateSensorForm from "@/screens/Research/CreateSensorForm";
+import ApplicationForm from "@/screens/Research/ApplicationForm";
+import DeviceForm from "@/screens/Research/DeviceForm";
+import SensorForm from "@/screens/Research/SensorForm";
 import ResearcherSelectionScreen from "@/screens/Research/ResearcherSelectionScreen";
 import NodeConnectionsScreen from "@/screens/NodeConnections/NodeConnectionsScreen";
 import AddConnectionForm from "@/screens/NodeConnections/AddConnectionForm";
@@ -49,6 +52,11 @@ function AppRouter() {
     const [selectedResearchId, setSelectedResearchId] = useState<string>('');
     const [selectedResearch, setSelectedResearch] = useState<Research | null>(null);
     const [selectedConnection, setSelectedConnection] = useState<ResearchNodeConnection | null>(null);
+
+    // Research sub-entity selection states
+    const [selectedApplicationId, setSelectedApplicationId] = useState<string>('');
+    const [selectedDeviceId, setSelectedDeviceId] = useState<string>('');
+    const [selectedSensorId, setSelectedSensorId] = useState<string>('');
 
     // User and Researcher selection states
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -131,6 +139,54 @@ function AppRouter() {
             const id = path.replace('/research/add-sensor/', '');
             setSelectedResearchId(id);
             setCurrentPage('add-sensor');
+            return;
+        }
+
+        if (path.startsWith('/research/view-application/')) {
+            const parts = path.replace('/research/view-application/', '').split('/');
+            setSelectedResearchId(parts[0]);
+            setSelectedApplicationId(parts[1]);
+            setCurrentPage('view-application');
+            return;
+        }
+
+        if (path.startsWith('/research/edit-application/')) {
+            const parts = path.replace('/research/edit-application/', '').split('/');
+            setSelectedResearchId(parts[0]);
+            setSelectedApplicationId(parts[1]);
+            setCurrentPage('edit-application');
+            return;
+        }
+
+        if (path.startsWith('/research/view-device/')) {
+            const parts = path.replace('/research/view-device/', '').split('/');
+            setSelectedResearchId(parts[0]);
+            setSelectedDeviceId(parts[1]);
+            setCurrentPage('view-device');
+            return;
+        }
+
+        if (path.startsWith('/research/edit-device/')) {
+            const parts = path.replace('/research/edit-device/', '').split('/');
+            setSelectedResearchId(parts[0]);
+            setSelectedDeviceId(parts[1]);
+            setCurrentPage('edit-device');
+            return;
+        }
+
+        if (path.startsWith('/research/view-sensor/')) {
+            const parts = path.replace('/research/view-sensor/', '').split('/');
+            setSelectedResearchId(parts[0]);
+            setSelectedSensorId(parts[1]);
+            setCurrentPage('view-sensor');
+            return;
+        }
+
+        if (path.startsWith('/research/edit-sensor/')) {
+            const parts = path.replace('/research/edit-sensor/', '').split('/');
+            setSelectedResearchId(parts[0]);
+            setSelectedSensorId(parts[1]);
+            setCurrentPage('edit-sensor');
             return;
         }
 
@@ -402,6 +458,60 @@ function AppRouter() {
                     <CreateSensorForm
                         handleNavigation={handleNavigation}
                         researchId={selectedResearchId}
+                    />
+                );
+            case 'view-application':
+                return (
+                    <ApplicationForm
+                        handleNavigation={handleNavigation}
+                        mode="view"
+                        researchId={selectedResearchId}
+                        applicationId={selectedApplicationId}
+                    />
+                );
+            case 'edit-application':
+                return (
+                    <ApplicationForm
+                        handleNavigation={handleNavigation}
+                        mode="edit"
+                        researchId={selectedResearchId}
+                        applicationId={selectedApplicationId}
+                    />
+                );
+            case 'view-device':
+                return (
+                    <DeviceForm
+                        handleNavigation={handleNavigation}
+                        mode="view"
+                        researchId={selectedResearchId}
+                        deviceId={selectedDeviceId}
+                    />
+                );
+            case 'edit-device':
+                return (
+                    <DeviceForm
+                        handleNavigation={handleNavigation}
+                        mode="edit"
+                        researchId={selectedResearchId}
+                        deviceId={selectedDeviceId}
+                    />
+                );
+            case 'view-sensor':
+                return (
+                    <SensorForm
+                        handleNavigation={handleNavigation}
+                        mode="view"
+                        researchId={selectedResearchId}
+                        sensorId={selectedSensorId}
+                    />
+                );
+            case 'edit-sensor':
+                return (
+                    <SensorForm
+                        handleNavigation={handleNavigation}
+                        mode="edit"
+                        researchId={selectedResearchId}
+                        sensorId={selectedSensorId}
                     />
                 );
             case 'volunteers':
@@ -687,8 +797,14 @@ type Pages =
     | 'view-research'
     | 'add-researcher-to-research'
     | 'add-application'
+    | 'view-application'
+    | 'edit-application'
     | 'add-device'
+    | 'view-device'
+    | 'edit-device'
     | 'add-sensor'
+    | 'view-sensor'
+    | 'edit-sensor'
     | 'volunteers'
     | 'add-volunteer'
     | 'view-volunteer'
