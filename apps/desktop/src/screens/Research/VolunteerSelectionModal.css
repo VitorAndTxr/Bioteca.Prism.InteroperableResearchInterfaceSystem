@@ -1,0 +1,166 @@
+/**
+ * VolunteerSelectionModal Styles
+ * Based on Figma design node 6998-5170
+ *
+ * Design tokens (from IRIS design system):
+ * - Primary teal: #49A2A8
+ * - Text primary: #1a1a1a
+ * - Text secondary: #9ca3af
+ * - Border: #e5e7eb
+ * - Surface: #ffffff
+ */
+
+/* ===== CONTAINER ===== */
+.volunteer-selection {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* ===== ERROR ===== */
+.volunteer-selection__error {
+    padding: 10px 14px;
+    background-color: #fef2f2;
+    color: #b91c1c;
+    border: 1px solid #fecaca;
+    border-radius: 8px;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+/* ===== ACCORDION ===== */
+.volunteer-selection__accordion {
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.volunteer-selection__accordion-header {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    color: #1a1a1a;
+    transition: background-color 0.15s ease;
+}
+
+.volunteer-selection__accordion-header:hover {
+    background-color: #f9fafb;
+}
+
+/* ===== CHEVRON ===== */
+.volunteer-selection__chevron {
+    width: 20px;
+    height: 20px;
+    color: #9ca3af;
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+}
+
+.volunteer-selection__chevron--open {
+    transform: rotate(180deg);
+}
+
+/* ===== VOLUNTEER LIST ===== */
+.volunteer-selection__list {
+    border-top: 1px solid #e5e7eb;
+    max-height: 240px;
+    overflow-y: auto;
+}
+
+.volunteer-selection__empty {
+    padding: 20px 16px;
+    text-align: center;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 14px;
+    color: #9ca3af;
+}
+
+/* ===== LIST ITEM ===== */
+.volunteer-selection__item {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    background: none;
+    border: none;
+    border-bottom: 1px solid #f3f4f6;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.volunteer-selection__item:last-child {
+    border-bottom: none;
+}
+
+.volunteer-selection__item:hover:not(:disabled) {
+    background-color: #f9fafb;
+}
+
+.volunteer-selection__item:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.volunteer-selection__item-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* ===== CHECK ICON ===== */
+.volunteer-selection__check-icon {
+    width: 22px;
+    height: 22px;
+    color: #49A2A8;
+    flex-shrink: 0;
+}
+
+.volunteer-selection__check-placeholder {
+    width: 22px;
+    height: 22px;
+    flex-shrink: 0;
+}
+
+/* ===== ITEM TEXT ===== */
+.volunteer-selection__item-name {
+    font-size: 15px;
+    font-weight: 500;
+    color: #1a1a1a;
+}
+
+.volunteer-selection__item-id {
+    font-size: 14px;
+    font-weight: 400;
+    color: #9ca3af;
+    flex-shrink: 0;
+    margin-left: 16px;
+}
+
+/* ===== SCROLLBAR ===== */
+.volunteer-selection__list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.volunteer-selection__list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.volunteer-selection__list::-webkit-scrollbar-thumb {
+    background-color: #d1d5db;
+    border-radius: 3px;
+}
+
+.volunteer-selection__list::-webkit-scrollbar-thumb:hover {
+    background-color: #9ca3af;
+}

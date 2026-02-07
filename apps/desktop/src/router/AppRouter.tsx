@@ -20,6 +20,7 @@ import VolunteerForm from "@/screens/Volunteers/VolunteerForm";
 import CreateApplicationForm from "@/screens/Research/CreateApplicationForm";
 import CreateDeviceForm from "@/screens/Research/CreateDeviceForm";
 import CreateSensorForm from "@/screens/Research/CreateSensorForm";
+import ResearcherSelectionScreen from "@/screens/Research/ResearcherSelectionScreen";
 import NodeConnectionsScreen from "@/screens/NodeConnections/NodeConnectionsScreen";
 import AddConnectionForm from "@/screens/NodeConnections/AddConnectionForm";
 import AddAllergyIntoleranceForm from "@/screens/SNOMED/AddAllergyIntoleranceForm";
@@ -102,6 +103,13 @@ function AppRouter() {
             const id = path.replace('/research/view/', '');
             setSelectedResearchId(id);
             setCurrentPage('view-research');
+            return;
+        }
+
+        if (path.startsWith('/research/add-researcher/')) {
+            const id = path.replace('/research/add-researcher/', '');
+            setSelectedResearchId(id);
+            setCurrentPage('add-researcher-to-research');
             return;
         }
 
@@ -364,6 +372,13 @@ function AppRouter() {
             case 'view-research':
                 return (
                     <ResearchDetailsScreen
+                        handleNavigation={handleNavigation}
+                        researchId={selectedResearchId}
+                    />
+                );
+            case 'add-researcher-to-research':
+                return (
+                    <ResearcherSelectionScreen
                         handleNavigation={handleNavigation}
                         researchId={selectedResearchId}
                     />
@@ -670,6 +685,7 @@ type Pages =
     | 'add-research'
     | 'edit-research'
     | 'view-research'
+    | 'add-researcher-to-research'
     | 'add-application'
     | 'add-device'
     | 'add-sensor'

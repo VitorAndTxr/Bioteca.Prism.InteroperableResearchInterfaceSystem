@@ -179,6 +179,10 @@ export interface ResearchDevice {
     lastCalibrationDate?: string | null;
     addedAt: string;
     removedAt?: string | null;
+    deviceName?: string;
+    manufacturer?: string;
+    model?: string;
+    sensorCount?: number;
 }
 
 // ── Aggregated Detail Type ───────────────────────────────────

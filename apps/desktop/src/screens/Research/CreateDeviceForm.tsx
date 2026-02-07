@@ -6,13 +6,14 @@
  */
 
 import { useState, FormEvent } from 'react';
-import { AppLayout } from '../../design-system/components/app-layout';
-import { Input } from '../../design-system/components/input';
-import { Button } from '../../design-system/components/button';
+import { AppLayout } from '@/design-system/components/app-layout';
+import { Input } from '@/design-system/components/input';
+import { Button } from '@/design-system/components/button';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
-import { mainMenuItems } from '../../config/menu';
+import { mainMenuItems } from '@/config/menu';
 import type { NewDeviceData } from '@iris/domain';
-import '../../styles/shared/AddForm.css';
+import { researchService } from '@/services/middleware';
+import '@/styles/shared/AddForm.css';
 
 export interface CreateDeviceFormProps {
     handleNavigation: (path: string) => void;
@@ -94,9 +95,7 @@ export function CreateDeviceForm({ handleNavigation, researchId, onSave, onCance
             setSubmitting(true);
             setSubmitError(null);
 
-            // Mock save until backend controller is implemented
-            await new Promise(resolve => setTimeout(resolve, 500));
-            console.log('Device created (mock):', data);
+            await researchService.createDeviceAndAssign(researchId, data);
 
             handleNavigation(`/research/view/${researchId}`);
         } catch (err) {

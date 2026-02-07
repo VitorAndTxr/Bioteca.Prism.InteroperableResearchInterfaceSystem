@@ -6,13 +6,14 @@
  */
 
 import { useState, FormEvent } from 'react';
-import { AppLayout } from '../../design-system/components/app-layout';
-import { Input } from '../../design-system/components/input';
-import { Button } from '../../design-system/components/button';
+import { AppLayout } from '@/design-system/components/app-layout';
+import { Input } from '@/design-system/components/input';
+import { Button } from '@/design-system/components/button';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
-import { mainMenuItems } from '../../config/menu';
+import { mainMenuItems } from '@/config/menu';
 import type { NewApplicationData } from '@iris/domain';
-import '../../styles/shared/AddForm.css';
+import { researchService } from '@/services/middleware';
+import '@/styles/shared/AddForm.css';
 
 export interface CreateApplicationFormProps {
     handleNavigation: (path: string) => void;
@@ -95,9 +96,7 @@ export function CreateApplicationForm({ handleNavigation, researchId, onSave, on
             setSubmitting(true);
             setSubmitError(null);
 
-            // Mock save until backend controller is implemented
-            await new Promise(resolve => setTimeout(resolve, 500));
-            console.log('Application created (mock):', data);
+            await researchService.addApplication(researchId, data);
 
             handleNavigation(`/research/view/${researchId}`);
         } catch (err) {

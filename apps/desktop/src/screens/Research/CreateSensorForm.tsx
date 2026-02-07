@@ -1,18 +1,21 @@
 /**
  * CreateSensorForm Component
  *
- * Form for creating a new sensor.
+ * Form for creating a new sensor with device selection dropdown.
  * Fields match the backend Sensor entity and Figma design.
  */
 
-import { useState, FormEvent } from 'react';
-import { AppLayout } from '../../design-system/components/app-layout';
-import { Input } from '../../design-system/components/input';
-import { Button } from '../../design-system/components/button';
+import { useState, useEffect, FormEvent, useMemo } from 'react';
+import { AppLayout } from '@/design-system/components/app-layout';
+import { Input } from '@/design-system/components/input';
+import { Dropdown } from '@/design-system/components/dropdown';
+import { Button } from '@/design-system/components/button';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
-import { mainMenuItems } from '../../config/menu';
-import type { NewSensorData } from '@iris/domain';
-import '../../styles/shared/AddForm.css';
+import { mainMenuItems } from '@/config/menu';
+import type { NewSensorData, ResearchDevice } from '@iris/domain';
+import type { DropdownOption } from '@/design-system/components/dropdown/Dropdown.types';
+import { researchService } from '@/services/middleware';
+import '@/styles/shared/AddForm.css';
 
 export interface CreateSensorFormProps {
     handleNavigation: (path: string) => void;
@@ -22,6 +25,7 @@ export interface CreateSensorFormProps {
 }
 
 export function CreateSensorForm({ handleNavigation, researchId, onSave, onCancel }: CreateSensorFormProps) {
+    const [deviceId, setDeviceId] = useState('');
     const [name, setName] = useState('');
     const [maxSamplingRate, setMaxSamplingRate] = useState('');
     const [unit, setUnit] = useState('');
@@ -36,6 +40,34 @@ export function CreateSensorForm({ handleNavigation, researchId, onSave, onCance
     const [submitting, setSubmitting] = useState(false);
     const [submitError, setSubmitError] = useState<string | null>(null);
 
+    const [devices, setDevices] = useState<ResearchDevice[]>([]);
+    const [loadingDevices, setLoadingDevices] = useState(true);
+
+    useEffect(() => {
+        let cancelled = false;
+        const loadDevices = async () => {
+            try {
+                setLoadingDevices(true);
+                const result = await researchService.getResearchDevices(researchId);
+                if (!cancelled) setDevices(result);
+            } catch (err) {
+                console.error('Failed to load devices:', err);
+            } finally {
+                if (!cancelled) setLoadingDevices(false);
+            }
+        };
+        loadDevices();
+        return () => { cancelled = true; };
+    }, [researchId]);
+
+    const deviceOptions: DropdownOption[] = useMemo(() =>
+        devices.map(d => ({
+            value: d.deviceId,
+            label: `${d.deviceName} — ${d.manufacturer} ${d.model}`,
+        })),
+        [devices]
+    );
+
     const handleBlur = (field: string) => {
         setTouched(prev => ({ ...prev, [field]: true }));
     };
@@ -46,6 +78,10 @@ export function CreateSensorForm({ handleNavigation, researchId, onSave, onCance
 
     const validateForm = (): boolean => {
         const newErrors: Record<string, string> = {};
+
+        if (!deviceId) {
+            newErrors.deviceId = 'Dispositivo é obrigatório';
+        }
 
         if (!name.trim()) {
             newErrors.name = 'Nome é obrigatório';
@@ -99,6 +135,7 @@ export function CreateSensorForm({ handleNavigation, researchId, onSave, onCance
         e.preventDefault();
 
         setTouched({
+            deviceId: true,
             name: true,
             maxSamplingRate: true,
             unit: true,
@@ -111,7 +148,7 @@ export function CreateSensorForm({ handleNavigation, researchId, onSave, onCance
         if (!validateForm()) return;
 
         const data: NewSensorData = {
-            deviceId: '', // Will be set when device selection is available
+            deviceId,
             name: name.trim(),
             maxSamplingRate: maxSamplingRate.trim(),
             unit: unit.trim(),
@@ -130,9 +167,15 @@ export function CreateSensorForm({ handleNavigation, researchId, onSave, onCance
             setSubmitting(true);
             setSubmitError(null);
 
-            // Mock save until backend controller is implemented
-            await new Promise(resolve => setTimeout(resolve, 500));
-            console.log('Sensor created (mock):', data);
+            await researchService.createSensor(deviceId, {
+                name: name.trim(),
+                maxSamplingRate: Number(maxSamplingRate),
+                unit: unit.trim(),
+                accuracy: Number(accuracy),
+                minRange: Number(minRange),
+                maxRange: Number(maxRange),
+                additionalInfo: additionalInfo.trim() || undefined,
+            });
 
             handleNavigation(`/research/view/${researchId}`);
         } catch (err) {
@@ -180,6 +223,28 @@ export function CreateSensorForm({ handleNavigation, researchId, onSave, onCance
                     )}
 
                     <div className="add-form__fields">
+                        <div className="add-form__full-width">
+                            <Dropdown
+                                label="Dispositivo"
+                                placeholder={loadingDevices ? 'Carregando dispositivos...' : 'Selecione o dispositivo'}
+                                options={deviceOptions}
+                                value={deviceId}
+                                onChange={(val) => {
+                                    setDeviceId(val as string);
+                                    setTouched(prev => ({ ...prev, deviceId: true }));
+                                }}
+                                validation={touched.deviceId && errors.deviceId ? 'error' : 'none'}
+                                errorMessage={touched.deviceId ? errors.deviceId : undefined}
+                                disabled={loadingDevices || devices.length === 0}
+                                required
+                            />
+                            {!loadingDevices && devices.length === 0 && (
+                                <span style={{ color: '#f59e0b', fontSize: '12px', marginTop: '4px', display: 'block' }}>
+                                    Nenhum dispositivo associado a esta pesquisa. Adicione um dispositivo primeiro.
+                                </span>
+                            )}
+                        </div>
+
                         <Input
                             label="Nome"
                             placeholder="Digite o nome do sensor"
@@ -295,7 +360,7 @@ export function CreateSensorForm({ handleNavigation, researchId, onSave, onCance
                             type="submit"
                             variant="primary"
                             size="big"
-                            disabled={submitting}
+                            disabled={submitting || (devices.length === 0 && !loadingDevices)}
                         >
                             {submitting ? 'Salvando...' : 'Salvar Sensor'}
                         </Button>
