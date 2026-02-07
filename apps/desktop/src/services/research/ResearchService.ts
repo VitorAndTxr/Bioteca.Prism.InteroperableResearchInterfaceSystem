@@ -5,8 +5,9 @@
  * Implements pagination support for research listing and research creation functionality.
  *
  * Endpoints:
- * - GET /api/Research/GetAllPaginatedAsync - Get paginated list of research projects
+ * - GET /api/Research/GetAllPaginated - Get paginated list of research projects
  * - POST /api/Research/New - Create new research project
+ * - PUT /api/Research/{id} - Update existing research project
  */
 
 import { BaseService, type MiddlewareServices } from '../BaseService';
@@ -16,6 +17,7 @@ import {
     AuthorizationStatus,
     type Research,
     type NewResearchData,
+    type UpdateResearchData,
     type PaginatedResponse,
     type AuthError,
     type AuthErrorCode,
@@ -59,10 +61,20 @@ interface AddResearchPayload extends Record<string, unknown> {
 }
 
 /**
+ * Middleware Update Research Payload (PascalCase - matches backend UpdateResearchPayload)
+ */
+interface UpdateResearchPayload extends Record<string, unknown> {
+    Title?: string;
+    Description?: string;
+    EndDate?: string | null;
+    Status?: string;
+}
+
+/**
  * Research Service Implementation
  */
 export class ResearchService extends BaseService {
-    private readonly USE_MOCK = true;
+    private readonly USE_MOCK = false;
 
     constructor(services: MiddlewareServices) {
         super(services, {
@@ -139,7 +151,7 @@ export class ResearchService extends BaseService {
 
             // Call backend API with pagination
             const response = await this.middleware.invoke<Record<string, unknown>, PaginatedResponse<ResearchDTO>>({
-                path: `/api/Research/GetAllPaginatedAsync?${queryParams.toString()}`,
+                path: `/api/Research/GetAllPaginated?${queryParams.toString()}`,
                 method: 'GET',
                 payload: {}
             });
@@ -221,6 +233,45 @@ export class ResearchService extends BaseService {
         });
     }
 
+    /**
+     * Update an existing research project
+     *
+     * @param id - Research project GUID
+     * @param data - Fields to update (all optional)
+     * @returns Updated research project
+     */
+    async updateResearch(id: string, data: UpdateResearchData): Promise<Research> {
+        return this.handleMiddlewareError(async () => {
+            this.log(`Updating research project: ${id}`);
+
+            await this.ensureSession();
+
+            const statusToBackend: Record<string, string> = {
+                [ResearchStatus.PLANNING]: 'Planning',
+                [ResearchStatus.ACTIVE]: 'Active',
+                [ResearchStatus.COMPLETED]: 'Completed',
+                [ResearchStatus.SUSPENDED]: 'Suspended',
+                [ResearchStatus.CANCELLED]: 'Cancelled',
+            };
+
+            const middlewarePayload: UpdateResearchPayload = {};
+            if (data.title !== undefined) middlewarePayload.Title = data.title;
+            if (data.description !== undefined) middlewarePayload.Description = data.description;
+            if (data.endDate !== undefined) middlewarePayload.EndDate = data.endDate;
+            if (data.status !== undefined) middlewarePayload.Status = statusToBackend[data.status] ?? data.status;
+
+            const response = await this.middleware.invoke<UpdateResearchPayload, ResearchDTO>({
+                path: `/api/Research/${id}`,
+                method: 'PUT',
+                payload: middlewarePayload
+            });
+
+            this.log('Research project updated:', response.id);
+
+            return this.convertToResearch(response);
+        });
+    }
+
     // ==================== Private Helpers ====================
 
     /**
@@ -266,17 +317,17 @@ export class ResearchService extends BaseService {
             'active': ResearchStatus.ACTIVE,
             'completed': ResearchStatus.COMPLETED,
             'suspended': ResearchStatus.SUSPENDED,
-            'archived': ResearchStatus.ARCHIVED,
+            'archived': ResearchStatus.CANCELLED,
             'PLANNING': ResearchStatus.PLANNING,
             'ACTIVE': ResearchStatus.ACTIVE,
             'COMPLETED': ResearchStatus.COMPLETED,
             'SUSPENDED': ResearchStatus.SUSPENDED,
-            'ARCHIVED': ResearchStatus.ARCHIVED,
+            'ARCHIVED': ResearchStatus.CANCELLED,
             'Planning': ResearchStatus.PLANNING,
             'Active': ResearchStatus.ACTIVE,
             'Completed': ResearchStatus.COMPLETED,
             'Suspended': ResearchStatus.SUSPENDED,
-            'Archived': ResearchStatus.ARCHIVED
+            'Archived': ResearchStatus.CANCELLED
         };
 
         return statusMap[status] || ResearchStatus.PLANNING;

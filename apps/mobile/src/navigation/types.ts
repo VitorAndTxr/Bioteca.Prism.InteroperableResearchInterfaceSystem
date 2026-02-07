@@ -29,7 +29,7 @@ export type MainTabParamList = {
 
 /**
  * Home Stack Navigator
- * Nested stack within the Home tab for session workflows
+ * Nested stack within the Home tab for session workflows and research management
  */
 export type HomeStackParamList = {
   SessionConfig: undefined;
@@ -37,4 +37,14 @@ export type HomeStackParamList = {
   Capture: { sessionId: string };
   AnnotationsList: { sessionId: string };
   NewAnnotation: { sessionId: string };
+  // Research management flow
+  ResearchList: undefined;
+  ResearchDetail: { researchId: string };
+  ResearchResearchers: { researchId: string };
+  ResearchVolunteers: { researchId: string };
+  ResearchApplications: { researchId: string };
+  ResearchDevices: { researchId: string };
+  ResearchDeviceSensors: { researchId: string; deviceId: string; deviceName: string };
+  ApplicationForm: { researchId: string; applicationId?: string };
+  EnrollVolunteerForm: { researchId: string };
 };

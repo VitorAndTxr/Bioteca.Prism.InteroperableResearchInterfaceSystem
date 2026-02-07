@@ -8,12 +8,14 @@
 import { AppLayout } from '../../design-system/components/app-layout';
 import ResearchList from './ResearchList';
 import { mainMenuItems } from '../../config/menu';
+import type { Research } from '@iris/domain';
 
 interface ResearchScreenProps {
     handleNavigation: (path: string) => void;
+    onSelectResearch?: (research: Research) => void;
 }
 
-function ResearchScreen({ handleNavigation }: ResearchScreenProps) {
+function ResearchScreen({ handleNavigation, onSelectResearch }: ResearchScreenProps) {
     return (
         <AppLayout
             sidebar={{
@@ -29,7 +31,10 @@ function ResearchScreen({ handleNavigation }: ResearchScreenProps) {
         >
             <ResearchList
                 onResearchAdd={() => handleNavigation('/research/add')}
-                onResearchEdit={(research) => console.log('Edit research:', research)}
+                onResearchEdit={(research) => {
+                    onSelectResearch?.(research);
+                    handleNavigation(`/research/edit/${research.id}`);
+                }}
                 onResearchView={(research) => handleNavigation(`/research/view/${research.id}`)}
             />
         </AppLayout>

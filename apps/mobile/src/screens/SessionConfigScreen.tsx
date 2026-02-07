@@ -36,7 +36,7 @@ import { useBluetoothContext } from '@/context/BluetoothContext';
 import { useSession } from '@/context/SessionContext';
 import { useAuth } from '@/context/AuthContext';
 import { Volunteer, Laterality, SnomedBodyStructure, SnomedTopographicalModifier } from '@iris/domain';
-import { Search, Plus } from 'lucide-react-native';
+import { Search, Plus, ClipboardList, ChevronRight } from 'lucide-react-native';
 
 type Props = NativeStackScreenProps<HomeStackParamList, 'SessionConfig'>;
 
@@ -198,6 +198,16 @@ export const SessionConfigScreen: FC<Props> = ({ navigation }) => {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
+        {/* Research Projects Entry Point */}
+        <Pressable
+          style={({ pressed }) => [styles.researchCard, pressed && { opacity: 0.7 }]}
+          onPress={() => navigation.navigate('ResearchList')}
+        >
+          <ClipboardList size={20} color={theme.colors.primary} />
+          <Text style={styles.researchCardTitle}>Research Projects</Text>
+          <ChevronRight size={16} color={theme.colors.textMuted} />
+        </Pressable>
+
         {/* Volunteer Section */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Volunteer</Text>
@@ -506,6 +516,24 @@ const styles = StyleSheet.create({
   deviceStatusText: {
     ...theme.typography.bodySmall,
     color: theme.colors.textBody,
+  },
+  researchCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.borderRadius.lg,
+    padding: theme.spacing.lg,
+    marginBottom: theme.spacing.xl,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    gap: theme.spacing.md,
+    ...theme.shadow.sm,
+  },
+  researchCardTitle: {
+    ...theme.typography.bodyBase,
+    color: theme.colors.textTitle,
+    fontWeight: '600',
+    flex: 1,
   },
   bottomSpacing: {
     height: theme.spacing['2xl'],

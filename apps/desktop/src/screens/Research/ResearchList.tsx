@@ -75,7 +75,7 @@ export function ResearchList({
             [ResearchStatus.ACTIVE]: 'Ativo',
             [ResearchStatus.COMPLETED]: 'Concluído',
             [ResearchStatus.SUSPENDED]: 'Suspenso',
-            [ResearchStatus.ARCHIVED]: 'Arquivado',
+            [ResearchStatus.CANCELLED]: 'Cancelado',
         };
         return statusMap[status] || status;
     };
@@ -87,7 +87,7 @@ export function ResearchList({
             [ResearchStatus.ACTIVE]: 'status-active',
             [ResearchStatus.COMPLETED]: 'status-completed',
             [ResearchStatus.SUSPENDED]: 'status-suspended',
-            [ResearchStatus.ARCHIVED]: 'status-archived',
+            [ResearchStatus.CANCELLED]: 'status-cancelled',
         };
         return classMap[status] || '';
     };

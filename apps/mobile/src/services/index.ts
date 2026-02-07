@@ -9,3 +9,4 @@ export type { SyncReport, SyncEntityReport, SyncOptions, SyncStatusEvent } from 
 export { volunteerService } from './VolunteerService';
 export { snomedService } from './SnomedService';
 export { preferencesService } from './PreferencesService';
+export { researchService } from './ResearchService';

@@ -24,6 +24,17 @@ import { CaptureScreen } from '@/screens/CaptureScreen';
 import { AnnotationsListScreen } from '@/screens/AnnotationsListScreen';
 import { NewAnnotationScreen } from '@/screens/NewAnnotationScreen';
 
+// Research management screens
+import { ResearchListScreen } from '@/screens/research/ResearchListScreen';
+import { ResearchDetailScreen } from '@/screens/research/ResearchDetailScreen';
+import { ResearchResearchersScreen } from '@/screens/research/ResearchResearchersScreen';
+import { ResearchVolunteersScreen } from '@/screens/research/ResearchVolunteersScreen';
+import { ResearchApplicationsScreen } from '@/screens/research/ResearchApplicationsScreen';
+import { ResearchDevicesScreen } from '@/screens/research/ResearchDevicesScreen';
+import { ResearchDeviceSensorsScreen } from '@/screens/research/ResearchDeviceSensorsScreen';
+import { ApplicationFormScreen } from '@/screens/research/ApplicationFormScreen';
+import { EnrollVolunteerFormScreen } from '@/screens/research/EnrollVolunteerFormScreen';
+
 const Stack = createNativeStackNavigator<HomeStackParamList>();
 
 export const HomeStackNavigator: FC = () => {
@@ -91,6 +102,53 @@ export const HomeStackNavigator: FC = () => {
           title: 'Add Annotation',
           presentation: 'modal',
         }}
+      />
+
+      {/* Research Management Screens */}
+      <Stack.Screen
+        name="ResearchList"
+        component={ResearchListScreen}
+        options={{ title: 'Research Projects' }}
+      />
+      <Stack.Screen
+        name="ResearchDetail"
+        component={ResearchDetailScreen}
+        options={{ title: 'Research Details' }}
+      />
+      <Stack.Screen
+        name="ResearchResearchers"
+        component={ResearchResearchersScreen}
+        options={{ title: 'Researchers' }}
+      />
+      <Stack.Screen
+        name="ResearchVolunteers"
+        component={ResearchVolunteersScreen}
+        options={{ title: 'Volunteers' }}
+      />
+      <Stack.Screen
+        name="ResearchApplications"
+        component={ResearchApplicationsScreen}
+        options={{ title: 'Applications' }}
+      />
+      <Stack.Screen
+        name="ResearchDevices"
+        component={ResearchDevicesScreen}
+        options={{ title: 'Devices' }}
+      />
+      <Stack.Screen
+        name="ResearchDeviceSensors"
+        component={ResearchDeviceSensorsScreen}
+        options={{ title: 'Sensors' }}
+      />
+      <Stack.Screen
+        name="ApplicationForm"
+        component={ApplicationFormScreen}
+        options={{ title: 'Application', presentation: 'modal' }}
+      />
+      <Stack.Screen
+        name="EnrollVolunteerForm"
+        component={EnrollVolunteerFormScreen}
+        options={{ title: 'Enroll Volunteer', presentation: 'modal' }}
       />
     </Stack.Navigator>
   );

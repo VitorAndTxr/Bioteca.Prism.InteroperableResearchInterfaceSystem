@@ -1,14 +1,12 @@
 /**
  * CreateResearchForm Component
  *
- * Form for creating a new research project.
- * Uses the ResearchService to create projects in the IRN backend.
+ * Form for creating and editing research projects.
+ * Uses the ResearchService to manage projects in the IRN backend.
  *
- * Features:
- * - Title input
- * - Description textarea
- * - Research Node selection
- * - Form validation
+ * Modes:
+ * - add: Create a new research project
+ * - edit: Update an existing research project (includes status field)
  */
 
 import React, { useState, FormEvent, useEffect } from 'react';
@@ -18,22 +16,40 @@ import { Dropdown } from '../../design-system/components/dropdown';
 import { Button } from '../../design-system/components/button';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { mainMenuItems } from '../../config/menu';
-import type { NewResearchData, ResearchNodeConnection } from '@iris/domain';
+import { ResearchStatus } from '@iris/domain';
+import type { NewResearchData, UpdateResearchData, Research, ResearchNodeConnection } from '@iris/domain';
 import { researchService, nodeConnectionService } from '../../services/middleware';
 import '../../styles/shared/AddForm.css';
 
+export type FormMode = 'add' | 'edit';
+
 export interface CreateResearchFormProps {
     handleNavigation: (path: string) => void;
-    onSave?: (researchData: NewResearchData) => void;
     onCancel?: () => void;
+    mode?: FormMode;
+    research?: Research;
 }
 
-export function CreateResearchForm({ handleNavigation, onSave, onCancel }: CreateResearchFormProps) {
+const statusOptions = [
+    { value: ResearchStatus.PLANNING, label: 'Planejamento' },
+    { value: ResearchStatus.ACTIVE, label: 'Ativo' },
+    { value: ResearchStatus.COMPLETED, label: 'Concluído' },
+    { value: ResearchStatus.SUSPENDED, label: 'Suspenso' },
+    { value: ResearchStatus.CANCELLED, label: 'Cancelado' },
+];
+
+export function CreateResearchForm({
+    handleNavigation,
+    onCancel,
+    mode = 'add',
+    research
+}: CreateResearchFormProps) {
     // Form state
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [startDate, setStartDate] = useState('');
     const [researchNodeId, setResearchNodeId] = useState<string>('');
+    const [status, setStatus] = useState<string>(ResearchStatus.PLANNING);
     const [nodeOptions, setNodeOptions] = useState<{ value: string; label: string }[]>([]);
 
     // Validation state
@@ -49,17 +65,28 @@ export function CreateResearchForm({ handleNavigation, onSave, onCancel }: Creat
         loadNodeOptions();
     }, []);
 
+    // Pre-populate form in edit mode
+    useEffect(() => {
+        if (mode === 'edit' && research) {
+            setTitle(research.title);
+            setDescription(research.description);
+            setStatus(research.status);
+            if (research.researchNode) {
+                setResearchNodeId(research.researchNode.id);
+            }
+        }
+    }, [mode, research]);
+
     const loadNodeOptions = async () => {
         try {
             const response = await nodeConnectionService.getActiveNodeConnectionsPaginated(1, 100);
-            const options = response.data.map((node: ResearchNodeConnection) => ({
+            const options = (response.data ?? []).map((node: ResearchNodeConnection) => ({
                 value: node.id,
                 label: `${node.nodeName} (${node.nodeUrl})`,
             }));
             setNodeOptions(options);
         } catch (error) {
             console.error('Failed to fetch research nodes for dropdown:', error);
-            // Set a default mock option for development
             setNodeOptions([
                 { value: 'mock-node-1', label: 'Mock Node 1 (https://mock-node-1.com)' },
                 { value: 'mock-node-2', label: 'Mock Node 2 (https://mock-node-2.com)' },
@@ -67,12 +94,10 @@ export function CreateResearchForm({ handleNavigation, onSave, onCancel }: Creat
         }
     };
 
-    // Mark field as touched
     const handleBlur = (field: string) => {
         setTouched(prev => ({ ...prev, [field]: true }));
     };
 
-    // Validate form
     const validateForm = (): boolean => {
         const newErrors: Record<string, string> = {};
 
@@ -88,68 +113,68 @@ export function CreateResearchForm({ handleNavigation, onSave, onCancel }: Creat
             newErrors.description = 'Descrição deve ter no máximo 2000 caracteres';
         }
 
-        if (!startDate) {
-            newErrors.startDate = 'Data de início é obrigatória';
-        }
-
-        if (!researchNodeId) {
-            newErrors.researchNodeId = 'Nó de pesquisa é obrigatório';
+        if (mode === 'add') {
+            if (!startDate) {
+                newErrors.startDate = 'Data de início é obrigatória';
+            }
+            if (!researchNodeId) {
+                newErrors.researchNodeId = 'Nó de pesquisa é obrigatório';
+            }
         }
 
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
 
-    // Handle form submission
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
 
-        // Mark all fields as touched
-        setTouched({
+        const touchedFields: Record<string, boolean> = {
             title: true,
             description: true,
-            startDate: true,
-            researchNodeId: true,
-        });
+            status: true,
+        };
+        if (mode === 'add') {
+            touchedFields.startDate = true;
+            touchedFields.researchNodeId = true;
+        }
+        setTouched(touchedFields);
 
         if (!validateForm()) {
             return;
         }
 
-        const researchData: NewResearchData = {
-            title: title.trim(),
-            description: description.trim(),
-            researchNodeId,
-            startDate,
-        };
-
-        // If custom save handler provided, use it
-        if (onSave) {
-            onSave(researchData);
-            return;
-        }
-
-        // Otherwise, save via ResearchService
         try {
             setSubmitting(true);
             setSubmitError(null);
 
-            console.log('Creating research project:', researchData);
-            const createdResearch = await researchService.createResearch(researchData);
-            console.log('Research project created successfully:', createdResearch);
+            if (mode === 'edit' && research) {
+                const updateData: UpdateResearchData = {
+                    title: title.trim(),
+                    description: description.trim(),
+                    status: status as ResearchStatus,
+                };
+                await researchService.updateResearch(research.id, updateData);
+            } else {
+                const createData: NewResearchData = {
+                    title: title.trim(),
+                    description: description.trim(),
+                    researchNodeId,
+                    startDate,
+                };
+                await researchService.createResearch(createData);
+            }
 
-            // Navigate back to research list
             handleNavigation('/research');
         } catch (err) {
-            console.error('Failed to create research project:', err);
-            const errorMessage = err instanceof Error ? err.message : 'Failed to create research project';
+            console.error(`Failed to ${mode} research project:`, err);
+            const errorMessage = err instanceof Error ? err.message : `Falha ao ${mode === 'edit' ? 'atualizar' : 'criar'} projeto de pesquisa`;
             setSubmitError(errorMessage);
         } finally {
             setSubmitting(false);
         }
     };
 
-    // Handle cancel/back
     const handleCancel = () => {
         if (onCancel) {
             onCancel();
@@ -157,6 +182,8 @@ export function CreateResearchForm({ handleNavigation, onSave, onCancel }: Creat
             handleNavigation('/research');
         }
     };
+
+    const headerTitle = mode === 'edit' ? 'Editar Projeto de Pesquisa' : 'Novo Projeto de Pesquisa';
 
     return (
         <AppLayout
@@ -167,13 +194,12 @@ export function CreateResearchForm({ handleNavigation, onSave, onCancel }: Creat
                 logo: 'I.R.I.S.',
             }}
             header={{
-                title: 'Novo Projeto de Pesquisa',
+                title: headerTitle,
                 showUserMenu: true,
             }}
         >
             <div className="add-form">
                 <form className="add-form__container" onSubmit={handleSubmit}>
-                    {/* Error message */}
                     {submitError && (
                         <div style={{
                             padding: '12px 16px',
@@ -234,33 +260,50 @@ export function CreateResearchForm({ handleNavigation, onSave, onCancel }: Creat
                             </span>
                         </div>
 
-                        {/* Start Date */}
-                        <Input
-                            label="Data de Início"
-                            type="date"
-                            placeholder="Selecione a data de início"
-                            value={startDate}
-                            onChange={(e) => setStartDate(e.target.value)}
-                            onBlur={() => handleBlur('startDate')}
-                            validationStatus={touched.startDate && errors.startDate ? 'error' : 'none'}
-                            errorMessage={touched.startDate ? errors.startDate : undefined}
-                            required
-                        />
+                        {/* Status - only in edit mode */}
+                        {mode === 'edit' && (
+                            <Dropdown
+                                label="Status"
+                                placeholder="Selecione o status"
+                                options={statusOptions}
+                                value={status}
+                                onChange={(value) => setStatus(value as string)}
+                                fullWidth
+                                required
+                            />
+                        )}
 
-                        {/* Research Node */}
-                        <Dropdown
-                            label="Nó de Pesquisa"
-                            placeholder="Selecione o nó de pesquisa"
-                            options={nodeOptions}
-                            value={researchNodeId}
-                            onChange={(value) => setResearchNodeId(value as string)}
-                            onBlur={() => handleBlur('researchNodeId')}
-                            validation={touched.researchNodeId && errors.researchNodeId ? 'error' : 'none'}
-                            errorMessage={touched.researchNodeId ? errors.researchNodeId : undefined}
-                            searchable
-                            fullWidth
-                            required
-                        />
+                        {/* Start Date - only in add mode */}
+                        {mode === 'add' && (
+                            <Input
+                                label="Data de Início"
+                                type="date"
+                                placeholder="Selecione a data de início"
+                                value={startDate}
+                                onChange={(e) => setStartDate(e.target.value)}
+                                onBlur={() => handleBlur('startDate')}
+                                validationStatus={touched.startDate && errors.startDate ? 'error' : 'none'}
+                                errorMessage={touched.startDate ? errors.startDate : undefined}
+                                required
+                            />
+                        )}
+
+                        {/* Research Node - only in add mode */}
+                        {mode === 'add' && (
+                            <Dropdown
+                                label="Nó de Pesquisa"
+                                placeholder="Selecione o nó de pesquisa"
+                                options={nodeOptions}
+                                value={researchNodeId}
+                                onChange={(value) => setResearchNodeId(value as string)}
+                                onBlur={() => handleBlur('researchNodeId')}
+                                validation={touched.researchNodeId && errors.researchNodeId ? 'error' : 'none'}
+                                errorMessage={touched.researchNodeId ? errors.researchNodeId : undefined}
+                                searchable
+                                fullWidth
+                                required
+                            />
+                        )}
                     </div>
 
                     {/* Action Buttons */}
@@ -281,7 +324,7 @@ export function CreateResearchForm({ handleNavigation, onSave, onCancel }: Creat
                             size="big"
                             disabled={submitting}
                         >
-                            {submitting ? 'Salvando...' : 'Salvar Projeto'}
+                            {submitting ? 'Salvando...' : (mode === 'edit' ? 'Atualizar Projeto' : 'Salvar Projeto')}
                         </Button>
                     </div>
                 </form>

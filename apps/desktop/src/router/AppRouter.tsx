@@ -25,6 +25,7 @@ import AddConnectionForm from "@/screens/NodeConnections/AddConnectionForm";
 import AddAllergyIntoleranceForm from "@/screens/SNOMED/AddAllergyIntoleranceForm";
 import {
     ResearchNodeConnection,
+    Research,
     User,
     Researcher,
     Volunteer,
@@ -45,6 +46,7 @@ function AppRouter() {
     const [activePath, setActivePath] = useState<string>('/dashboard');
 
     const [selectedResearchId, setSelectedResearchId] = useState<string>('');
+    const [selectedResearch, setSelectedResearch] = useState<Research | null>(null);
     const [selectedConnection, setSelectedConnection] = useState<ResearchNodeConnection | null>(null);
 
     // User and Researcher selection states
@@ -89,6 +91,13 @@ function AppRouter() {
         setActivePath(path);
 
         // Handle dynamic routes with parameters first
+        if (path.startsWith('/research/edit/')) {
+            const id = path.replace('/research/edit/', '');
+            setSelectedResearchId(id);
+            setCurrentPage('edit-research');
+            return;
+        }
+
         if (path.startsWith('/research/view/')) {
             const id = path.replace('/research/view/', '');
             setSelectedResearchId(id);
@@ -335,12 +344,21 @@ function AppRouter() {
                 return (
                     <ResearchScreen
                         handleNavigation={handleNavigation}
+                        onSelectResearch={setSelectedResearch}
                     />
                 );
             case 'add-research':
                 return (
                     <CreateResearchForm
                         handleNavigation={handleNavigation}
+                    />
+                );
+            case 'edit-research':
+                return (
+                    <CreateResearchForm
+                        handleNavigation={handleNavigation}
+                        mode="edit"
+                        research={selectedResearch ?? undefined}
                     />
                 );
             case 'view-research':
@@ -650,6 +668,7 @@ type Pages =
     | 'edit-connection'
     | 'research'
     | 'add-research'
+    | 'edit-research'
     | 'view-research'
     | 'add-application'
     | 'add-device'
