@@ -36,6 +36,7 @@ import { ResearchDevicesScreen } from '@/screens/research/ResearchDevicesScreen'
 import { ResearchDeviceSensorsScreen } from '@/screens/research/ResearchDeviceSensorsScreen';
 import { ApplicationFormScreen } from '@/screens/research/ApplicationFormScreen';
 import { EnrollVolunteerFormScreen } from '@/screens/research/EnrollVolunteerFormScreen';
+import { FavoritesManageScreen } from '@/screens/FavoritesManageScreen';
 
 const Stack = createNativeStackNavigator<HomeStackParamList>();
 
@@ -157,6 +158,11 @@ export const HomeStackNavigator: FC = () => {
         name="EnrollVolunteerForm"
         component={EnrollVolunteerFormScreen}
         options={{ title: 'Enroll Volunteer', presentation: 'modal' }}
+      />
+      <Stack.Screen
+        name="FavoritesManage"
+        component={FavoritesManageScreen}
+        options={{ title: 'Manage Favorites' }}
       />
     </Stack.Navigator>
   );

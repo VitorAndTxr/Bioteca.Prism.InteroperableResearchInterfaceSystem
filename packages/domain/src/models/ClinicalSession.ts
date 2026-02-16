@@ -71,3 +71,33 @@ export interface SessionConfig {
         topographyNames: string[];
     };
 }
+
+/**
+ * Session Favorite
+ *
+ * A saved configuration preset for quick session setup.
+ * Captures the repeatable clinical protocol (body structure, topography,
+ * optional research linkage) while leaving session-specific variables
+ * (volunteer, device) for manual selection.
+ */
+export interface SessionFavorite {
+    id: string;
+    name: string;
+    bodyStructureSnomedCode: string;
+    bodyStructureName: string;
+    topographyCodes: string[];
+    topographyNames: string[];
+    topographyCategories: string[];
+    deviceId?: string;
+    laterality?: Laterality | null;
+    researchId?: string;
+    researchTitle?: string;
+    createdAt: string;
+    updatedAt: string;
+}
+
+/**
+ * Payload for creating a new favorite.
+ * Omits auto-generated fields (id, timestamps).
+ */
+export type CreateFavoritePayload = Omit<SessionFavorite, 'id' | 'createdAt' | 'updatedAt'>;

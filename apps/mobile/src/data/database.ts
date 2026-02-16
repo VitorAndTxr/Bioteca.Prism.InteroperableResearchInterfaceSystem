@@ -9,6 +9,7 @@ import * as SQLite from 'expo-sqlite';
 import { v1_initial } from './migrations/v1_initial';
 import { v2_add_research_columns } from './migrations/v2_add_research_columns';
 import { v3_relax_laterality_constraint } from './migrations/v3_relax_laterality_constraint';
+import { v4_add_session_favorites } from './migrations/v4_add_session_favorites';
 
 interface Migration {
     version: number;
@@ -20,6 +21,7 @@ const MIGRATIONS: Migration[] = [
     { version: 1, name: 'v1_initial', sql: v1_initial },
     { version: 2, name: 'v2_add_research_columns', sql: v2_add_research_columns },
     { version: 3, name: 'v3_relax_laterality_constraint', sql: v3_relax_laterality_constraint },
+    { version: 4, name: 'v4_add_session_favorites', sql: v4_add_session_favorites },
 ];
 
 class DatabaseManager {
@@ -128,6 +130,7 @@ class DatabaseManager {
 
         // Drop all tables
         await this.db.execAsync(`
+            DROP TABLE IF EXISTS session_favorites;
             DROP TABLE IF EXISTS annotations;
             DROP TABLE IF EXISTS recordings;
             DROP TABLE IF EXISTS clinical_data;

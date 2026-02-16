@@ -13,7 +13,7 @@
  * - Form validation before session start
  */
 
-import React, { FC, useState, useEffect } from 'react';
+import React, { FC, useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -27,6 +27,7 @@ import {
   Alert,
 } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { useFocusEffect } from '@react-navigation/native';
 import type { HomeStackParamList } from '@/navigation/types';
 import { theme } from '@/theme';
 import { Button, Input, Select, Card } from '@/components/ui';
@@ -34,12 +35,14 @@ import { useDebounce } from '@/hooks/useDebounce';
 import { volunteerService } from '@/services/VolunteerService';
 import { snomedService } from '@/services/SnomedService';
 import { researchService } from '@/services/ResearchService';
-import type { Research } from '@iris/domain';
+import type { Research, SessionFavorite } from '@iris/domain';
 import { useBluetoothContext } from '@/context/BluetoothContext';
 import { useSession } from '@/context/SessionContext';
 import { useAuth } from '@/context/AuthContext';
 import { Volunteer, SnomedBodyStructure, SnomedTopographicalModifier } from '@iris/domain';
-import { Search, Plus, ClipboardList, ChevronRight } from 'lucide-react-native';
+import { Search, Plus, ClipboardList, ChevronRight, Star, Settings } from 'lucide-react-native';
+import { favoriteRepository } from '@/data/repositories/FavoriteRepository';
+import { NamePromptModal } from '@/components/NamePromptModal';
 
 type Props = NativeStackScreenProps<HomeStackParamList, 'SessionConfig'>;
 
@@ -68,12 +71,32 @@ export const SessionConfigScreen: FC<Props> = ({ navigation, route }) => {
   // Device state
   const [selectedDeviceId, setSelectedDeviceId] = useState<string>('');
 
+  // Favorites state
+  const [favorites, setFavorites] = useState<SessionFavorite[]>([]);
+  const [showSavePrompt, setShowSavePrompt] = useState(false);
+  const [savePromptDefault, setSavePromptDefault] = useState('');
+
   // Loading states
   const [isLoadingSnomedData, setIsLoadingSnomedData] = useState(true);
   const [isStartingSession, setIsStartingSession] = useState(false);
 
   // Debounce volunteer search
   const debouncedSearchQuery = useDebounce(volunteerSearchQuery, 500);
+
+  // Load favorites on every screen focus (refreshes after save/delete/rename)
+  useFocusEffect(
+    useCallback(() => {
+      const loadFavorites = async () => {
+        try {
+          const data = await favoriteRepository.getAll();
+          setFavorites(data);
+        } catch (error) {
+          console.warn('[SessionConfigScreen] Failed to load favorites:', error);
+        }
+      };
+      loadFavorites();
+    }, [])
+  );
 
   // Load SNOMED data and research projects on mount
   useEffect(() => {
@@ -181,6 +204,111 @@ export const SessionConfigScreen: FC<Props> = ({ navigation, route }) => {
     );
   };
 
+  // Apply a saved favorite to the form
+  const applyFavorite = (favorite: SessionFavorite) => {
+    // Body structure
+    setSelectedBodyStructure(favorite.bodyStructureSnomedCode);
+
+    // Topographies -- reconstruct from parallel arrays including category (M1 fix)
+    const topographies: SnomedTopographicalModifier[] = favorite.topographyCodes.map(
+      (code, index) => ({
+        snomedCode: code,
+        displayName: favorite.topographyNames[index] ?? code,
+        category: favorite.topographyCategories[index] ?? '',
+        description: '',
+      })
+    );
+    setSelectedTopographies(topographies);
+
+    // Research linkage with stale-data validation (US-SF-017)
+    if (favorite.researchId) {
+      const projectExists = researchProjects.find(r => r.id === favorite.researchId);
+      if (projectExists) {
+        setSelectedResearchId(favorite.researchId);
+        setSelectedResearchTitle(favorite.researchTitle ?? '');
+      } else {
+        setSelectedResearchId('');
+        setSelectedResearchTitle('');
+        Alert.alert(
+          'Research Unavailable',
+          `Research project "${favorite.researchTitle}" is no longer available. ` +
+          'Favorite applied without research linkage.'
+        );
+      }
+    } else {
+      setSelectedResearchId('');
+      setSelectedResearchTitle('');
+    }
+
+    // Device with stale-device validation
+    if (favorite.deviceId) {
+      const deviceExists = neuraDevices.find(d => d.address === favorite.deviceId);
+      if (deviceExists) {
+        setSelectedDeviceId(favorite.deviceId);
+      } else {
+        setSelectedDeviceId('');
+        Alert.alert(
+          'Device Unavailable',
+          'The saved device is no longer paired. Please select a device manually.'
+        );
+      }
+    } else {
+      setSelectedDeviceId('');
+    }
+
+    // Body structure stale-data warning (US-SF-018)
+    const structureExists = bodyStructures.find(
+      bs => bs.snomedCode === favorite.bodyStructureSnomedCode
+    );
+    if (!structureExists) {
+      Alert.alert(
+        'Body Structure Notice',
+        `Body structure "${favorite.bodyStructureName}" was not found in the current SNOMED set. ` +
+        'The saved code has been applied.'
+      );
+    }
+  };
+
+  // Whether the current form state has enough data to save as a favorite
+  const canSaveFavorite = (): boolean => {
+    return !!(selectedBodyStructure && selectedTopographies.length > 0);
+  };
+
+  // Open save-as-favorite prompt
+  const handleOpenSavePrompt = () => {
+    const defaultName = bodyStructures.find(
+      bs => bs.snomedCode === selectedBodyStructure
+    )?.displayName ?? 'My Favorite';
+    setSavePromptDefault(defaultName);
+    setShowSavePrompt(true);
+  };
+
+  // Persist a new favorite
+  const handleSaveFavorite = async (name: string) => {
+    setShowSavePrompt(false);
+    try {
+      await favoriteRepository.create({
+        name,
+        bodyStructureSnomedCode: selectedBodyStructure,
+        bodyStructureName: bodyStructures.find(
+          bs => bs.snomedCode === selectedBodyStructure
+        )?.displayName ?? '',
+        topographyCodes: selectedTopographies.map(t => t.snomedCode),
+        topographyNames: selectedTopographies.map(t => t.displayName),
+        topographyCategories: selectedTopographies.map(t => t.category),
+        deviceId: selectedDeviceId || undefined,
+        laterality: null,
+        researchId: selectedResearchId || undefined,
+        researchTitle: selectedResearchTitle || undefined,
+      });
+
+      const updated = await favoriteRepository.getAll();
+      setFavorites(updated);
+    } catch (error) {
+      console.error('[SessionConfigScreen] Failed to save favorite:', error);
+    }
+  };
+
   // Validation
   const isFormValid = (): boolean => {
     return !!(
@@ -268,6 +396,41 @@ export const SessionConfigScreen: FC<Props> = ({ navigation, route }) => {
                 value: r.id,
               }))}
             />
+          </View>
+        )}
+
+        {/* Favorites Chip Strip */}
+        {favorites.length > 0 && (
+          <View style={styles.favoritesSection}>
+            <View style={styles.favoritesSectionHeader}>
+              <Star size={16} color={theme.colors.primary} />
+              <Text style={styles.favoritesSectionTitle}>Favorites</Text>
+            </View>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.favoritesStripContent}
+            >
+              {favorites.map(fav => (
+                <TouchableOpacity
+                  key={fav.id}
+                  style={styles.favoriteChip}
+                  onPress={() => applyFavorite(fav)}
+                >
+                  <Star size={12} color={theme.colors.primary} />
+                  <Text style={styles.favoriteChipText} numberOfLines={1}>
+                    {fav.name}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+              <TouchableOpacity
+                style={styles.favoriteManageChip}
+                onPress={() => navigation.navigate('FavoritesManage')}
+              >
+                <Settings size={12} color={theme.colors.textMuted} />
+                <Text style={styles.favoriteManageText}>Manage</Text>
+              </TouchableOpacity>
+            </ScrollView>
           </View>
         )}
 
@@ -405,8 +568,18 @@ export const SessionConfigScreen: FC<Props> = ({ navigation, route }) => {
         <View style={styles.bottomSpacing} />
       </ScrollView>
 
-      {/* Footer - Start Session Button */}
+      {/* Footer - Save as Favorite + Start Session */}
       <View style={styles.footer}>
+        <Button
+          title="Save as Favorite"
+          variant="secondary"
+          size="md"
+          fullWidth
+          disabled={!canSaveFavorite()}
+          onPress={handleOpenSavePrompt}
+          leftIcon={<Star size={16} color={canSaveFavorite() ? theme.colors.primary : theme.colors.textMuted} />}
+        />
+        <View style={{ height: theme.spacing.sm }} />
         <Button
           title="Start Session"
           variant="primary"
@@ -417,6 +590,16 @@ export const SessionConfigScreen: FC<Props> = ({ navigation, route }) => {
           onPress={handleStartSession}
         />
       </View>
+
+      {/* Save Favorite Name Prompt */}
+      <NamePromptModal
+        visible={showSavePrompt}
+        title="Save as Favorite"
+        placeholder="Enter a name for this favorite..."
+        defaultValue={savePromptDefault}
+        onConfirm={handleSaveFavorite}
+        onCancel={() => setShowSavePrompt(false)}
+      />
     </SafeAreaView>
   );
 };
@@ -570,6 +753,58 @@ const styles = StyleSheet.create({
     color: theme.colors.textTitle,
     fontWeight: '600',
     flex: 1,
+  },
+  // Favorites strip
+  favoritesSection: {
+    marginBottom: theme.spacing.xl,
+  },
+  favoritesSectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.xs,
+    marginBottom: theme.spacing.sm,
+  },
+  favoritesSectionTitle: {
+    ...theme.typography.uiSmall,
+    color: theme.colors.textBody,
+    fontWeight: '600',
+  },
+  favoritesStripContent: {
+    gap: theme.spacing.sm,
+    paddingRight: theme.spacing.md,
+  },
+  favoriteChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: theme.colors.primaryLight,
+    borderWidth: 1,
+    borderColor: theme.colors.primary,
+    borderRadius: theme.borderRadius.full,
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.xs,
+    gap: theme.spacing.xs,
+    maxWidth: 160,
+  },
+  favoriteChipText: {
+    ...theme.typography.uiSmall,
+    color: theme.colors.primaryDark,
+    fontWeight: '600',
+  },
+  favoriteManageChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: theme.colors.textMuted,
+    borderStyle: 'dashed',
+    borderRadius: theme.borderRadius.full,
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.xs,
+    gap: theme.spacing.xs,
+  },
+  favoriteManageText: {
+    ...theme.typography.uiSmall,
+    color: theme.colors.textMuted,
+    fontWeight: '600',
   },
   bottomSpacing: {
     height: theme.spacing['2xl'],

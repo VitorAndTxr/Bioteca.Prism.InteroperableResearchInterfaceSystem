@@ -1,12 +1,14 @@
 ## Purpose
 
-Projetar a modificação de uma funcionalidade de `/apps/mobile` na tela de `NewSession` para adequar ao funcionamento e organização do back-end `InteroperableResearchNode`
+Corrigir fluxos de navegação e persistencia de estados de `/apps/mobile` na tela de `NewSession`
 
-## Instructions
+## Problemas
 
-1. In `Clinical Data` screen session, remove laterality select
-2. Modify Topography when clicking in the +add toast
-    1. Open a modal with a select like the `/apps/desktop` -> `AddTopographForm` -> Select category
-    2. The user must select the type of topografical modifier as in te add form
-    3. Then it search between topografical modifiers of that category and list in the modal to be selected
+1. Quando entramos na tela de seleção de modificadores topográficos, perdemos o estado de preenchimento da tela de novas sessões
+2. Quando navegamos nos sub menus, também perdemos o estado de preenchimento da tela
+
+## Comportamento esperado
+
+- Apenas ao finalizar uma sessão que deve ser limpo o formulário
+- Botão para limpar preenchimento também é interessante
 

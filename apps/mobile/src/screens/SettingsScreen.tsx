@@ -23,7 +23,7 @@ import {
   Pressable,
   Alert,
 } from 'react-native';
-import { User, Moon, Download, Shield, ChevronRight, LogOut, RefreshCw } from 'lucide-react-native';
+import { User, Moon, Download, Shield, ChevronRight, LogOut, RefreshCw, Star } from 'lucide-react-native';
 import type { CompositeScreenProps } from '@react-navigation/native';
 import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -167,7 +167,13 @@ export const SettingsScreen: FC<Props> = ({ navigation }) => {
               label="Export Preferences"
               value={exportFormat.toUpperCase()}
               onPress={handleExportFormatToggle}
+              showBorder
               icon={<Download size={20} color={theme.colors.textBody} />}
+            />
+            <SettingRow
+              label="Manage Favorites"
+              onPress={() => navigation.navigate('Home', { screen: 'FavoritesManage' })}
+              icon={<Star size={20} color={theme.colors.textBody} />}
             />
           </Card>
         </View>

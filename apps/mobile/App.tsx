@@ -13,7 +13,7 @@
  * 6. RootNavigator - Auth-gated navigation
  */
 
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
@@ -35,6 +35,7 @@ import { AuthProvider } from './src/context/AuthContext';
 import { SessionProvider } from './src/context/SessionContext';
 import { SyncProvider } from './src/context/SyncContext';
 import { RootNavigator } from './src/navigation';
+import { databaseManager } from './src/data/database';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -48,13 +49,21 @@ export default function App() {
     'Nunito-SemiBold': Nunito_600SemiBold,
   });
 
+  const [dbReady, setDbReady] = useState(false);
+
+  useEffect(() => {
+    databaseManager.initialize()
+      .then(() => setDbReady(true))
+      .catch((error) => console.error('[App] Database initialization failed:', error));
+  }, []);
+
   const onLayoutRootView = useCallback(async () => {
-    if (fontsLoaded) {
+    if (fontsLoaded && dbReady) {
       await SplashScreen.hideAsync();
     }
-  }, [fontsLoaded]);
+  }, [fontsLoaded, dbReady]);
 
-  if (!fontsLoaded) {
+  if (!fontsLoaded || !dbReady) {
     return null;
   }
 

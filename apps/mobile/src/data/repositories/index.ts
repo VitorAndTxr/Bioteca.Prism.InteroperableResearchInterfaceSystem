@@ -7,3 +7,4 @@
 export { SessionRepository } from './SessionRepository';
 export { RecordingRepository } from './RecordingRepository';
 export { AnnotationRepository } from './AnnotationRepository';
+export { FavoriteRepository, favoriteRepository } from './FavoriteRepository';

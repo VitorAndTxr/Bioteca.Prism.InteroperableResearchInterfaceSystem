@@ -58,4 +58,5 @@ export type HomeStackParamList = {
   ResearchDeviceSensors: { researchId: string; deviceId: string; deviceName: string };
   ApplicationForm: { researchId: string; applicationId?: string };
   EnrollVolunteerForm: { researchId: string };
+  FavoritesManage: undefined;
 };
