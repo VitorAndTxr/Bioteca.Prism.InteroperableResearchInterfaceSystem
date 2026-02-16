@@ -32,6 +32,8 @@ import { Button, Input, Select, Card } from '@/components/ui';
 import { useDebounce } from '@/hooks/useDebounce';
 import { volunteerService } from '@/services/VolunteerService';
 import { snomedService } from '@/services/SnomedService';
+import { researchService } from '@/services/ResearchService';
+import type { Research } from '@iris/domain';
 import { useBluetoothContext } from '@/context/BluetoothContext';
 import { useSession } from '@/context/SessionContext';
 import { useAuth } from '@/context/AuthContext';
@@ -60,6 +62,11 @@ export const SessionConfigScreen: FC<Props> = ({ navigation }) => {
   const [selectedTopographies, setSelectedTopographies] = useState<SnomedTopographicalModifier[]>([]);
   const [showTopographyDropdown, setShowTopographyDropdown] = useState(false);
 
+  // Research state
+  const [researchProjects, setResearchProjects] = useState<Research[]>([]);
+  const [selectedResearchId, setSelectedResearchId] = useState<string>('');
+  const [selectedResearchTitle, setSelectedResearchTitle] = useState<string>('');
+
   // Device state
   const [selectedDeviceId, setSelectedDeviceId] = useState<string>('');
 
@@ -70,9 +77,9 @@ export const SessionConfigScreen: FC<Props> = ({ navigation }) => {
   // Debounce volunteer search
   const debouncedSearchQuery = useDebounce(volunteerSearchQuery, 500);
 
-  // Load SNOMED data on mount
+  // Load SNOMED data and research projects on mount
   useEffect(() => {
-    const loadSnomedData = async () => {
+    const loadInitialData = async () => {
       try {
         setIsLoadingSnomedData(true);
         const [structures, modifiers] = await Promise.all([
@@ -86,9 +93,17 @@ export const SessionConfigScreen: FC<Props> = ({ navigation }) => {
       } finally {
         setIsLoadingSnomedData(false);
       }
+
+      // Load research projects (non-blocking -- failure is silent)
+      try {
+        const response = await researchService.getActive();
+        setResearchProjects(response.data ?? []);
+      } catch (error) {
+        console.warn('[SessionConfigScreen] Failed to load research projects:', error);
+      }
     };
 
-    loadSnomedData();
+    loadInitialData();
   }, []);
 
   // Search volunteers when debounced query changes
@@ -121,6 +136,14 @@ export const SessionConfigScreen: FC<Props> = ({ navigation }) => {
     setSelectedVolunteer(volunteer);
     setVolunteerSearchQuery(volunteer.name);
     setShowVolunteerDropdown(false);
+  };
+
+  // Handle research selection
+  const handleResearchChange = (value: string | number) => {
+    const id = String(value);
+    setSelectedResearchId(id);
+    const project = researchProjects.find((r) => r.id === id);
+    setSelectedResearchTitle(project?.title ?? '');
   };
 
   // Handle topography addition
@@ -166,6 +189,8 @@ export const SessionConfigScreen: FC<Props> = ({ navigation }) => {
         volunteerName: selectedVolunteer.name,
         researcherId: user.id,
         deviceId: selectedDeviceId,
+        researchId: selectedResearchId || undefined,
+        researchTitle: selectedResearchTitle || undefined,
         clinicalData: {
           bodyStructureSnomedCode: bodyStructure.snomedCode,
           bodyStructureName: bodyStructure.displayName,
@@ -207,6 +232,23 @@ export const SessionConfigScreen: FC<Props> = ({ navigation }) => {
           <Text style={styles.researchCardTitle}>Research Projects</Text>
           <ChevronRight size={16} color={theme.colors.textMuted} />
         </Pressable>
+
+        {/* Research Project Selector (optional linkage) */}
+        {researchProjects.length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Link to Research (Optional)</Text>
+            <Select
+              label="Research Project"
+              placeholder="No research linked"
+              value={selectedResearchId}
+              onValueChange={handleResearchChange}
+              options={researchProjects.map((r) => ({
+                label: r.title,
+                value: r.id,
+              }))}
+            />
+          </View>
+        )}
 
         {/* Volunteer Section */}
         <View style={styles.section}>

@@ -17,6 +17,8 @@ interface SessionRow {
     volunteer_name: string | null;
     researcher_id: string;
     device_id: string | null;
+    research_id: string | null;
+    research_title: string | null;
     started_at: string;
     ended_at: string | null;
     duration_seconds: number;
@@ -135,13 +137,15 @@ export class SessionRepository {
             // Insert session
             await db.runAsync(
                 `INSERT INTO clinical_sessions
-                 (id, volunteer_id, volunteer_name, researcher_id, device_id, started_at, duration_seconds, sync_status, created_at)
-                 VALUES (?, ?, ?, ?, ?, ?, 0, 'pending', ?)`,
+                 (id, volunteer_id, volunteer_name, researcher_id, device_id, research_id, research_title, started_at, duration_seconds, sync_status, created_at)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, 'pending', ?)`,
                 sessionId,
                 config.volunteerId,
                 config.volunteerName,
                 config.researcherId,
                 config.deviceId ?? null,
+                config.researchId ?? null,
+                config.researchTitle ?? null,
                 now,
                 now
             );
@@ -207,6 +211,14 @@ export class SessionRepository {
             fields.push('sync_status = ?');
             values.push(data.syncStatus);
         }
+        if (data.researchId !== undefined) {
+            fields.push('research_id = ?');
+            values.push(data.researchId ?? null);
+        }
+        if (data.researchTitle !== undefined) {
+            fields.push('research_title = ?');
+            values.push(data.researchTitle ?? null);
+        }
 
         if (fields.length === 0) {
             return;
@@ -267,6 +279,8 @@ export class SessionRepository {
             volunteerName: row.volunteer_name ?? undefined,
             researcherId: row.researcher_id,
             deviceId: row.device_id ?? undefined,
+            researchId: row.research_id ?? undefined,
+            researchTitle: row.research_title ?? undefined,
             startedAt: row.started_at,
             endedAt: row.ended_at ?? undefined,
             durationSeconds: row.duration_seconds,

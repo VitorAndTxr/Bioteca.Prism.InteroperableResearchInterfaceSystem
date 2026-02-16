@@ -14,8 +14,8 @@
 
 import React, { createContext, useContext, useState, useCallback, useEffect, ReactNode, FC } from 'react';
 import type { LoginCredentials, User, AuthToken } from '@iris/middleware';
-import type { Researcher } from '@iris/domain';
-import { authService, initializeAndHydrate } from '@/services/middleware';
+import type { Researcher, PaginatedResponse } from '@iris/domain';
+import { authService, middleware, initializeAndHydrate } from '@/services/middleware';
 
 interface AuthContextValue {
   user: User | null;
@@ -26,6 +26,30 @@ interface AuthContextValue {
   logout: () => Promise<void>;
   error: string | null;
   clearError: () => void;
+}
+
+// ── Researcher DTO (internal — not exported) ────────────────
+
+interface ResearcherDTO {
+  ResearcherId: string;
+  ResearchNodeId: string;
+  Name: string;
+  Email: string;
+  Institution: string;
+  Role: string;
+  Orcid: string;
+}
+
+function convertToResearcher(dto: ResearcherDTO): Researcher {
+  return {
+    researcherId: dto.ResearcherId,
+    researchNodeId: dto.ResearchNodeId,
+    name: dto.Name,
+    email: dto.Email,
+    institution: dto.Institution,
+    role: dto.Role.toLowerCase().includes('chief') ? 'chief_researcher' : 'researcher',
+    orcid: dto.Orcid,
+  } as Researcher;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -87,6 +111,25 @@ export const AuthProvider: FC<AuthProviderProps> = ({ children }) => {
 
       console.log('[AuthContext] Login successful:', currentUser.username);
       console.log('[AuthContext] Token expires at:', token.expiresAt);
+
+      // Fetch researcher profile (silent — don't block login flow)
+      try {
+        const response = await middleware.invoke<Record<string, unknown>, PaginatedResponse<ResearcherDTO>>({
+          path: '/api/Researcher/GetResearchers?page=1&pageSize=100',
+          method: 'GET',
+          payload: {},
+        });
+        const researchers = response.data ?? [];
+        const match = researchers.find((r) => r.Email === email);
+        if (match) {
+          setResearcher(convertToResearcher(match));
+          console.log('[AuthContext] Researcher profile loaded:', match.Name);
+        } else {
+          console.log('[AuthContext] No researcher profile found for:', email);
+        }
+      } catch (profileErr) {
+        console.warn('[AuthContext] Failed to fetch researcher profile:', profileErr);
+      }
     } catch (err) {
       console.error('[AuthContext] Login failed:', err);
 

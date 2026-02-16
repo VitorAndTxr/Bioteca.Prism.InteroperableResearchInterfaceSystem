@@ -1,103 +1,64 @@
 /**
  * Volunteer Service
  *
- * Mock service for volunteer search.
- * Backend endpoint doesn't exist yet - will be replaced with middleware.invoke() call later.
+ * Service for volunteer search and retrieval.
+ * Communicates with InteroperableResearchNode VolunteerController through the
+ * encrypted middleware channel. Provides DTO-to-domain mapping as an
+ * anti-corruption layer between backend camelCase responses and frontend types.
+ *
+ * Implements US-IS-001 (DTOs + mappers), US-IS-002 (mock swap).
  */
 
-import { Volunteer, VolunteerStatus, VolunteerGender } from '@iris/domain';
+import {
+  type Volunteer,
+  type VolunteerGender,
+  type BloodType,
+  type ConsentStatus,
+  type PaginatedResponse,
+} from '@iris/domain';
+import { middleware } from './middleware';
 
-// Mock volunteer data for development
-const MOCK_VOLUNTEERS: Volunteer[] = [
-  {
-    id: '1',
-    name: 'Ana Silva',
-    email: 'ana.silva@example.com',
-    birthDate: new Date('1985-03-15'),
-    gender: VolunteerGender.FEMALE,
-    phone: '+55 11 98765-4321',
-    status: VolunteerStatus.ACTIVE,
-    createdAt: new Date('2024-01-10'),
-    updatedAt: new Date('2024-01-10'),
-  },
-  {
-    id: '2',
-    name: 'Carlos Oliveira',
-    email: 'carlos.oliveira@example.com',
-    birthDate: new Date('1978-07-22'),
-    gender: VolunteerGender.MALE,
-    phone: '+55 11 98765-1234',
-    status: VolunteerStatus.ACTIVE,
-    createdAt: new Date('2024-01-12'),
-    updatedAt: new Date('2024-01-12'),
-  },
-  {
-    id: '3',
-    name: 'Maria Santos',
-    email: 'maria.santos@example.com',
-    birthDate: new Date('1992-11-08'),
-    gender: VolunteerGender.FEMALE,
-    phone: '+55 11 98765-5678',
-    status: VolunteerStatus.ACTIVE,
-    createdAt: new Date('2024-01-15'),
-    updatedAt: new Date('2024-01-15'),
-  },
-  {
-    id: '4',
-    name: 'João Ferreira',
-    email: 'joao.ferreira@example.com',
-    birthDate: new Date('1980-05-30'),
-    gender: VolunteerGender.MALE,
-    phone: '+55 11 98765-9012',
-    status: VolunteerStatus.ACTIVE,
-    createdAt: new Date('2024-01-18'),
-    updatedAt: new Date('2024-01-18'),
-  },
-  {
-    id: '5',
-    name: 'Patricia Costa',
-    email: 'patricia.costa@example.com',
-    birthDate: new Date('1995-09-14'),
-    gender: VolunteerGender.FEMALE,
-    phone: '+55 11 98765-3456',
-    status: VolunteerStatus.ACTIVE,
-    createdAt: new Date('2024-01-20'),
-    updatedAt: new Date('2024-01-20'),
-  },
-  {
-    id: '6',
-    name: 'Roberto Lima',
-    email: 'roberto.lima@example.com',
-    birthDate: new Date('1988-12-01'),
-    gender: VolunteerGender.MALE,
-    phone: '+55 11 98765-7890',
-    status: VolunteerStatus.ACTIVE,
-    createdAt: new Date('2024-01-22'),
-    updatedAt: new Date('2024-01-22'),
-  },
-  {
-    id: '7',
-    name: 'Fernanda Souza',
-    email: 'fernanda.souza@example.com',
-    birthDate: new Date('1983-06-25'),
-    gender: VolunteerGender.FEMALE,
-    phone: '+55 11 98765-2345',
-    status: VolunteerStatus.ACTIVE,
-    createdAt: new Date('2024-01-25'),
-    updatedAt: new Date('2024-01-25'),
-  },
-  {
-    id: '8',
-    name: 'Eduardo Alves',
-    email: 'eduardo.alves@example.com',
-    birthDate: new Date('1990-04-17'),
-    gender: VolunteerGender.MALE,
-    phone: '+55 11 98765-6789',
-    status: VolunteerStatus.ACTIVE,
-    createdAt: new Date('2024-01-28'),
-    updatedAt: new Date('2024-01-28'),
-  },
-];
+// ── Backend DTO interface (internal — not exported) ─────────
+
+interface VolunteerDTO {
+  volunteerId: string;
+  researchNodeId: string;
+  volunteerCode: string;
+  name: string;
+  email: string;
+  birthDate: string;
+  gender: string;
+  bloodType: string;
+  height: number | null;
+  weight: number | null;
+  medicalHistory: string;
+  consentStatus: string;
+  enrolledAt: string;
+  updatedAt: string;
+}
+
+// ── DTO → Domain mapper ─────────────────────────────────────
+
+function convertToVolunteer(dto: VolunteerDTO): Volunteer {
+  return {
+    id: dto.volunteerId,
+    researchNodeId: dto.researchNodeId,
+    volunteerCode: dto.volunteerCode,
+    name: dto.name,
+    email: dto.email,
+    birthDate: new Date(dto.birthDate),
+    gender: dto.gender as VolunteerGender,
+    bloodType: dto.bloodType ? (dto.bloodType as BloodType) : undefined,
+    height: dto.height ?? undefined,
+    weight: dto.weight ?? undefined,
+    medicalHistory: dto.medicalHistory || undefined,
+    consentStatus: dto.consentStatus as ConsentStatus,
+    enrolledAt: dto.enrolledAt ? new Date(dto.enrolledAt) : undefined,
+    updatedAt: dto.updatedAt ? new Date(dto.updatedAt) : undefined,
+  };
+}
+
+// ── Service ──────────────────────────────────────────────────
 
 interface SearchResult {
   items: Volunteer[];
@@ -107,50 +68,50 @@ interface SearchResult {
 class VolunteerService {
   /**
    * Search volunteers by name or email.
-   * Mock implementation - will be replaced with middleware API call.
+   * Fetches paginated results from backend; client-side filtering is applied
+   * because BaseController.HandleQueryParameters does NOT support `search`.
    */
   async search(query: string, page: number = 0, pageSize: number = 20): Promise<SearchResult> {
-    // Simulate network delay
-    await new Promise((resolve) => setTimeout(resolve, 300));
+    const apiPage = page + 1;
+    const response = await middleware.invoke<Record<string, unknown>, PaginatedResponse<VolunteerDTO>>({
+      path: `/api/Volunteer/GetAllPaginated?page=${apiPage}&pageSize=${pageSize}`,
+      method: 'GET',
+      payload: {},
+    });
 
-    const normalizedQuery = query.toLowerCase().trim();
+    const allVolunteers = (response.data ?? []).map(convertToVolunteer);
 
-    if (!normalizedQuery) {
-      // Return all volunteers if no query
-      const start = page * pageSize;
-      const end = start + pageSize;
+    if (!query.trim()) {
       return {
-        items: MOCK_VOLUNTEERS.slice(start, end),
-        totalCount: MOCK_VOLUNTEERS.length,
+        items: allVolunteers,
+        totalCount: response.totalRecords ?? allVolunteers.length,
       };
     }
 
-    // Filter volunteers by name or email
-    const filtered = MOCK_VOLUNTEERS.filter(
-      (volunteer) =>
-        volunteer.name.toLowerCase().includes(normalizedQuery) ||
-        volunteer.email.toLowerCase().includes(normalizedQuery)
+    // Client-side filter since backend has no search param
+    const normalizedQuery = query.toLowerCase().trim();
+    const filtered = allVolunteers.filter(
+      (v) =>
+        v.name.toLowerCase().includes(normalizedQuery) ||
+        v.email.toLowerCase().includes(normalizedQuery)
     );
 
-    // Apply pagination
-    const start = page * pageSize;
-    const end = start + pageSize;
-
     return {
-      items: filtered.slice(start, end),
+      items: filtered,
       totalCount: filtered.length,
     };
   }
 
   /**
    * Get volunteer by ID.
-   * Mock implementation - will be replaced with middleware API call.
    */
   async getById(id: string): Promise<Volunteer | null> {
-    // Simulate network delay
-    await new Promise((resolve) => setTimeout(resolve, 200));
-
-    return MOCK_VOLUNTEERS.find((v) => v.id === id) ?? null;
+    const dto = await middleware.invoke<Record<string, unknown>, VolunteerDTO>({
+      path: `/api/Volunteer/${id}`,
+      method: 'GET',
+      payload: {},
+    });
+    return convertToVolunteer(dto);
   }
 }
 

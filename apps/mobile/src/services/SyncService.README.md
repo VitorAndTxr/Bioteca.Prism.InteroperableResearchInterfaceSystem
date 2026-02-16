@@ -1,14 +1,16 @@
 # Sync Service
 
-The Sync Service manages periodic synchronization of local data with the Research Node backend.
+The Sync Service manages periodic synchronization of local data with the Research Node backend via the PRISM encrypted middleware channel.
 
 ## Overview
 
 The Sync Service is responsible for:
-- Synchronizing pending clinical sessions, recordings, and annotations
-- Handling retry logic for failed sync attempts
-- Preventing concurrent sync operations
-- Providing sync status reports
+- Synchronizing pending clinical sessions, recordings, and annotations to the backend
+- Enforcing dependency ordering: sessions first, then recordings, then annotations
+- Two-step recording sync: metadata POST + base64 file upload
+- Exponential backoff retry with jitter and error classification (transient vs permanent)
+- Preventing concurrent sync operations via `isSyncing` mutex
+- Providing sync status reports with per-entity error details
 
 ## Architecture
 
@@ -18,18 +20,24 @@ The Sync Service is responsible for:
 ├─────────────────────────────────────────────────────┤
 │                                                      │
 │  ┌──────────────────┐                               │
-│  │   SyncProvider   │ ◄─── Starts on authentication │
-│  │   (Context)      │                               │
+│  │  SessionContext   │ ◄─── Triggers syncAll() on   │
+│  │                   │      endSession() (fire&forget)│
 │  └────────┬─────────┘                               │
 │           │                                          │
 │  ┌────────▼─────────┐                               │
 │  │   SyncService    │ ◄─── Periodic sync (60s)     │
+│  │                   │      + manual trigger         │
 │  └────────┬─────────┘                               │
 │           │                                          │
 │  ┌────────▼──────────────────────────┐             │
-│  │  SessionRepository                │             │
-│  │  RecordingRepository              │             │
-│  │  AnnotationRepository             │             │
+│  │  SyncService.mappers              │             │
+│  │  (DTO interfaces + mapper fns)    │             │
+│  └────────┬──────────────────────────┘             │
+│           │                                          │
+│  ┌────────▼──────────────────────────┐             │
+│  │  Repositories                     │             │
+│  │  SessionRepo / RecordingRepo /    │             │
+│  │  AnnotationRepo                   │             │
 │  └────────┬──────────────────────────┘             │
 │           │                                          │
 │  ┌────────▼─────────┐                               │
@@ -39,13 +47,17 @@ The Sync Service is responsible for:
 │                                                      │
 └──────────────────────────────────────────────────────┘
            │
-           │ HTTPS (TODO: Implement)
+           │ middleware.invoke()
+           │ (PRISM Encrypted Channel)
            │
 ┌──────────▼──────────────────────────────────────────┐
 │         Research Node Backend                        │
-│  /api/clinicalsession/new                           │
-│  /api/recording/upload                              │
-│  /api/annotation/new                                │
+│  POST /api/ClinicalSession/New                      │
+│  PUT  /api/ClinicalSession/Update/{id}              │
+│  POST /api/ClinicalSession/{sid}/recordings/New     │
+│  POST /api/Upload/recording                         │
+│  POST /api/ClinicalSession/{sid}/annotations/New    │
+│  GET  /api/ClinicalSession/GetAllPaginated          │
 └─────────────────────────────────────────────────────┘
 ```
 
@@ -53,7 +65,7 @@ The Sync Service is responsible for:
 
 ### SyncService
 
-Core service class that manages sync operations.
+Core service class that manages sync operations with real backend integration.
 
 **Constructor**:
 ```typescript
@@ -65,119 +77,113 @@ constructor(
 )
 ```
 
-**Methods**:
+**Public Methods**:
 - `start(intervalMs?: number)` - Start periodic sync (default: 60000ms)
 - `stop()` - Stop periodic sync
 - `isRunning()` - Check if sync is running
 - `syncAll()` - Manually trigger sync for all entity types
+- `resetEntityRetry(entityId: string)` - Reset retry state for an entity (used by retry button)
 
-### SyncProvider
+### SyncService.mappers
 
-React Context provider that manages sync service lifecycle.
+Anti-corruption layer between mobile domain types and backend DTOs.
 
-**Props**:
-```typescript
-interface SyncProviderProps {
-    children: ReactNode;
-    syncIntervalMs?: number;  // Default: 60000 (1 minute)
-    maxRetries?: number;       // Default: 5
-    enabled?: boolean;         // Default: true
-}
+**Outbound Payload Interfaces** (mobile -> backend, PascalCase):
+- `CreateClinicalSessionPayload` - Session creation with ClinicalContext JSON
+- `UpdateClinicalSessionPayload` - Session update (FinishedAt)
+- `CreateRecordingPayload` - Recording metadata
+- `CreateAnnotationPayload` - Annotation data
+- `UploadRecordingPayload` - Base64 file upload with metadata
+
+**Inbound DTO** (backend -> mobile, camelCase):
+- `ClinicalSessionResponseDTO` - Backend session response
+
+**Mapper Functions**:
+- `mapToCreateSessionPayload(session, clinicalData)` - Maps session + clinical data to backend payload
+- `mapToCreateRecordingPayload(recording)` - Maps recording to backend payload
+- `mapToCreateAnnotationPayload(annotation)` - Maps annotation to backend payload
+- `buildUploadPayload(recording, sessionId, base64, size)` - Builds file upload payload
+- `mapResponseToClinicalSession(dto)` - Maps backend response to mobile ClinicalSession
+
+### SyncService.types
+
+TypeScript interfaces for sync reporting:
+- `SyncReport` - Aggregate report with per-entity results and timestamp
+- `SyncEntityReport` - Per-entity report with synced/failed/pending counts and optional errorDetails
+
+## Sync Protocol
+
+### Dependency Ordering
+
+The sync executes in strict order to respect backend foreign key constraints:
+
+1. **Sessions** (`syncSessions`) - Fetches pending sessions, loads ClinicalData, maps to backend payload, POSTs via middleware
+2. **Recordings** (`syncRecordings`) - Only processes recordings whose parent session is already synced (SQL JOIN via `getPendingWithSyncedParent()`)
+3. **Annotations** (`syncAnnotations`) - Only processes annotations whose parent session is synced (client-side filter via Set)
+
+### Two-Step Recording Sync
+
+Each recording requires two backend calls treated as an atomic retry unit:
+1. `POST /api/ClinicalSession/{sid}/recordings/New` - Create recording metadata
+2. `POST /api/Upload/recording` - Upload base64-encoded CSV file (via `expo-file-system`)
+
+If either step fails, the recording stays as `pending` and both steps retry on the next cycle. The backend upsert ensures step 1 is idempotent.
+
+### Session End Trigger
+
+When `SessionContext.endSession()` is called:
+1. Session is updated in SQLite with `endedAt` and `durationSeconds`
+2. If the session was previously synced, a PUT request sends `{ FinishedAt }` to update the backend
+3. `syncService.syncAll()` is triggered fire-and-forget (non-blocking)
+
+### Retry Logic
+
+Exponential backoff with jitter:
+- Formula: `min(1000 * 2^attempt + random(0-500), 300000ms)`
+- Max attempts: 5 (configurable)
+- Error classification:
+  - **Permanent** (4xx except 408/429): Fail immediately, no retry
+  - **Transient** (5xx, network, 408, 429): Retry with backoff
+- In-memory retry tracking via `Map<string, number>` (resets on app restart)
+
+## Backend Endpoints
+
+### Session Sync
+```
+POST /api/ClinicalSession/New
+Body: { Id, ResearchId, VolunteerId, ClinicalContext, StartAt, FinishedAt }
+Response: 200 OK (upsert on client-generated UUID)
 ```
 
-**Behavior**:
-- Automatically starts sync when user is authenticated
-- Automatically stops sync when user logs out
-- Prevents sync when disabled via `enabled` prop
-
-### useSyncContext Hook
-
-Access sync status and trigger manual syncs.
-
-**Returns**:
-```typescript
-interface SyncContextValue {
-    syncReport: SyncReport | null;
-    syncNow: () => Promise<SyncReport>;
-    isRunning: boolean;
-    isSyncing: boolean;
-}
+### Session Update
+```
+PUT /api/ClinicalSession/Update/{id}
+Body: { FinishedAt, ClinicalContext? }
 ```
 
-## Usage
-
-### Basic Setup
-
-The SyncProvider is already integrated in `App.tsx`:
-
-```typescript
-<BluetoothContextProvider>
-  <AuthProvider>
-    <SessionProvider>
-      <SyncProvider syncIntervalMs={60000} maxRetries={5}>
-        <NavigationContainer>
-          <RootNavigator />
-        </NavigationContainer>
-      </SyncProvider>
-    </SessionProvider>
-  </AuthProvider>
-</BluetoothContextProvider>
+### Recording Metadata
+```
+POST /api/ClinicalSession/{sessionId}/recordings/New
+Body: { Id, SignalType, SamplingRate, SamplesCount, FileUrl, CollectionDate, SensorId }
 ```
 
-### Using in Components
-
-```typescript
-import { useSyncContext } from '@/context/SyncContext';
-
-function SettingsScreen() {
-  const { syncReport, syncNow, isRunning, isSyncing } = useSyncContext();
-
-  const handleManualSync = async () => {
-    try {
-      const report = await syncNow();
-      Alert.alert('Sync Complete',
-        `Sessions: ${report.sessions.synced} synced\n` +
-        `Recordings: ${report.recordings.synced} synced\n` +
-        `Annotations: ${report.annotations.synced} synced`
-      );
-    } catch (error) {
-      Alert.alert('Sync Failed', error.message);
-    }
-  };
-
-  return (
-    <View>
-      <Text>Sync Status: {isRunning ? 'Running' : 'Stopped'}</Text>
-
-      {syncReport && (
-        <View>
-          <Text>Last sync: {new Date(syncReport.timestamp).toLocaleString()}</Text>
-          <Text>Sessions synced: {syncReport.sessions.synced}</Text>
-          <Text>Recordings synced: {syncReport.recordings.synced}</Text>
-          <Text>Annotations synced: {syncReport.annotations.synced}</Text>
-        </View>
-      )}
-
-      <Button
-        title={isSyncing ? 'Syncing...' : 'Sync Now'}
-        onPress={handleManualSync}
-        disabled={isSyncing}
-      />
-    </View>
-  );
-}
+### Recording File Upload
+```
+POST /api/Upload/recording
+Body: { RecordingId, SessionId, FileName, ContentType, FileData, FileSizeBytes }
+Response: { message, fileUrl }
 ```
 
-### Alternative: useSyncStatus Hook
+### Annotation Sync
+```
+POST /api/ClinicalSession/{sessionId}/annotations/New
+Body: { Id, Text, CreatedAt }
+```
 
-```typescript
-import { useSyncStatus } from '@/hooks/useSyncStatus';
-
-function DataScreen() {
-  const { syncReport, syncNow, isRunning } = useSyncStatus();
-
-  // Use sync status...
-}
+### History Fetch
+```
+GET /api/ClinicalSession/GetAllPaginated?page=1&pageSize=50
+Response: { items: ClinicalSessionResponseDTO[], totalCount, page, pageSize }
 ```
 
 ## Sync Status Tracking
@@ -188,8 +194,6 @@ Each entity (session, recording, annotation) has a `syncStatus` field:
 - `'failed'` - Permanently failed after max retries
 
 ## Sync Report
-
-The sync report provides details about each sync cycle:
 
 ```typescript
 interface SyncReport {
@@ -203,109 +207,40 @@ interface SyncEntityReport {
     synced: number;   // Successfully synced this cycle
     failed: number;   // Failed this cycle
     pending: number;  // Still pending after cycle
+    errorDetails?: Array<{ entityId: string; error: string }>;
 }
-```
-
-## Current Implementation Status
-
-### ✅ Complete
-- SyncService core logic
-- Periodic sync scheduler
-- Concurrent sync prevention
-- Repository integration
-- Context provider
-- Authentication-based lifecycle
-
-### 🚧 TODO: Backend Integration
-- Replace mock sync with actual middleware calls
-- Implement retry count tracking (currently all errors treated as transient)
-- Add error classification (transient vs permanent)
-- Implement max retry logic (mark as 'failed' after N attempts)
-
-### Mock Implementation
-
-Current implementation uses mock network calls:
-
-```typescript
-// Current (mock)
-await this.simulateNetworkDelay();
-await this.sessionRepo.update(session.id, { syncStatus: 'synced' });
-
-// Future (real)
-await middleware.invoke({
-    method: 'POST',
-    path: '/api/clinicalsession/new',
-    payload: session
-});
-await this.sessionRepo.update(session.id, { syncStatus: 'synced' });
-```
-
-## Backend Endpoints (To Be Implemented)
-
-### Session Sync
-```
-POST /api/clinicalsession/new
-Body: ClinicalSession + ClinicalData
-```
-
-### Recording Sync
-```
-POST /api/recording/upload
-Body: Recording (with file reference)
-```
-
-### Annotation Sync
-```
-POST /api/annotation/new
-Body: Annotation
 ```
 
 ## Error Handling
 
-### Transient Errors
-Network failures, timeouts, rate limits → Keep as `'pending'`, retry later
+### Error Classification
+- **Transient errors** (5xx, network failures, 408 timeout, 429 rate limit): Retry with exponential backoff
+- **Permanent errors** (4xx except 408/429): Fail immediately, mark entity as `'failed'`
 
-### Permanent Errors
-Validation failures, authorization denied → Mark as `'failed'` after max retries
-
-### Future Enhancement
-```typescript
-interface SyncMetadata {
-    retryCount: number;
-    lastAttempt: string;
-    lastError?: string;
-}
-
-// Store in SQLite for each entity
-```
+### Error Reporting
+Each sync cycle produces a `SyncReport` with optional `errorDetails` arrays containing the entity ID and error message for each failure.
 
 ## Performance Considerations
 
 - **Concurrent Sync Prevention**: `isSyncing` flag prevents overlapping sync cycles
-- **Batch Processing**: All pending items synced in a single cycle
-- **Background Execution**: Sync runs on interval without blocking UI
-- **Incremental Sync**: Only pending items are processed
+- **Dependency Ordering**: Recordings and annotations only sync after their parent session is synced
+- **Incremental Sync**: Only pending items are processed each cycle
+- **Base64 Streaming**: `expo-file-system` reads files natively to base64 without loading into JS memory
+- **In-Memory Retry**: V1 uses Map-based tracking (resets on restart); SQLite persistence planned for V2
 
 ## Testing
 
-### Manual Testing
+Unit tests in `SyncService.test.ts` cover:
+- Start/stop lifecycle management
+- Empty report when no pending items
+- Session sync with middleware.invoke() and getClinicalData()
+- Recording two-step sync (metadata + file upload)
+- Annotation sync with parent session filtering
+- Concurrent sync prevention via isSyncing mutex
+- Error handling: transient retry vs permanent failure
+- Retry backoff behavior
 
-1. Create sessions/recordings/annotations in the app
-2. Check database to confirm `sync_status = 'pending'`
-3. Wait for sync cycle (60s) or trigger manual sync
-4. Verify `sync_status` updated to `'synced'`
-5. Check sync report for accurate counts
-
-### Test Scenarios
-
-- ✅ Sync starts on authentication
-- ✅ Sync stops on logout
-- ✅ Concurrent sync prevented
-- ✅ Manual sync trigger works
-- ✅ Sync report accurate
-- ⏳ Network error handling (requires backend)
-- ⏳ Retry logic (requires backend)
-- ⏳ Max retry enforcement (requires backend)
+Run with: `npm test src/services/SyncService.test.ts`
 
 ## Configuration
 
@@ -313,20 +248,7 @@ interface SyncMetadata {
 
 ```typescript
 syncIntervalMs: 60000     // 1 minute
-maxRetries: 5             // Max retry attempts
-enabled: true             // Sync enabled by default
-```
-
-### Customization
-
-```typescript
-<SyncProvider
-  syncIntervalMs={30000}  // 30 seconds
-  maxRetries={3}          // Max 3 retries
-  enabled={true}          // Enable/disable sync
->
-  {children}
-</SyncProvider>
+maxRetries: 5             // Max retry attempts per entity
 ```
 
 ## Files
@@ -334,23 +256,31 @@ enabled: true             // Sync enabled by default
 ```
 apps/mobile/src/
 ├── services/
-│   ├── SyncService.ts              # Core service implementation
-│   ├── SyncService.types.ts        # TypeScript types
+│   ├── SyncService.ts              # Core service (middleware.invoke, retry, dependency ordering)
+│   ├── SyncService.mappers.ts      # DTO interfaces + 6 mapper functions
+│   ├── SyncService.types.ts        # SyncReport, SyncEntityReport interfaces
+│   ├── SyncService.test.ts         # Unit tests (vitest)
 │   ├── SyncService.README.md       # This file
+│   ├── middleware.ts               # PRISM encrypted channel singleton
 │   └── index.ts                    # Barrel export
 ├── context/
-│   └── SyncContext.tsx             # React Context provider
-├── hooks/
-│   └── useSyncStatus.ts            # Convenience hook
-└── data/repositories/
-    ├── SessionRepository.ts        # getPending() method
-    ├── RecordingRepository.ts      # getPending() method
-    └── AnnotationRepository.ts     # getPending() method
+│   └── SessionContext.tsx           # endSession() triggers syncAll()
+├── screens/
+│   └── HistoryScreen.tsx            # Backend fetch, merge, sync badges
+└── data/
+    ├── repositories/
+    │   ├── SessionRepository.ts     # getPending(), getClinicalData(), research columns
+    │   ├── RecordingRepository.ts   # getPendingWithSyncedParent() (SQL JOIN)
+    │   └── AnnotationRepository.ts  # getPending()
+    ├── migrations/
+    │   └── v2_add_research_columns.ts  # research_id, research_title columns
+    └── database.ts                  # Migration registry
 ```
 
 ## References
 
-- **US-025**: Data Synchronization user story
+- **Architecture**: `docs/ARCHITECTURE_MOBILE_INTEGRATION.md`
+- **User Stories**: US-MI-001 through US-MI-020
 - **Domain Models**: `packages/domain/src/models/`
 - **Middleware**: `packages/middleware/src/service/ResearchNodeMiddleware.ts`
-- **Repositories**: `apps/mobile/src/data/repositories/`
+- **Backend Endpoints**: `docs/ARCHITECTURE_INTEGRATION_SURVEY.md`

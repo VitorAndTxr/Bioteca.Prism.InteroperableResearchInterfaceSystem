@@ -16,6 +16,9 @@ import React, { createContext, useContext, useState, useCallback, useEffect, Rea
 import { ClinicalSession, ClinicalData, SessionConfig, Recording, NewRecordingData } from '@iris/domain';
 import { SessionRepository } from '@/data/repositories/SessionRepository';
 import { RecordingRepository } from '@/data/repositories/RecordingRepository';
+import { AnnotationRepository } from '@/data/repositories/AnnotationRepository';
+import { SyncService } from '@/services/SyncService';
+import { middleware } from '@/services/middleware';
 
 interface SessionContextValue {
   activeSession: ClinicalSession | null;
@@ -35,6 +38,8 @@ interface SessionProviderProps {
 
 const sessionRepository = new SessionRepository();
 const recordingRepository = new RecordingRepository();
+const annotationRepository = new AnnotationRepository();
+const syncService = new SyncService(sessionRepository, recordingRepository, annotationRepository);
 
 export const SessionProvider: FC<SessionProviderProps> = ({ children }) => {
   const [activeSession, setActiveSession] = useState<ClinicalSession | null>(null);
@@ -160,17 +165,33 @@ export const SessionProvider: FC<SessionProviderProps> = ({ children }) => {
       const startedAt = new Date(activeSession.startedAt);
       const durationSeconds = Math.floor((new Date(endedAt).getTime() - startedAt.getTime()) / 1000);
 
+      // Capture sync status before updating
+      const previousSyncStatus = activeSession.syncStatus;
+
       // Update session in database
       await sessionRepository.update(activeSession.id, {
         endedAt,
         durationSeconds,
       });
 
+      // If session was already synced, send FinishedAt to backend (fire-and-forget)
+      if (previousSyncStatus === 'synced') {
+        void middleware.invoke<Record<string, unknown>, unknown>({
+          method: 'PUT',
+          path: `/api/ClinicalSession/Update/${activeSession.id}`,
+          payload: { FinishedAt: endedAt },
+        }).catch(err => console.warn('[SessionContext] Backend update failed, will retry via sync:', err));
+      }
+
       // Clear active state
       setActiveSession(null);
       setClinicalData(null);
       setRecordings([]);
       setElapsedSeconds(0);
+
+      // Fire-and-forget sync trigger
+      console.log('[SessionContext] Sync triggered after session end');
+      void syncService.syncAll();
 
       console.log('[SessionContext] Session ended successfully');
     } catch (error) {

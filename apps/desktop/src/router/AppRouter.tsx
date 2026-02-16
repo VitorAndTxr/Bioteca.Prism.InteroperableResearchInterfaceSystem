@@ -774,9 +774,9 @@ function AppRouter() {
             case 'home':
             default:
                 return (
-                    <HomeScreen
-                        activePath={activePath}
+                    <NodeConnectionsScreen
                         handleNavigation={handleNavigation}
+                        onSelectConnection={setSelectedConnection}
                     />
                 );
         }

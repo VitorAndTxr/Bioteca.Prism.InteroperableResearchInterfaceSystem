@@ -71,6 +71,21 @@ export class RecordingRepository {
     }
 
     /**
+     * Get pending recordings whose parent session has already been synced.
+     * Ensures recordings are only pushed after their session exists on the backend.
+     */
+    async getPendingWithSyncedParent(): Promise<Recording[]> {
+        const db = databaseManager.getDatabase();
+        const rows = await db.getAllAsync<RecordingRow>(
+            `SELECT r.* FROM recordings r
+             INNER JOIN clinical_sessions s ON r.session_id = s.id
+             WHERE r.sync_status = 'pending' AND s.sync_status = 'synced'
+             ORDER BY r.recorded_at ASC`
+        );
+        return rows.map(row => this.mapRowToRecording(row));
+    }
+
+    /**
      * Create a new recording.
      */
     async create(data: NewRecordingData): Promise<Recording> {

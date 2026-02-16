@@ -24,6 +24,8 @@ export interface ClinicalSession {
     volunteerName?: string;
     researcherId: string;
     deviceId?: string;
+    researchId?: string;
+    researchTitle?: string;
     startedAt: string; // ISO 8601
     endedAt?: string; // ISO 8601
     durationSeconds: number;
@@ -59,6 +61,8 @@ export interface SessionConfig {
     volunteerName: string;
     researcherId: string;
     deviceId?: string;
+    researchId?: string;
+    researchTitle?: string;
     clinicalData: {
         bodyStructureSnomedCode: string;
         bodyStructureName: string;

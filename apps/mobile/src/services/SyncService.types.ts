@@ -25,6 +25,7 @@ export interface SyncEntityReport {
     synced: number;
     failed: number;
     pending: number;
+    errorDetails?: Array<{ entityId: string; error: string }>;
 }
 
 /**
