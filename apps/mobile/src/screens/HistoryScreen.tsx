@@ -199,7 +199,7 @@ export const HistoryScreen: FC<Props> = ({ navigation }) => {
         volunteerId: session.volunteerId,
         volunteerName: session.volunteerName,
         bodyStructure: session.clinicalData?.bodyStructureName ?? 'Unknown',
-        laterality: session.clinicalData?.laterality ?? 'Unknown',
+        laterality: session.clinicalData?.laterality ?? 'N/A',
         startedAt: session.startedAt,
         durationSeconds: session.durationSeconds,
         sampleRate: recordings[0]?.sampleRate ?? 215,

@@ -4,7 +4,7 @@
  * Manages persistence of clinical sessions and associated clinical data.
  */
 
-import { ClinicalSession, ClinicalData, SessionConfig } from '@iris/domain';
+import { ClinicalSession, ClinicalData, SessionConfig, Laterality } from '@iris/domain';
 import { databaseManager } from '../database';
 import { generateUUID } from '../../utils/uuid';
 
@@ -31,7 +31,7 @@ interface ClinicalDataRow {
     session_id: string;
     body_structure_snomed_code: string;
     body_structure_name: string;
-    laterality: string;
+    laterality: string | null;
     topography_codes: string;
     topography_names: string;
 }
@@ -298,7 +298,7 @@ export class SessionRepository {
             sessionId: row.session_id,
             bodyStructureSnomedCode: row.body_structure_snomed_code,
             bodyStructureName: row.body_structure_name,
-            laterality: row.laterality as 'left' | 'right' | 'bilateral',
+            laterality: row.laterality as Laterality | null,
             topographyCodes: JSON.parse(row.topography_codes) as string[],
             topographyNames: JSON.parse(row.topography_names) as string[]
         };

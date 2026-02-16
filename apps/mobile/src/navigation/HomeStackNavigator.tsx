@@ -24,6 +24,8 @@ import { CaptureScreen } from '@/screens/CaptureScreen';
 import { AnnotationsListScreen } from '@/screens/AnnotationsListScreen';
 import { NewAnnotationScreen } from '@/screens/NewAnnotationScreen';
 
+import { TopographySelectScreen } from '@/screens/TopographySelectScreen';
+
 // Research management screens
 import { ResearchListScreen } from '@/screens/research/ResearchListScreen';
 import { ResearchDetailScreen } from '@/screens/research/ResearchDetailScreen';
@@ -102,6 +104,12 @@ export const HomeStackNavigator: FC = () => {
           title: 'Add Annotation',
           presentation: 'modal',
         }}
+      />
+
+      <Stack.Screen
+        name="TopographySelect"
+        component={TopographySelectScreen}
+        options={{ title: 'Select Topography' }}
       />
 
       {/* Research Management Screens */}

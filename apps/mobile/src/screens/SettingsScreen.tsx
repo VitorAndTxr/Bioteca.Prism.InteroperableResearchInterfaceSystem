@@ -23,7 +23,7 @@ import {
   Pressable,
   Alert,
 } from 'react-native';
-import { User, Moon, Download, Shield, ChevronRight, LogOut } from 'lucide-react-native';
+import { User, Moon, Download, Shield, ChevronRight, LogOut, RefreshCw } from 'lucide-react-native';
 import type { CompositeScreenProps } from '@react-navigation/native';
 import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -33,6 +33,7 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { useAuth } from '@/context/AuthContext';
 import { preferencesService } from '@/services/PreferencesService';
+import { snomedService } from '@/services/SnomedService';
 
 type Props = CompositeScreenProps<
   BottomTabScreenProps<MainTabParamList, 'Settings'>,
@@ -86,6 +87,11 @@ export const SettingsScreen: FC<Props> = ({ navigation }) => {
       Alert.alert('Error', 'Failed to save export format preference');
     }
   }, [exportFormat]);
+
+  const handleRefreshSnomedData = useCallback(() => {
+    snomedService.clearCache();
+    Alert.alert('Success', 'SNOMED data cache cleared. New data will be fetched on next use.');
+  }, []);
 
   const handleLogout = useCallback(() => {
     // TODO: Check for active session when SessionContext is implemented
@@ -170,6 +176,12 @@ export const SettingsScreen: FC<Props> = ({ navigation }) => {
         <View style={styles.section}>
           <Text style={styles.sectionHeader}>SYSTEM</Text>
           <Card padded={false}>
+            <SettingRow
+              label="Refresh SNOMED Data"
+              onPress={handleRefreshSnomedData}
+              showBorder
+              icon={<RefreshCw size={20} color={theme.colors.textBody} />}
+            />
             <SettingRow
               label="App Version"
               value={APP_VERSION}

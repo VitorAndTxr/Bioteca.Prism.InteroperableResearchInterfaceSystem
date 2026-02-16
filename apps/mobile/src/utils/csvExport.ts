@@ -133,7 +133,7 @@ export interface SessionMetadata {
     volunteerId: string;
     volunteerName?: string;
     bodyStructure: string;
-    laterality: string;
+    laterality: string | null;
     startedAt: string;
     durationSeconds: number;
     sampleRate: number;
@@ -193,7 +193,7 @@ export async function exportSessionData(
         lines.push(`Volunteer Name,${metadata.volunteerName}`);
     }
     lines.push(`Body Structure,${metadata.bodyStructure}`);
-    lines.push(`Laterality,${metadata.laterality}`);
+    lines.push(`Laterality,${metadata.laterality ?? 'N/A'}`);
     lines.push(`Started At,${metadata.startedAt}`);
     lines.push(`Duration (seconds),${metadata.durationSeconds}`);
     lines.push(`Sample Rate (Hz),${metadata.sampleRate}`);

@@ -24,6 +24,7 @@ import {
   FlatList,
   ActivityIndicator,
   Pressable,
+  Alert,
 } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { HomeStackParamList } from '@/navigation/types';
@@ -37,12 +38,12 @@ import type { Research } from '@iris/domain';
 import { useBluetoothContext } from '@/context/BluetoothContext';
 import { useSession } from '@/context/SessionContext';
 import { useAuth } from '@/context/AuthContext';
-import { Volunteer, Laterality, SnomedBodyStructure, SnomedTopographicalModifier } from '@iris/domain';
+import { Volunteer, SnomedBodyStructure, SnomedTopographicalModifier } from '@iris/domain';
 import { Search, Plus, ClipboardList, ChevronRight } from 'lucide-react-native';
 
 type Props = NativeStackScreenProps<HomeStackParamList, 'SessionConfig'>;
 
-export const SessionConfigScreen: FC<Props> = ({ navigation }) => {
+export const SessionConfigScreen: FC<Props> = ({ navigation, route }) => {
   const { user } = useAuth();
   const { neuraDevices } = useBluetoothContext();
   const { startSession } = useSession();
@@ -56,11 +57,8 @@ export const SessionConfigScreen: FC<Props> = ({ navigation }) => {
 
   // Clinical data state
   const [bodyStructures, setBodyStructures] = useState<SnomedBodyStructure[]>([]);
-  const [topographies, setTopographies] = useState<SnomedTopographicalModifier[]>([]);
   const [selectedBodyStructure, setSelectedBodyStructure] = useState<string>('');
-  const [selectedLaterality, setSelectedLaterality] = useState<string>('');
   const [selectedTopographies, setSelectedTopographies] = useState<SnomedTopographicalModifier[]>([]);
-  const [showTopographyDropdown, setShowTopographyDropdown] = useState(false);
 
   // Research state
   const [researchProjects, setResearchProjects] = useState<Research[]>([]);
@@ -82,12 +80,11 @@ export const SessionConfigScreen: FC<Props> = ({ navigation }) => {
     const loadInitialData = async () => {
       try {
         setIsLoadingSnomedData(true);
-        const [structures, modifiers] = await Promise.all([
+        const [structures] = await Promise.all([
           snomedService.getBodyStructures(),
-          snomedService.getTopographicalModifiers(),
+          snomedService.getTopographicalModifiers(), // warm cache for TopographySelectScreen
         ]);
         setBodyStructures(structures);
-        setTopographies(modifiers);
       } catch (error) {
         console.error('[SessionConfigScreen] Failed to load SNOMED data:', error);
       } finally {
@@ -131,10 +128,28 @@ export const SessionConfigScreen: FC<Props> = ({ navigation }) => {
     searchVolunteers();
   }, [debouncedSearchQuery]);
 
+  // Consume updatedTopographies from TopographySelectScreen return navigation
+  useEffect(() => {
+    const updated = route.params?.updatedTopographies;
+    if (!updated) return;
+
+    setSelectedTopographies(
+      updated.map((m) => ({
+        snomedCode: m.snomedCode,
+        displayName: m.displayName,
+        category: m.category,
+        description: '',
+      }))
+    );
+
+    // Clear param to prevent re-applying on subsequent focus events
+    navigation.setParams({ updatedTopographies: undefined });
+  }, [route.params?.updatedTopographies, navigation]);
+
   // Handle volunteer selection
   const handleSelectVolunteer = (volunteer: Volunteer) => {
     setSelectedVolunteer(volunteer);
-    setVolunteerSearchQuery(volunteer.name);
+    setVolunteerSearchQuery('');
     setShowVolunteerDropdown(false);
   };
 
@@ -146,17 +161,24 @@ export const SessionConfigScreen: FC<Props> = ({ navigation }) => {
     setSelectedResearchTitle(project?.title ?? '');
   };
 
-  // Handle topography addition
-  const handleAddTopography = (topography: SnomedTopographicalModifier) => {
-    if (!selectedTopographies.find((t) => t.snomedCode === topography.snomedCode)) {
-      setSelectedTopographies([...selectedTopographies, topography]);
-    }
-    setShowTopographyDropdown(false);
-  };
-
-  // Handle topography removal
-  const handleRemoveTopography = (snomedCode: string) => {
-    setSelectedTopographies(selectedTopographies.filter((t) => t.snomedCode !== snomedCode));
+  // Handle topography removal with confirmation
+  const handleRemoveTopography = (modifier: SnomedTopographicalModifier) => {
+    Alert.alert(
+      'Remove Modifier',
+      `Remove ${modifier.displayName}?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Remove',
+          style: 'destructive',
+          onPress: () => {
+            setSelectedTopographies(
+              selectedTopographies.filter((t) => t.snomedCode !== modifier.snomedCode)
+            );
+          },
+        },
+      ]
+    );
   };
 
   // Validation
@@ -164,7 +186,6 @@ export const SessionConfigScreen: FC<Props> = ({ navigation }) => {
     return !!(
       selectedVolunteer &&
       selectedBodyStructure &&
-      selectedLaterality &&
       selectedTopographies.length > 0 &&
       selectedDeviceId
     );
@@ -194,7 +215,7 @@ export const SessionConfigScreen: FC<Props> = ({ navigation }) => {
         clinicalData: {
           bodyStructureSnomedCode: bodyStructure.snomedCode,
           bodyStructureName: bodyStructure.displayName,
-          laterality: selectedLaterality as Laterality,
+          laterality: null,
           topographyCodes: selectedTopographies.map((t) => t.snomedCode),
           topographyNames: selectedTopographies.map((t) => t.displayName),
         },
@@ -312,33 +333,28 @@ export const SessionConfigScreen: FC<Props> = ({ navigation }) => {
             }))}
           />
 
-          <Select
-            label="Laterality"
-            placeholder="Select laterality..."
-            value={selectedLaterality}
-            onValueChange={(value) => setSelectedLaterality(String(value))}
-            options={[
-              { label: 'Left', value: 'left' },
-              { label: 'Right', value: 'right' },
-              { label: 'Bilateral', value: 'bilateral' },
-            ]}
-            style={styles.inputSpacing}
-          />
-
           <View style={styles.topographyContainer}>
             <Text style={styles.inputLabel}>Topography</Text>
             <View style={styles.topographyChips}>
               {selectedTopographies.map((topography) => (
                 <View key={topography.snomedCode} style={styles.chip}>
                   <Text style={styles.chipText}>{topography.displayName}</Text>
-                  <TouchableOpacity onPress={() => handleRemoveTopography(topography.snomedCode)}>
+                  <TouchableOpacity onPress={() => handleRemoveTopography(topography)}>
                     <Text style={styles.chipRemove}>×</Text>
                   </TouchableOpacity>
                 </View>
               ))}
               <TouchableOpacity
                 style={styles.chipAdd}
-                onPress={() => setShowTopographyDropdown(!showTopographyDropdown)}
+                onPress={() =>
+                  navigation.navigate('TopographySelect', {
+                    selectedModifiers: selectedTopographies.map((t) => ({
+                      snomedCode: t.snomedCode,
+                      displayName: t.displayName,
+                      category: t.category,
+                    })),
+                  })
+                }
               >
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
                   <Plus size={14} color={theme.colors.textMuted} />
@@ -346,25 +362,6 @@ export const SessionConfigScreen: FC<Props> = ({ navigation }) => {
                 </View>
               </TouchableOpacity>
             </View>
-
-            {showTopographyDropdown && (
-              <Card variant="outlined" style={styles.dropdownCard}>
-                <FlatList
-                  data={topographies}
-                  keyExtractor={(item) => item.snomedCode}
-                  renderItem={({ item }) => (
-                    <TouchableOpacity
-                      style={styles.dropdownItem}
-                      onPress={() => handleAddTopography(item)}
-                    >
-                      <Text style={styles.dropdownItemName}>{item.displayName}</Text>
-                      <Text style={styles.dropdownItemEmail}>{item.category}</Text>
-                    </TouchableOpacity>
-                  )}
-                  style={styles.dropdownList}
-                />
-              </Card>
-            )}
           </View>
         </View>
 
@@ -492,9 +489,6 @@ const styles = StyleSheet.create({
     ...theme.typography.bodySmall,
     color: theme.colors.textMuted,
     marginTop: theme.spacing.xs,
-  },
-  inputSpacing: {
-    marginTop: theme.spacing.md,
   },
   topographyContainer: {
     marginTop: theme.spacing.md,

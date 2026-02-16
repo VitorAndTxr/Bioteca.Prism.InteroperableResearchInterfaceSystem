@@ -44,7 +44,7 @@ export interface ClinicalData {
     sessionId: string;
     bodyStructureSnomedCode: string;
     bodyStructureName: string;
-    laterality: Laterality;
+    laterality: Laterality | null;
     topographyCodes: string[]; // JSON-serialized in SQLite
     topographyNames: string[];
 }
@@ -66,7 +66,7 @@ export interface SessionConfig {
     clinicalData: {
         bodyStructureSnomedCode: string;
         bodyStructureName: string;
-        laterality: Laterality;
+        laterality: Laterality | null;
         topographyCodes: string[];
         topographyNames: string[];
     };

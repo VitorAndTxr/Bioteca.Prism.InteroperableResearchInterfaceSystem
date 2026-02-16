@@ -28,11 +28,22 @@ export type MainTabParamList = {
 };
 
 /**
+ * Projection of a selected topographical modifier.
+ * Carries all info needed for display and filtering (including Lateralidade constraint).
+ */
+export interface SelectedModifier {
+  snomedCode: string;
+  displayName: string;
+  category: string;
+}
+
+/**
  * Home Stack Navigator
  * Nested stack within the Home tab for session workflows and research management
  */
 export type HomeStackParamList = {
-  SessionConfig: undefined;
+  SessionConfig: { updatedTopographies?: SelectedModifier[] } | undefined;
+  TopographySelect: { selectedModifiers: SelectedModifier[] };
   ActiveSession: { sessionId: string };
   Capture: { sessionId: string };
   AnnotationsList: { sessionId: string };

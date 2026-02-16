@@ -157,7 +157,7 @@ export const ActiveSessionScreen: FC<Props> = ({ navigation }) => {
             <View style={styles.summaryItem}>
               <Text style={styles.summaryLabel}>Structure</Text>
               <Text style={styles.summaryValue}>
-                {clinicalData?.bodyStructureName || 'Unknown'} ({clinicalData?.laterality?.[0]?.toUpperCase() || '-'})
+                {clinicalData?.bodyStructureName || 'Unknown'}{clinicalData?.laterality ? ` (${clinicalData.laterality[0].toUpperCase()})` : ''}
               </Text>
             </View>
             <View style={styles.summaryItem}>

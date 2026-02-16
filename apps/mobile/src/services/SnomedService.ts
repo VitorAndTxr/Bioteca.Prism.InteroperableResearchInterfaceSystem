@@ -31,11 +31,10 @@ interface BodyStructureDTO {
 }
 
 interface TopographicalModifierDTO {
-  code: string;
+  snomedCode: string;
   displayName: string;
   category: string;
   description: string;
-  isActive: boolean;
 }
 
 // ── DTO → Domain mappers ────────────────────────────────────
@@ -51,7 +50,7 @@ function convertToBodyStructure(dto: BodyStructureDTO): SnomedBodyStructure {
 
 function convertToTopographicalModifier(dto: TopographicalModifierDTO): SnomedTopographicalModifier {
   return {
-    snomedCode: dto.code,
+    snomedCode: dto.snomedCode,
     displayName: dto.displayName,
     category: dto.category,
     description: dto.description,

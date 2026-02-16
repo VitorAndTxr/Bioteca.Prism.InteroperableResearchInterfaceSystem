@@ -8,6 +8,7 @@
 import * as SQLite from 'expo-sqlite';
 import { v1_initial } from './migrations/v1_initial';
 import { v2_add_research_columns } from './migrations/v2_add_research_columns';
+import { v3_relax_laterality_constraint } from './migrations/v3_relax_laterality_constraint';
 
 interface Migration {
     version: number;
@@ -18,6 +19,7 @@ interface Migration {
 const MIGRATIONS: Migration[] = [
     { version: 1, name: 'v1_initial', sql: v1_initial },
     { version: 2, name: 'v2_add_research_columns', sql: v2_add_research_columns },
+    { version: 3, name: 'v3_relax_laterality_constraint', sql: v3_relax_laterality_constraint },
 ];
 
 class DatabaseManager {
