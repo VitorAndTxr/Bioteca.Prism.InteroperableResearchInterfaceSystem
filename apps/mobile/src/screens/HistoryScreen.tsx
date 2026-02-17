@@ -36,12 +36,12 @@ import {
   type ClinicalSessionResponseDTO,
 } from '@/services/SyncService.mappers';
 import { useDebounce } from '@/hooks/useDebounce';
+import * as FileSystem from 'expo-file-system';
 import {
-  exportSessionData,
-  shareCSV,
+  exportSessionAsZip,
+  shareZip,
   type SessionMetadata,
   type RecordingForExport,
-  type RecordingDataPoint,
 } from '@/utils/csvExport';
 import {
   Search,
@@ -215,9 +215,26 @@ export const HistoryScreen: FC<Props> = ({ navigation }) => {
         sampleCount: rec.sampleCount,
       }));
 
-      const dataPoints: RecordingDataPoint[][] = recordings.map(() => []);
-      const fileUri = await exportSessionData(metadata, recordingsForExport, dataPoints);
-      await shareCSV(fileUri);
+      // Read CSV file contents from disk sequentially to avoid OOM on low-end devices
+      const csvContents: string[] = [];
+      for (const rec of recordings) {
+        if (rec.filePath) {
+          const fileInfo = await FileSystem.getInfoAsync(rec.filePath);
+          if (fileInfo.exists) {
+            const content = await FileSystem.readAsStringAsync(rec.filePath, {
+              encoding: FileSystem.EncodingType.UTF8,
+            });
+            csvContents.push(content);
+          } else {
+            csvContents.push('# File not found on disk\n');
+          }
+        } else {
+          csvContents.push('# No file path recorded\n');
+        }
+      }
+
+      const zipUri = await exportSessionAsZip(metadata, recordingsForExport, csvContents);
+      await shareZip(zipUri);
     } catch (error) {
       console.error('[HistoryScreen] Export failed:', error);
       Alert.alert('Export Failed', 'Failed to export session data. Please try again.');
@@ -343,7 +360,7 @@ export const HistoryScreen: FC<Props> = ({ navigation }) => {
               ) : (
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                   <FileDown size={14} color={theme.colors.primary} />
-                  <Text style={styles.exportButtonText}>Export CSV</Text>
+                  <Text style={styles.exportButtonText}>Export ZIP</Text>
                 </View>
               )}
             </Pressable>

@@ -1,0 +1,1714 @@
+{
+  "metadata": {
+    "version": "1.0",
+    "created_at": "2026-02-17T20:20:25.131644+00:00",
+    "updated_at": "2026-02-17T21:54:32.241283+00:00"
+  },
+  "stories": [
+    {
+      "id": "US-001",
+      "title": "Add fixed device sample rate constant to @iris/domain",
+      "feature_area": "WA1: Domain Constants",
+      "priority": "Must",
+      "role": "developer",
+      "want": "a DEVICE_SAMPLE_RATE_HZ constant exported from @iris/domain",
+      "benefit": "all mobile app modules reference a single authoritative 215 Hz value instead of scattered literals",
+      "acceptance_criteria": [
+        {
+          "id": "AC1",
+          "given": "the developer imports from @iris/domain",
+          "when": "referencing the sample rate constant",
+          "then": "DEVICE_SAMPLE_RATE_HZ equals 215 and is typed as a number"
+        },
+        {
+          "id": "AC2",
+          "given": "the developer imports from @iris/domain",
+          "when": "referencing the chart display rate",
+          "then": "CHART_DISPLAY_RATE_HZ equals 40 and is typed as a number"
+        },
+        {
+          "id": "AC3",
+          "given": "packages/domain/src/index.ts barrel file",
+          "when": "the file is inspected",
+          "then": "both DEVICE_SAMPLE_RATE_HZ and CHART_DISPLAY_RATE_HZ are re-exported"
+        },
+        {
+          "id": "AC4",
+          "given": "npm run type-check:all is executed",
+          "when": "checking packages/domain",
+          "then": "zero new TypeScript strict-mode errors are reported"
+        },
+        {
+          "id": "AC5",
+          "given": "the constant names are reviewed",
+          "when": "checking naming convention",
+          "then": "they follow UPPER_SNAKE_CASE as required by project style"
+        }
+      ],
+      "notes": "",
+      "dependencies": [],
+      "status": "Ready",
+      "created_at": "2026-02-17T20:20:39.996237+00:00",
+      "updated_at": "2026-02-17T20:22:44.614109+00:00",
+      "created_by": "po",
+      "history": [
+        {
+          "action": "created",
+          "by": "po",
+          "at": "2026-02-17T20:20:39.996237+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "po",
+          "from": "Draft",
+          "to": "Ready",
+          "at": "2026-02-17T20:22:17.422287+00:00"
+        },
+        {
+          "action": "edited",
+          "by": "po",
+          "changes": [
+            "acceptance_criteria"
+          ],
+          "at": "2026-02-17T20:22:44.614109+00:00"
+        }
+      ]
+    },
+    {
+      "id": "US-002",
+      "title": "Fix BluetoothContext default stream rate to 215 Hz for real-device path",
+      "feature_area": "WA2: BluetoothContext Rate Fix",
+      "priority": "Must",
+      "role": "researcher",
+      "want": "the app to use 215 Hz as the default stream sample rate when connected to the real device",
+      "benefit": "CSV timestamps and recording metadata reflect the actual ESP32 hardware rate, ensuring clinical data accuracy",
+      "acceptance_criteria": [
+        {
+          "id": "AC1",
+          "given": "the mobile app initialises BluetoothContext",
+          "when": "no explicit configureStream call has been made",
+          "then": "streamConfig.rate is 215 (DEVICE_SAMPLE_RATE_HZ), not 100"
+        },
+        {
+          "id": "AC2",
+          "given": "the developer reads BluetoothContext source",
+          "when": "locating rate references in startStream() and stopStream()",
+          "then": "they reference DEVICE_SAMPLE_RATE_HZ constant, not a numeric literal"
+        },
+        {
+          "id": "AC3",
+          "given": "the app is running in simulation mode without a BT device",
+          "when": "streaming is started",
+          "then": "simulation mode uses its own independent 50 Hz rate unchanged"
+        },
+        {
+          "id": "AC4",
+          "given": "existing consumers of BluetoothContext",
+          "when": "the change is applied",
+          "then": "all public API methods (connect, disconnect, configureStream, etc.) retain the same signatures"
+        },
+        {
+          "id": "AC5",
+          "given": "npm run type-check:all is executed",
+          "when": "checking BluetoothContext.tsx",
+          "then": "zero new TypeScript strict-mode errors are reported"
+        }
+      ],
+      "notes": "",
+      "dependencies": [
+        "US-001"
+      ],
+      "status": "Ready",
+      "created_at": "2026-02-17T20:20:50.798903+00:00",
+      "updated_at": "2026-02-17T20:22:54.307960+00:00",
+      "created_by": "po",
+      "history": [
+        {
+          "action": "created",
+          "by": "po",
+          "at": "2026-02-17T20:20:50.798903+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "po",
+          "from": "Draft",
+          "to": "Ready",
+          "at": "2026-02-17T20:22:17.559871+00:00"
+        },
+        {
+          "action": "edited",
+          "by": "po",
+          "changes": [
+            "acceptance_criteria"
+          ],
+          "at": "2026-02-17T20:22:54.307960+00:00"
+        }
+      ]
+    },
+    {
+      "id": "US-003",
+      "title": "Make StreamConfigScreen sampling rate read-only (215 Hz fixed)",
+      "feature_area": "WA3: StreamConfigScreen Simplification",
+      "priority": "Must",
+      "role": "researcher",
+      "want": "the stream configuration screen to show 215 Hz as a non-editable fixed value",
+      "benefit": "users cannot accidentally override the hardware rate, preventing misconfigured recordings",
+      "acceptance_criteria": [
+        {
+          "id": "AC1",
+          "given": "a user opens StreamConfigScreen",
+          "when": "the screen renders",
+          "then": "the sample rate field shows 215 Hz and cannot be edited (picker removed or input is read-only)"
+        },
+        {
+          "id": "AC2",
+          "given": "a user opens StreamConfigScreen",
+          "when": "interacting with the data type selector",
+          "then": "it remains fully functional and can be changed normally"
+        },
+        {
+          "id": "AC3",
+          "given": "the summary section of StreamConfigScreen",
+          "when": "rendered",
+          "then": "it displays 215 Hz as the configured rate"
+        },
+        {
+          "id": "AC4",
+          "given": "any user interaction on the rate field",
+          "when": "attempted",
+          "then": "no change is possible \u00e2\u20ac\u201d the field is non-interactive"
+        },
+        {
+          "id": "AC5",
+          "given": "npm run type-check:all is executed",
+          "when": "checking StreamConfigScreen.tsx",
+          "then": "zero new TypeScript strict-mode errors are reported"
+        }
+      ],
+      "notes": "",
+      "dependencies": [
+        "US-001"
+      ],
+      "status": "Ready",
+      "created_at": "2026-02-17T20:20:58.648276+00:00",
+      "updated_at": "2026-02-17T20:23:01.659079+00:00",
+      "created_by": "po",
+      "history": [
+        {
+          "action": "created",
+          "by": "po",
+          "at": "2026-02-17T20:20:58.648276+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "po",
+          "from": "Draft",
+          "to": "Ready",
+          "at": "2026-02-17T20:22:17.697247+00:00"
+        },
+        {
+          "action": "edited",
+          "by": "po",
+          "changes": [
+            "acceptance_criteria"
+          ],
+          "at": "2026-02-17T20:23:01.659079+00:00"
+        }
+      ]
+    },
+    {
+      "id": "US-004",
+      "title": "Fix CaptureScreen CSV timestamp interpolation to use 215 Hz constant",
+      "feature_area": "WA4: CaptureScreen CSV & Recording Fix",
+      "priority": "Must",
+      "role": "researcher",
+      "want": "recording CSV files to use correct 215 Hz inter-sample timestamps",
+      "benefit": "the time axis in exported CSVs is clinically accurate, and blob-uploaded recordings contain valid signal data",
+      "acceptance_criteria": [
+        {
+          "id": "AC1",
+          "given": "a recording is captured from the real ESP32 device",
+          "when": "createCSVContent() runs",
+          "then": "inter-sample timestamps use DEVICE_SAMPLE_RATE_HZ (215 Hz) \u00e2\u20ac\u201d interval = 1000/215 ms"
+        },
+        {
+          "id": "AC2",
+          "given": "the app is in simulation mode",
+          "when": "createCSVContent() runs",
+          "then": "inter-sample timestamps use 50 Hz \u00e2\u20ac\u201d interval = 1000/50 ms"
+        },
+        {
+          "id": "AC3",
+          "given": "a real-device recording entity is created",
+          "when": "NewRecordingData.sampleRate is set",
+          "then": "it equals DEVICE_SAMPLE_RATE_HZ (215)"
+        },
+        {
+          "id": "AC4",
+          "given": "a simulation-mode recording entity is created",
+          "when": "NewRecordingData.sampleRate is set",
+          "then": "it equals 50"
+        },
+        {
+          "id": "AC5",
+          "given": "an exported CSV file from a real-device session",
+          "when": "opened in a spreadsheet",
+          "then": "timestamp column increments by ~4.65 ms per row (1000/215)"
+        },
+        {
+          "id": "AC6",
+          "given": "npm run type-check:all is executed",
+          "when": "checking CaptureScreen.tsx",
+          "then": "zero new TypeScript strict-mode errors are reported"
+        }
+      ],
+      "notes": "",
+      "dependencies": [
+        "US-001 US-002"
+      ],
+      "status": "Ready",
+      "created_at": "2026-02-17T20:21:07.906699+00:00",
+      "updated_at": "2026-02-17T20:23:10.378337+00:00",
+      "created_by": "po",
+      "history": [
+        {
+          "action": "created",
+          "by": "po",
+          "at": "2026-02-17T20:21:07.906699+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "po",
+          "from": "Draft",
+          "to": "Ready",
+          "at": "2026-02-17T20:22:17.826901+00:00"
+        },
+        {
+          "action": "edited",
+          "by": "po",
+          "changes": [
+            "acceptance_criteria"
+          ],
+          "at": "2026-02-17T20:23:10.378337+00:00"
+        }
+      ]
+    },
+    {
+      "id": "US-005",
+      "title": "Refactor useStreamData hook: 4-second window, 40 Hz downsample, 1 Hz update cadence",
+      "feature_area": "WA5: Chart Visualization Fix",
+      "priority": "Must",
+      "role": "researcher",
+      "want": "the stream data hook to expose only the last 4 seconds of data downsampled to 40 Hz and refreshed at 1 Hz",
+      "benefit": "the capture chart renders efficiently with predictable 160-point datasets and does not overwhelm the UI thread",
+      "acceptance_criteria": [
+        {
+          "id": "AC1",
+          "given": "streaming data arrives at 215 Hz",
+          "when": "the hook processes packets",
+          "then": "an internal buffer holds only the last 4 seconds (~860 raw samples)"
+        },
+        {
+          "id": "AC2",
+          "given": "the hook is queried for chart data",
+          "when": "the caller reads the output array",
+          "then": "it contains ~160 points (4s \u00c3\u2014 40 Hz downsampled from 215 Hz buffer)"
+        },
+        {
+          "id": "AC3",
+          "given": "packets arrive continuously",
+          "when": "one second elapses",
+          "then": "the hook outputs updated chart data exactly once (1 Hz cadence)"
+        },
+        {
+          "id": "AC4",
+          "given": "the downsampling implementation",
+          "when": "reviewed",
+          "then": "it uses decimation or averaging without introducing visible aliasing artifacts"
+        },
+        {
+          "id": "AC5",
+          "given": "the hook implementation",
+          "when": "reviewed",
+          "then": "it imports DEVICE_SAMPLE_RATE_HZ and CHART_DISPLAY_RATE_HZ from @iris/domain \u00e2\u20ac\u201d no magic numbers"
+        },
+        {
+          "id": "AC6",
+          "given": "npm run type-check:all is executed",
+          "when": "checking useStreamData.ts",
+          "then": "zero new TypeScript strict-mode errors are reported"
+        }
+      ],
+      "notes": "",
+      "dependencies": [
+        "US-001"
+      ],
+      "status": "Ready",
+      "created_at": "2026-02-17T20:21:17.700125+00:00",
+      "updated_at": "2026-02-17T20:23:20.192522+00:00",
+      "created_by": "po",
+      "history": [
+        {
+          "action": "created",
+          "by": "po",
+          "at": "2026-02-17T20:21:17.700125+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "po",
+          "from": "Draft",
+          "to": "Ready",
+          "at": "2026-02-17T20:22:17.958297+00:00"
+        },
+        {
+          "action": "edited",
+          "by": "po",
+          "changes": [
+            "acceptance_criteria"
+          ],
+          "at": "2026-02-17T20:23:20.192522+00:00"
+        }
+      ]
+    },
+    {
+      "id": "US-006",
+      "title": "Fix SEMGChart to render fixed 4-second viewport with no horizontal scroll",
+      "feature_area": "WA5: Chart Visualization Fix",
+      "priority": "Must",
+      "role": "researcher",
+      "want": "the real-time chart to display a fixed 4-second window without horizontal scrolling",
+      "benefit": "the capture screen is less distracting during clinical data collection and avoids unnecessary GPU work",
+      "acceptance_criteria": [
+        {
+          "id": "AC1",
+          "given": "the SEMGChart component receives chart data",
+          "when": "rendering",
+          "then": "it renders at most 160 data points (the downsampled output from useStreamData)"
+        },
+        {
+          "id": "AC2",
+          "given": "the SEMGChart component layout",
+          "when": "inspected",
+          "then": "there is no horizontal ScrollView wrapping the chart element"
+        },
+        {
+          "id": "AC3",
+          "given": "the SEMGChart component",
+          "when": "new data arrives",
+          "then": "auto-scroll behavior is absent \u00e2\u20ac\u201d the viewport does not scroll horizontally"
+        },
+        {
+          "id": "AC4",
+          "given": "the device screen size changes",
+          "when": "SEMGChart renders",
+          "then": "the chart fills the available screen width responsively"
+        },
+        {
+          "id": "AC5",
+          "given": "npm run type-check:all is executed",
+          "when": "checking SEMGChart.tsx",
+          "then": "zero new TypeScript strict-mode errors are reported"
+        }
+      ],
+      "notes": "",
+      "dependencies": [
+        "US-005"
+      ],
+      "status": "Ready",
+      "created_at": "2026-02-17T20:21:25.401497+00:00",
+      "updated_at": "2026-02-17T20:23:27.120963+00:00",
+      "created_by": "po",
+      "history": [
+        {
+          "action": "created",
+          "by": "po",
+          "at": "2026-02-17T20:21:25.401497+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "po",
+          "from": "Draft",
+          "to": "Ready",
+          "at": "2026-02-17T20:22:18.089468+00:00"
+        },
+        {
+          "action": "edited",
+          "by": "po",
+          "changes": [
+            "acceptance_criteria"
+          ],
+          "at": "2026-02-17T20:23:27.120963+00:00"
+        }
+      ]
+    },
+    {
+      "id": "US-007",
+      "title": "Wire CaptureScreen chart parameters to corrected 215 Hz stream and 1 Hz refresh",
+      "feature_area": "WA5: Chart Visualization Fix",
+      "priority": "Must",
+      "role": "researcher",
+      "want": "the CaptureScreen to pass the correct sample rate and chart update throttle to useStreamData and SEMGChart",
+      "benefit": "the capture screen chart reflects the real 215 Hz signal cadence and updates at the specified 1 Hz display rate",
+      "acceptance_criteria": [
+        {
+          "id": "AC1",
+          "given": "CaptureScreen calls useStreamData",
+          "when": "passing the sample rate parameter",
+          "then": "it passes DEVICE_SAMPLE_RATE_HZ (215), not streamConfig.rate"
+        },
+        {
+          "id": "AC2",
+          "given": "chart state update logic in CaptureScreen",
+          "when": "packets arrive at 215 Hz",
+          "then": "chart state is updated at most once per second (throttled to 1 Hz)"
+        },
+        {
+          "id": "AC3",
+          "given": "a live stream is active",
+          "when": "observing the SEMGChart visually",
+          "then": "chart shows only the last ~4 seconds of signal data (the sliding window)"
+        },
+        {
+          "id": "AC4",
+          "given": "npm run type-check:all is executed",
+          "when": "checking CaptureScreen.tsx chart-related changes",
+          "then": "zero new TypeScript strict-mode errors are reported"
+        }
+      ],
+      "notes": "",
+      "dependencies": [
+        "US-004 US-005 US-006"
+      ],
+      "status": "Ready",
+      "created_at": "2026-02-17T20:21:33.830124+00:00",
+      "updated_at": "2026-02-17T20:23:33.844312+00:00",
+      "created_by": "po",
+      "history": [
+        {
+          "action": "created",
+          "by": "po",
+          "at": "2026-02-17T20:21:33.830124+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "po",
+          "from": "Draft",
+          "to": "Ready",
+          "at": "2026-02-17T20:22:18.227357+00:00"
+        },
+        {
+          "action": "edited",
+          "by": "po",
+          "changes": [
+            "acceptance_criteria"
+          ],
+          "at": "2026-02-17T20:23:33.844312+00:00"
+        }
+      ]
+    },
+    {
+      "id": "US-008",
+      "title": "Add jszip (or equivalent) dependency to mobile app for ZIP export",
+      "feature_area": "WA6: ZIP Export from History",
+      "priority": "Must",
+      "role": "developer",
+      "want": "a ZIP archive library available in the mobile app bundle",
+      "benefit": "the export function can produce ZIP archives compatible with Expo's file system and sharing APIs",
+      "acceptance_criteria": [
+        {
+          "id": "AC1",
+          "given": "apps/mobile/package.json is inspected",
+          "when": "checking production dependencies",
+          "then": "jszip (or fflate) is listed as a dependency with a compatible version"
+        },
+        {
+          "id": "AC2",
+          "given": "the chosen library",
+          "when": "evaluated against Expo 52 compatibility matrix",
+          "then": "it does not require native module linking or eject"
+        },
+        {
+          "id": "AC3",
+          "given": "the chosen library",
+          "when": "TypeScript types are checked",
+          "then": "@types/jszip or built-in types are available with no type errors"
+        },
+        {
+          "id": "AC4",
+          "given": "npm install is run in apps/mobile",
+          "when": "it completes",
+          "then": "no peer-dependency conflicts are reported"
+        }
+      ],
+      "notes": "",
+      "dependencies": [],
+      "status": "Ready",
+      "created_at": "2026-02-17T20:21:41.592645+00:00",
+      "updated_at": "2026-02-17T20:23:42.196164+00:00",
+      "created_by": "po",
+      "history": [
+        {
+          "action": "created",
+          "by": "po",
+          "at": "2026-02-17T20:21:41.592645+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "po",
+          "from": "Draft",
+          "to": "Ready",
+          "at": "2026-02-17T20:22:18.388402+00:00"
+        },
+        {
+          "action": "edited",
+          "by": "po",
+          "changes": [
+            "acceptance_criteria"
+          ],
+          "at": "2026-02-17T20:23:42.196164+00:00"
+        }
+      ]
+    },
+    {
+      "id": "US-009",
+      "title": "Implement exportSessionAsZip() in csvExport.ts",
+      "feature_area": "WA6: ZIP Export from History",
+      "priority": "Must",
+      "role": "developer",
+      "want": "a new exportSessionAsZip() function that produces a ZIP containing session.json and per-recording CSVs",
+      "benefit": "history exports are structured, clinically meaningful artifacts that researchers can import into analysis tools",
+      "acceptance_criteria": [
+        {
+          "id": "AC1",
+          "given": "csvExport.ts is inspected",
+          "when": "looking for the export API",
+          "then": "exportSessionAsZip(session, recordings) is exported with the correct signature"
+        },
+        {
+          "id": "AC2",
+          "given": "exportSessionAsZip is called with a session and its recordings",
+          "when": "the ZIP is opened",
+          "then": "it contains a session.json with sessionId, volunteer, bodyStructure, laterality, startTime, duration, sampleRate (215), dataType, and recordings array with filenames"
+        },
+        {
+          "id": "AC3",
+          "given": "exportSessionAsZip is called with two recordings",
+          "when": "the ZIP is opened",
+          "then": "it contains recording_001.csv and recording_002.csv with actual signal data rows"
+        },
+        {
+          "id": "AC4",
+          "given": "recording CSV files exist on disk at recording.filePath",
+          "when": "exportSessionAsZip runs",
+          "then": "it reads them via expo-file-system \u00e2\u20ac\u201d it does NOT regenerate data from memory"
+        },
+        {
+          "id": "AC5",
+          "given": "the ZIP file",
+          "when": "presented via expo-sharing",
+          "then": "it has MIME type application/zip and a .zip filename extension"
+        },
+        {
+          "id": "AC6",
+          "given": "npm run type-check:all is executed",
+          "when": "checking csvExport.ts",
+          "then": "zero new TypeScript strict-mode errors are reported"
+        }
+      ],
+      "notes": "",
+      "dependencies": [
+        "US-008"
+      ],
+      "status": "Ready",
+      "created_at": "2026-02-17T20:21:53.132286+00:00",
+      "updated_at": "2026-02-17T20:23:52.698559+00:00",
+      "created_by": "po",
+      "history": [
+        {
+          "action": "created",
+          "by": "po",
+          "at": "2026-02-17T20:21:53.132286+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "po",
+          "from": "Draft",
+          "to": "Ready",
+          "at": "2026-02-17T20:22:18.523032+00:00"
+        },
+        {
+          "action": "edited",
+          "by": "po",
+          "changes": [
+            "acceptance_criteria"
+          ],
+          "at": "2026-02-17T20:23:52.698559+00:00"
+        }
+      ]
+    },
+    {
+      "id": "US-010",
+      "title": "Wire HistoryScreen export to new ZIP export function",
+      "feature_area": "WA6: ZIP Export from History",
+      "priority": "Must",
+      "role": "researcher",
+      "want": "the history screen export action to produce a structured ZIP file instead of a single flat CSV",
+      "benefit": "exported session data is immediately usable by researchers without manual reorganisation",
+      "acceptance_criteria": [
+        {
+          "id": "AC1",
+          "given": "the user taps export on a session in HistoryScreen",
+          "when": "handleExportSession runs",
+          "then": "it calls exportSessionAsZip() instead of the legacy exportSessionData()"
+        },
+        {
+          "id": "AC2",
+          "given": "handleExportSession is executed",
+          "when": "passing data to the zip function",
+          "then": "it provides the recording entities whose filePath fields reference the on-disk CSV files"
+        },
+        {
+          "id": "AC3",
+          "given": "the share sheet is presented",
+          "when": "the user sees the share prompt",
+          "then": "the shared file has MIME type application/zip and a .zip filename"
+        },
+        {
+          "id": "AC4",
+          "given": "csvExport.ts is inspected",
+          "when": "reviewing exports",
+          "then": "the legacy exportSessionData() function is removed or clearly deprecated if still used for another purpose"
+        },
+        {
+          "id": "AC5",
+          "given": "npm run type-check:all is executed",
+          "when": "checking HistoryScreen.tsx",
+          "then": "zero new TypeScript strict-mode errors are reported"
+        }
+      ],
+      "notes": "",
+      "dependencies": [
+        "US-009"
+      ],
+      "status": "Ready",
+      "created_at": "2026-02-17T20:22:02.199062+00:00",
+      "updated_at": "2026-02-17T20:24:01.096834+00:00",
+      "created_by": "po",
+      "history": [
+        {
+          "action": "created",
+          "by": "po",
+          "at": "2026-02-17T20:22:02.199062+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "po",
+          "from": "Draft",
+          "to": "Ready",
+          "at": "2026-02-17T20:22:18.662690+00:00"
+        },
+        {
+          "action": "edited",
+          "by": "po",
+          "changes": [
+            "acceptance_criteria"
+          ],
+          "at": "2026-02-17T20:24:01.096834+00:00"
+        }
+      ]
+    },
+    {
+      "id": "US-011",
+      "title": "Verify TypeScript strict mode compliance across all modified files",
+      "feature_area": "WA7: Type Safety & Cleanup",
+      "priority": "Must",
+      "role": "developer",
+      "want": "a clean npm run type-check:all output with zero new type errors introduced by this sprint",
+      "benefit": "the codebase remains type-safe and no silent runtime type bugs are introduced alongside the bug fixes",
+      "acceptance_criteria": [
+        {
+          "id": "AC1",
+          "given": "npm run type-check:all is run after all changes",
+          "when": "checking the 8 modified files",
+          "then": "zero new TypeScript errors appear in Stream.ts, BluetoothContext.tsx, StreamConfigScreen.tsx, CaptureScreen.tsx, useStreamData.ts, SEMGChart.tsx, csvExport.ts, HistoryScreen.tsx"
+        },
+        {
+          "id": "AC2",
+          "given": "any modified file is inspected",
+          "when": "reviewing type annotations",
+          "then": "no any type is introduced \u00e2\u20ac\u201d all types are explicit"
+        },
+        {
+          "id": "AC3",
+          "given": "csvExport.ts is inspected",
+          "when": "looking for legacy code",
+          "then": "exportSessionData() is deleted or has a clear deprecation notice if retained for a distinct use case"
+        },
+        {
+          "id": "AC4",
+          "given": "@iris/domain barrel (index.ts)",
+          "when": "the exports are reviewed",
+          "then": "DEVICE_SAMPLE_RATE_HZ and CHART_DISPLAY_RATE_HZ are correctly exported"
+        },
+        {
+          "id": "AC5",
+          "given": "any import statement in modified files",
+          "when": "reviewed",
+          "then": "it uses the @/ alias prefix as required by project CLAUDE.md, not relative paths"
+        }
+      ],
+      "notes": "",
+      "dependencies": [
+        "US-001 US-002 US-003 US-004 US-005 US-006 US-007 US-008 US-009 US-010"
+      ],
+      "status": "Ready",
+      "created_at": "2026-02-17T20:22:11.820022+00:00",
+      "updated_at": "2026-02-17T20:24:11.776638+00:00",
+      "created_by": "po",
+      "history": [
+        {
+          "action": "created",
+          "by": "po",
+          "at": "2026-02-17T20:22:11.820022+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "po",
+          "from": "Draft",
+          "to": "Ready",
+          "at": "2026-02-17T20:22:18.817262+00:00"
+        },
+        {
+          "action": "edited",
+          "by": "po",
+          "changes": [
+            "acceptance_criteria"
+          ],
+          "at": "2026-02-17T20:24:11.776638+00:00"
+        }
+      ]
+    },
+    {
+      "id": "US-012",
+      "title": "Add binary protocol constants to @iris/domain",
+      "feature_area": "Binary Protocol Support",
+      "priority": "Must",
+      "role": "developer",
+      "want": "a single source of truth for binary protocol constants (magic byte, message code, header size, samples per packet, total packet size)",
+      "benefit": "all binary decoder code references named constants instead of magic numbers, and the TypeScript side mirrors StreamingProtocol.h on the ESP32",
+      "acceptance_criteria": [
+        {
+          "id": "AC1",
+          "given": "the developer imports from @iris/domain",
+          "when": "referencing the binary magic byte",
+          "then": "BINARY_PACKET_MAGIC equals 0xAA and is typed as a number constant"
+        },
+        {
+          "id": "AC2",
+          "given": "the developer imports from @iris/domain",
+          "when": "referencing the binary message code",
+          "then": "BINARY_PACKET_CODE equals 0x0D (13) and is typed as a number constant"
+        },
+        {
+          "id": "AC3",
+          "given": "the developer imports from @iris/domain",
+          "when": "referencing header and packet sizes",
+          "then": "BINARY_PACKET_HEADER_SIZE equals 8, BINARY_PACKET_SAMPLES_PER_PACKET equals 50, and BINARY_PACKET_TOTAL_SIZE equals 108"
+        },
+        {
+          "id": "AC4",
+          "given": "packages/domain/src/models/Stream.ts is inspected",
+          "when": "checking for const declarations",
+          "then": "all five binary protocol constants are declared and no any types are used"
+        },
+        {
+          "id": "AC5",
+          "given": "packages/domain/src/index.ts is inspected",
+          "when": "checking barrel exports",
+          "then": "all five binary protocol constants are re-exported"
+        }
+      ],
+      "notes": "",
+      "dependencies": [],
+      "status": "In Review",
+      "created_at": "2026-02-17T20:56:39.620557+00:00",
+      "updated_at": "2026-02-17T21:13:00.604232+00:00",
+      "created_by": "po",
+      "history": [
+        {
+          "action": "created",
+          "by": "po",
+          "at": "2026-02-17T20:56:39.620557+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "po",
+          "from": "Draft",
+          "to": "Ready",
+          "at": "2026-02-17T20:58:19.913924+00:00"
+        },
+        {
+          "action": "edited",
+          "by": "po",
+          "changes": [
+            "acceptance_criteria"
+          ],
+          "at": "2026-02-17T20:59:31.383846+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "dev",
+          "from": "Ready",
+          "to": "In Progress",
+          "at": "2026-02-17T21:10:57.290399+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "dev",
+          "from": "In Progress",
+          "to": "In Review",
+          "at": "2026-02-17T21:13:00.604232+00:00"
+        }
+      ]
+    },
+    {
+      "id": "US-013",
+      "title": "Implement decodeBinaryPacket() utility function",
+      "feature_area": "Binary Protocol Support",
+      "priority": "Must",
+      "role": "developer",
+      "want": "a pure function that parses a 108-byte binary sEMG packet from a Uint8Array into a StreamDataPacket",
+      "benefit": "binary decoding logic is isolated, testable, and not entangled with BluetoothContext state management",
+      "acceptance_criteria": [
+        {
+          "id": "AC1",
+          "given": "apps/mobile/src/utils/binaryDecoder.ts is created",
+          "when": "the file is inspected",
+          "then": "it exports a decodeBinaryPacket function with signature: (buffer: Uint8Array, offset: number) => { packet: StreamDataPacket; bytesConsumed: number } | null"
+        },
+        {
+          "id": "AC2",
+          "given": "decodeBinaryPacket is called with a buffer where byte at offset is not 0xAA",
+          "when": "the function executes",
+          "then": "it returns null"
+        },
+        {
+          "id": "AC3",
+          "given": "decodeBinaryPacket is called with a buffer where byte at offset+1 is not 0x0D",
+          "when": "the function executes",
+          "then": "it returns null"
+        },
+        {
+          "id": "AC4",
+          "given": "decodeBinaryPacket is called with a valid 108-byte packet",
+          "when": "the function executes",
+          "then": "it returns a StreamDataPacket with correct timestamp (uint32 LE from bytes 2-5) and 50 int16 LE sample values"
+        },
+        {
+          "id": "AC5",
+          "given": "decodeBinaryPacket returns a result",
+          "when": "bytesConsumed is inspected",
+          "then": "it equals 108"
+        },
+        {
+          "id": "AC6",
+          "given": "tsc --noEmit is run on the mobile workspace",
+          "when": "checking binaryDecoder.ts",
+          "then": "zero strict-mode errors and no any types are present"
+        }
+      ],
+      "notes": "",
+      "dependencies": [
+        "US-012"
+      ],
+      "status": "In Review",
+      "created_at": "2026-02-17T20:56:50.148154+00:00",
+      "updated_at": "2026-02-17T21:13:00.734927+00:00",
+      "created_by": "po",
+      "history": [
+        {
+          "action": "created",
+          "by": "po",
+          "at": "2026-02-17T20:56:50.149156+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "po",
+          "from": "Draft",
+          "to": "Ready",
+          "at": "2026-02-17T20:58:20.035451+00:00"
+        },
+        {
+          "action": "edited",
+          "by": "po",
+          "changes": [
+            "acceptance_criteria"
+          ],
+          "at": "2026-02-17T20:59:31.477666+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "dev",
+          "from": "Ready",
+          "to": "In Progress",
+          "at": "2026-02-17T21:10:57.436614+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "dev",
+          "from": "In Progress",
+          "to": "In Review",
+          "at": "2026-02-17T21:13:00.734927+00:00"
+        }
+      ]
+    },
+    {
+      "id": "US-014",
+      "title": "Implement BinaryFrameAccumulator class for SPP packet framing",
+      "feature_area": "Binary Protocol Support",
+      "priority": "Must",
+      "role": "developer",
+      "want": "a class that accumulates incoming Bluetooth SPP byte chunks and yields complete 108-byte binary packets",
+      "benefit": "partial packet fragments are held across onDataReceived callbacks until enough bytes arrive to form a complete packet, eliminating data loss from SPP fragmentation",
+      "acceptance_criteria": [
+        {
+          "id": "AC1",
+          "given": "apps/mobile/src/utils/binaryDecoder.ts is inspected",
+          "when": "checking exports",
+          "then": "it also exports a BinaryFrameAccumulator class with a feed(chunk: Uint8Array): StreamDataPacket[] method"
+        },
+        {
+          "id": "AC2",
+          "given": "a single complete 108-byte packet is passed to feed()",
+          "when": "the method executes",
+          "then": "it returns an array with exactly one decoded StreamDataPacket"
+        },
+        {
+          "id": "AC3",
+          "given": "a 50-byte fragment is passed to feed() followed by the remaining 58 bytes",
+          "when": "both calls complete",
+          "then": "the first call returns an empty array and the second returns one complete StreamDataPacket"
+        },
+        {
+          "id": "AC4",
+          "given": "two consecutive complete packets are passed in a single feed() call",
+          "when": "the method executes",
+          "then": "it returns an array with exactly two decoded StreamDataPacket objects"
+        },
+        {
+          "id": "AC5",
+          "given": "bytes before the 0xAA magic marker arrive in the buffer",
+          "when": "feed() scans for the start marker",
+          "then": "those pre-marker bytes are discarded and do not corrupt subsequent packet decoding"
+        },
+        {
+          "id": "AC6",
+          "given": "tsc --noEmit is run",
+          "when": "checking BinaryFrameAccumulator",
+          "then": "zero strict-mode errors and no any types are present"
+        }
+      ],
+      "notes": "",
+      "dependencies": [
+        "US-013"
+      ],
+      "status": "In Review",
+      "created_at": "2026-02-17T20:56:59.543633+00:00",
+      "updated_at": "2026-02-17T21:13:00.867794+00:00",
+      "created_by": "po",
+      "history": [
+        {
+          "action": "created",
+          "by": "po",
+          "at": "2026-02-17T20:56:59.543633+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "po",
+          "from": "Draft",
+          "to": "Ready",
+          "at": "2026-02-17T20:58:20.165351+00:00"
+        },
+        {
+          "action": "edited",
+          "by": "po",
+          "changes": [
+            "acceptance_criteria"
+          ],
+          "at": "2026-02-17T20:59:31.581671+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "dev",
+          "from": "Ready",
+          "to": "In Progress",
+          "at": "2026-02-17T21:10:57.566673+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "dev",
+          "from": "In Progress",
+          "to": "In Review",
+          "at": "2026-02-17T21:13:00.868798+00:00"
+        }
+      ]
+    },
+    {
+      "id": "US-015",
+      "title": "Add binary vs JSON detection in BluetoothContext decodeMessage()",
+      "feature_area": "Binary Protocol Support",
+      "priority": "Must",
+      "role": "developer",
+      "want": "decodeMessage() to inspect the first byte of incoming data and route binary packets to the binary decoder path before attempting JSON.parse()",
+      "benefit": "binary sEMG packets no longer trigger SyntaxError: JSON Parse error and are correctly handled, while all existing JSON messages continue to work unchanged",
+      "acceptance_criteria": [
+        {
+          "id": "AC1",
+          "given": "BluetoothContext.tsx instantiates a BinaryFrameAccumulator",
+          "when": "the component mounts",
+          "then": "the accumulator is stored as a ref so it persists across re-renders"
+        },
+        {
+          "id": "AC2",
+          "given": "decodeMessage() receives data whose first char code is 0xAA",
+          "when": "the function executes",
+          "then": "the data is converted to Uint8Array via char codes and passed to the accumulator feed() \u00e2\u20ac\u201d JSON.parse is NOT attempted"
+        },
+        {
+          "id": "AC3",
+          "given": "decodeMessage() receives data whose first char code is not 0xAA",
+          "when": "the function executes",
+          "then": "the existing JSON.parse() path executes unchanged"
+        },
+        {
+          "id": "AC4",
+          "given": "a live binary streaming session is running",
+          "when": "the device transmits binary packets",
+          "then": "no SyntaxError: JSON Parse error appears in the console"
+        },
+        {
+          "id": "AC5",
+          "given": "the JSON switch/case for code 13 exists in decodeMessage",
+          "when": "binary detection is added",
+          "then": "the code-13 JSON case remains intact for backward compatibility with simulation mode"
+        },
+        {
+          "id": "AC6",
+          "given": "tsc --noEmit is run on BluetoothContext.tsx",
+          "when": "checking new binary path code",
+          "then": "zero new type errors are reported"
+        }
+      ],
+      "notes": "",
+      "dependencies": [
+        "US-014"
+      ],
+      "status": "In Review",
+      "created_at": "2026-02-17T20:57:10.448611+00:00",
+      "updated_at": "2026-02-17T21:13:00.998866+00:00",
+      "created_by": "po",
+      "history": [
+        {
+          "action": "created",
+          "by": "po",
+          "at": "2026-02-17T20:57:10.448611+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "po",
+          "from": "Draft",
+          "to": "Ready",
+          "at": "2026-02-17T20:58:20.319910+00:00"
+        },
+        {
+          "action": "edited",
+          "by": "po",
+          "changes": [
+            "acceptance_criteria"
+          ],
+          "at": "2026-02-17T20:59:31.683152+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "dev",
+          "from": "Ready",
+          "to": "In Progress",
+          "at": "2026-02-17T21:10:57.707952+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "dev",
+          "from": "In Progress",
+          "to": "In Review",
+          "at": "2026-02-17T21:13:00.998866+00:00"
+        }
+      ]
+    },
+    {
+      "id": "US-016",
+      "title": "Integrate decoded binary packets into streamBufferRef pipeline",
+      "feature_area": "Binary Protocol Support",
+      "priority": "Must",
+      "role": "developer",
+      "want": "decoded StreamDataPacket objects from the binary path to be pushed into streamBufferRef.current, exactly as the JSON streaming path does",
+      "benefit": "the existing flushStreamBuffer() / chart rendering / allStreamPacketsRef / CSV export pipeline receives real sEMG data from the device without any changes to those downstream components",
+      "acceptance_criteria": [
+        {
+          "id": "AC1",
+          "given": "the binary decoder path produces StreamDataPacket objects",
+          "when": "accumulator.feed() returns decoded packets",
+          "then": "each packet is pushed to streamBufferRef.current"
+        },
+        {
+          "id": "AC2",
+          "given": "decoded binary packets are in streamBufferRef",
+          "when": "flushStreamBuffer() fires after 500 ms",
+          "then": "the packets are moved to streamData state and render in the chart component"
+        },
+        {
+          "id": "AC3",
+          "given": "decoded binary packets are in streamBufferRef",
+          "when": "packets are flushed",
+          "then": "they are also appended to allStreamPacketsRef.current for CSV export"
+        },
+        {
+          "id": "AC4",
+          "given": "exportStreamData() is called after a binary streaming session",
+          "when": "the CSV is generated",
+          "then": "it contains rows corresponding to the binary-decoded sEMG samples"
+        },
+        {
+          "id": "AC5",
+          "given": "the downstream pipeline (flushStreamBuffer, chart, exportStreamData) is inspected",
+          "when": "verifying changes required",
+          "then": "no modifications are needed to those components"
+        }
+      ],
+      "notes": "",
+      "dependencies": [
+        "US-015"
+      ],
+      "status": "In Review",
+      "created_at": "2026-02-17T20:57:21.799522+00:00",
+      "updated_at": "2026-02-17T21:13:01.150768+00:00",
+      "created_by": "po",
+      "history": [
+        {
+          "action": "created",
+          "by": "po",
+          "at": "2026-02-17T20:57:21.799522+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "po",
+          "from": "Draft",
+          "to": "Ready",
+          "at": "2026-02-17T20:58:20.447123+00:00"
+        },
+        {
+          "action": "edited",
+          "by": "po",
+          "changes": [
+            "acceptance_criteria"
+          ],
+          "at": "2026-02-17T20:59:31.785379+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "dev",
+          "from": "Ready",
+          "to": "In Progress",
+          "at": "2026-02-17T21:10:57.839907+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "dev",
+          "from": "In Progress",
+          "to": "In Review",
+          "at": "2026-02-17T21:13:01.150768+00:00"
+        }
+      ]
+    },
+    {
+      "id": "US-017",
+      "title": "Add binary packet validation, error logging, and dropped-packet counter",
+      "feature_area": "Binary Protocol Support",
+      "priority": "Must",
+      "role": "developer",
+      "want": "invalid binary packets to be logged with a console.warn and counted, rather than silently discarded",
+      "benefit": "debugging a misbehaving device or encoding issue is straightforward",
+      "acceptance_criteria": [
+        {
+          "id": "AC1",
+          "given": "decodeBinaryPacket receives a buffer with an invalid magic byte after framing",
+          "when": "the function executes",
+          "then": "it returns null"
+        },
+        {
+          "id": "AC2",
+          "given": "BluetoothContext processes a dropped binary packet",
+          "when": "the drop occurs",
+          "then": "binaryPacketsDropped counter (ref) is incremented and console.warn is called with a descriptive reason"
+        },
+        {
+          "id": "AC3",
+          "given": "BluetoothContext successfully decodes a binary packet",
+          "when": "the packet is decoded",
+          "then": "binaryPacketsReceived counter (ref) is incremented"
+        },
+        {
+          "id": "AC4",
+          "given": "JSON.parse() fails on data that does not start with 0xAA",
+          "when": "the error occurs",
+          "then": "console.warn is called (existing behavior) and the app does not crash"
+        },
+        {
+          "id": "AC5",
+          "given": "any binary framing or validation error occurs",
+          "when": "the error is caught",
+          "then": "the app continues running and subsequent Bluetooth data is processed normally"
+        }
+      ],
+      "notes": "",
+      "dependencies": [
+        "US-015"
+      ],
+      "status": "In Review",
+      "created_at": "2026-02-17T20:57:56.618636+00:00",
+      "updated_at": "2026-02-17T21:13:01.279723+00:00",
+      "created_by": "po",
+      "history": [
+        {
+          "action": "created",
+          "by": "po",
+          "at": "2026-02-17T20:57:56.618636+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "po",
+          "from": "Draft",
+          "to": "Ready",
+          "at": "2026-02-17T20:58:20.578271+00:00"
+        },
+        {
+          "action": "edited",
+          "by": "po",
+          "changes": [
+            "acceptance_criteria"
+          ],
+          "at": "2026-02-17T20:59:31.884459+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "dev",
+          "from": "Ready",
+          "to": "In Progress",
+          "at": "2026-02-17T21:10:58.033421+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "dev",
+          "from": "In Progress",
+          "to": "In Review",
+          "at": "2026-02-17T21:13:01.279723+00:00"
+        }
+      ]
+    },
+    {
+      "id": "US-018",
+      "title": "Ensure TypeScript strict mode compliance for all binary decoder code",
+      "feature_area": "Binary Protocol Support",
+      "priority": "Must",
+      "role": "developer",
+      "want": "all new binary decoding code to have explicit types and pass strict TypeScript compilation with zero errors",
+      "benefit": "the codebase maintains its strict-mode contract and future contributors cannot introduce runtime type errors in the binary path",
+      "acceptance_criteria": [
+        {
+          "id": "AC1",
+          "given": "tsc --noEmit is run on apps/mobile after all binary decoder code is added",
+          "when": "checking binaryDecoder.ts",
+          "then": "zero strict-mode errors are reported and no any types exist"
+        },
+        {
+          "id": "AC2",
+          "given": "tsc --noEmit is run on apps/mobile after BluetoothContext.tsx is modified",
+          "when": "checking the new binary path code",
+          "then": "zero new type errors are introduced compared to the baseline"
+        },
+        {
+          "id": "AC3",
+          "given": "decodeBinaryPacket is inspected for its return type annotation",
+          "when": "checking the function signature",
+          "then": "the return type is explicitly declared as { packet: StreamDataPacket; bytesConsumed: number } | null"
+        },
+        {
+          "id": "AC4",
+          "given": "BinaryFrameAccumulator.feed() is inspected",
+          "when": "checking parameter and return types",
+          "then": "the parameter is typed as Uint8Array and the return is typed as StreamDataPacket[]"
+        },
+        {
+          "id": "AC5",
+          "given": "the string-to-Uint8Array conversion helper in BluetoothContext is inspected",
+          "when": "checking for implicit any",
+          "then": "all variables and function signatures have explicit types"
+        }
+      ],
+      "notes": "",
+      "dependencies": [
+        "US-013",
+        "US-014",
+        "US-015"
+      ],
+      "status": "In Review",
+      "created_at": "2026-02-17T20:58:13.161944+00:00",
+      "updated_at": "2026-02-17T21:13:01.414181+00:00",
+      "created_by": "po",
+      "history": [
+        {
+          "action": "created",
+          "by": "po",
+          "at": "2026-02-17T20:58:13.161944+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "po",
+          "from": "Draft",
+          "to": "Ready",
+          "at": "2026-02-17T20:58:20.711682+00:00"
+        },
+        {
+          "action": "edited",
+          "by": "po",
+          "changes": [
+            "acceptance_criteria"
+          ],
+          "at": "2026-02-17T20:59:31.987625+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "dev",
+          "from": "Ready",
+          "to": "In Progress",
+          "at": "2026-02-17T21:10:58.168123+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "dev",
+          "from": "In Progress",
+          "to": "In Review",
+          "at": "2026-02-17T21:13:01.414181+00:00"
+        }
+      ]
+    },
+    {
+      "id": "US-019",
+      "title": "Validate isStreaming flag behavior with binary protocol device",
+      "feature_area": "Stream Bug: H1 Investigation",
+      "priority": "Must",
+      "role": "developer",
+      "want": "to confirm whether the isStreaming flag in BluetoothContext transitions to true when connected to a binary-protocol device",
+      "benefit": "we can confirm or rule out H1 as the root cause of the empty CSV and static chart bug",
+      "acceptance_criteria": [
+        "Add console.log inside the isStreaming useEffect (BluetoothContext.tsx lines 124-147) that logs the transition when isStreaming changes to true",
+        "Add console.log inside startStream() (line 538) that logs immediately after the BT command is sent",
+        "Add console.log inside the JSON ACK handler for StartStream (lines 433-437) that logs when the ACK is received and parsed",
+        "Run a real device recording session and capture the logs \u00e2\u20ac\u201d document whether isStreaming transitions to true",
+        "If isStreaming never transitions to true with a binary device, confirm that streamBufferRef accumulates packets (log its length inside decodeMessage after each push)",
+        "Document findings: which log appeared, which did not, and at what timestamps"
+      ],
+      "notes": "",
+      "dependencies": [],
+      "status": "Done",
+      "created_at": "2026-02-17T21:52:20.119085+00:00",
+      "updated_at": "2026-02-17T21:54:31.323986+00:00",
+      "created_by": "po",
+      "history": [
+        {
+          "action": "created",
+          "by": "po",
+          "at": "2026-02-17T21:52:20.119085+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "po",
+          "from": "Draft",
+          "to": "Ready",
+          "at": "2026-02-17T21:54:31.323986+00:00"
+        }
+      ]
+    },
+    {
+      "id": "US-020",
+      "title": "Validate race condition between stopStream and getAllStreamPackets",
+      "feature_area": "Stream Bug: H2 Investigation",
+      "priority": "Must",
+      "role": "developer",
+      "want": "to confirm whether getAllStreamPackets is called before the final flushStreamBuffer completes after stopping the stream",
+      "benefit": "we can confirm or rule out H2 as a contributing cause of missing CSV data, independently of H1",
+      "acceptance_criteria": [
+        "Add console.log at the start of handleStopRecording (CaptureScreen.tsx line 186) that logs streamBufferRef.current.length and allStreamPacketsRef.current.length before stopStream() is awaited",
+        "Add console.log at the end of flushStreamBuffer() that logs how many packets were moved to allStreamPacketsRef",
+        "Add console.log at the start of getAllStreamPackets() (BluetoothContext.tsx line 682) that logs allStreamPacketsRef.current.length before and after the internal flushStreamBuffer call",
+        "Run a real device recording session: start recording, record for 10+ seconds, stop recording, and capture the log sequence",
+        "Document the exact order of log lines and timestamps \u00e2\u20ac\u201d confirm whether getAllStreamPackets sees data that flushStreamBuffer placed during stopStream cleanup",
+        "If a race condition is confirmed, document the precise timing gap between the last flush and getAllStreamPackets execution"
+      ],
+      "notes": "",
+      "dependencies": [],
+      "status": "Done",
+      "created_at": "2026-02-17T21:52:35.363893+00:00",
+      "updated_at": "2026-02-17T21:54:31.450142+00:00",
+      "created_by": "po",
+      "history": [
+        {
+          "action": "created",
+          "by": "po",
+          "at": "2026-02-17T21:52:35.363893+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "po",
+          "from": "Draft",
+          "to": "Ready",
+          "at": "2026-02-17T21:54:31.450142+00:00"
+        }
+      ]
+    },
+    {
+      "id": "US-021",
+      "title": "Fix: start batch flush interval independently of JSON ACK for binary protocol",
+      "feature_area": "Stream Bug: H1 Fix",
+      "priority": "Must",
+      "role": "developer",
+      "want": "the 500ms batch flush interval to start when the first binary packet arrives, not only when a JSON ACK for StartStream is received",
+      "benefit": "stream data flows to allStreamPacketsRef and streamData state during real device recording sessions, so both chart and CSV export receive data",
+      "acceptance_criteria": [
+        "The batch flush interval (BluetoothContext.tsx lines 124-147) starts as soon as the first binary stream packet is received, without requiring a JSON ACK",
+        "Alternatively, isStreaming is set to true when the first binary packet (0xAA magic byte) is received and routed to BinaryFrameAccumulator \u00e2\u20ac\u201d not gated on JSON ACK parsing",
+        "The fix does not break the existing JSON ACK path: if a JSON ACK arrives for StartStream, it still sets isStreaming to true (no regression for JSON protocol devices)",
+        "Simulation mode is unaffected: the simulation data path does not use isStreaming or streamBufferRef",
+        "After the fix, a real device recording session populates streamData with packets during recording",
+        "After the fix, allStreamPacketsRef contains all accumulated packets when getAllStreamPackets is called on stop",
+        "The fix is a minimal code change \u00e2\u20ac\u201d no refactoring of unrelated logic"
+      ],
+      "notes": "",
+      "dependencies": [
+        "US-019"
+      ],
+      "status": "Done",
+      "created_at": "2026-02-17T21:52:46.844086+00:00",
+      "updated_at": "2026-02-17T21:54:31.572394+00:00",
+      "created_by": "po",
+      "history": [
+        {
+          "action": "created",
+          "by": "po",
+          "at": "2026-02-17T21:52:46.844086+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "po",
+          "from": "Draft",
+          "to": "Ready",
+          "at": "2026-02-17T21:54:31.572394+00:00"
+        }
+      ]
+    },
+    {
+      "id": "US-022",
+      "title": "Fix: synchronize stopStream with final buffer flush before CSV export",
+      "feature_area": "Stream Bug: H2 Fix",
+      "priority": "Must",
+      "role": "developer",
+      "want": "all stream data in streamBufferRef to be flushed to allStreamPacketsRef before getAllStreamPackets returns after recording stops",
+      "benefit": "the CSV export captures every recorded packet, including those that arrived between the last periodic flush and the stop command",
+      "acceptance_criteria": [
+        "getAllStreamPackets() guarantees that flushStreamBuffer() has completed before returning the packet array",
+        "Any packets still in streamBufferRef at the time stopStream is called are included in the returned packet array",
+        "The fix handles the case where the BT StopStream ACK is async \u00e2\u20ac\u201d data arriving between stop command send and ACK receipt is not lost",
+        "The fix does not introduce a deadlock or indefinite await",
+        "After the fix, a real device recording session produces a CSV with all samples from start to stop",
+        "Simulation mode CSV export is unaffected"
+      ],
+      "notes": "",
+      "dependencies": [
+        "US-020"
+      ],
+      "status": "Done",
+      "created_at": "2026-02-17T21:53:10.188416+00:00",
+      "updated_at": "2026-02-17T21:54:31.729316+00:00",
+      "created_by": "po",
+      "history": [
+        {
+          "action": "created",
+          "by": "po",
+          "at": "2026-02-17T21:53:10.188416+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "po",
+          "from": "Draft",
+          "to": "Ready",
+          "at": "2026-02-17T21:54:31.729316+00:00"
+        }
+      ]
+    },
+    {
+      "id": "US-023",
+      "title": "Fix: improve chart update cadence to reflect real-time data during recording",
+      "feature_area": "Stream Bug: Chart Fix",
+      "priority": "Should",
+      "role": "researcher",
+      "want": "the waveform chart on CaptureScreen to update visibly during a real device recording session",
+      "benefit": "I can confirm the device is transmitting valid sEMG data in real time and identify signal quality issues during the session",
+      "acceptance_criteria": [
+        "The SEMGChart updates at least once per second during a real device recording session when stream data is flowing",
+        "The chart displays the most recent 4 seconds of sEMG data at 40 Hz (as per CHART_DISPLAY_RATE_HZ and CHART_WINDOW_SECONDS domain constants)",
+        "If the useStreamData hook 1 Hz cadence is confirmed as the cause of perceived staleness, the cadence is reviewed and updated to a value that feels responsive to the researcher",
+        "Chart updates do not cause visible jank or performance degradation on a mid-range Android device",
+        "Simulation mode chart behavior is unaffected"
+      ],
+      "notes": "",
+      "dependencies": [
+        "US-021"
+      ],
+      "status": "Done",
+      "created_at": "2026-02-17T21:53:25.893686+00:00",
+      "updated_at": "2026-02-17T21:54:31.861022+00:00",
+      "created_by": "po",
+      "history": [
+        {
+          "action": "created",
+          "by": "po",
+          "at": "2026-02-17T21:53:25.893686+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "po",
+          "from": "Draft",
+          "to": "Ready",
+          "at": "2026-02-17T21:54:31.861022+00:00"
+        }
+      ]
+    },
+    {
+      "id": "US-024",
+      "title": "Add diagnostic instrumentation at 3 key pipeline points",
+      "feature_area": "Stream Bug: Instrumentation",
+      "priority": "Should",
+      "role": "developer",
+      "want": "persistent diagnostic logging at BinaryFrameAccumulator output, allStreamPacketsRef before CSV write, and streamBufferRef at flush time",
+      "benefit": "future debugging of stream pipeline issues requires no code changes \u00e2\u20ac\u201d the data is already visible in the dev console",
+      "acceptance_criteria": [
+        "BinaryFrameAccumulator.getStats() is logged at stream stop time: shows received packet count, dropped packet count, and last error if any",
+        "allStreamPacketsRef.current.length is logged immediately before createCSVContent is called in handleStopRecording",
+        "streamBufferRef.current.length is logged at the start and end of every flushStreamBuffer() call",
+        "All diagnostic logs use a consistent prefix (e.g., [StreamPipeline]) to allow easy filtering",
+        "Diagnostic logs are dev-only \u00e2\u20ac\u201d they do not appear in production builds (use __DEV__ guard or equivalent)",
+        "No business logic is changed \u00e2\u20ac\u201d purely additive logging"
+      ],
+      "notes": "",
+      "dependencies": [],
+      "status": "Ready",
+      "created_at": "2026-02-17T21:53:41.761217+00:00",
+      "updated_at": "2026-02-17T21:54:31.985875+00:00",
+      "created_by": "po",
+      "history": [
+        {
+          "action": "created",
+          "by": "po",
+          "at": "2026-02-17T21:53:41.761217+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "po",
+          "from": "Draft",
+          "to": "Ready",
+          "at": "2026-02-17T21:54:31.985875+00:00"
+        }
+      ]
+    },
+    {
+      "id": "US-025",
+      "title": "Unit tests for createCSVContent, BinaryFrameAccumulator, and flushStreamBuffer",
+      "feature_area": "Stream Bug: Testing",
+      "priority": "Must",
+      "role": "developer",
+      "want": "automated unit tests for the three most critical functions in the stream data pipeline",
+      "benefit": "regressions in the binary decoder, CSV generation, or flush logic are caught automatically before they reach a real device recording session",
+      "acceptance_criteria": [
+        "createCSVContent: test with 0 packets (output is header-only), 1 packet, and N packets \u00e2\u20ac\u201d verify row count and timestamp/value format",
+        "createCSVContent: test with packets containing multiple samples \u00e2\u20ac\u201d verify each sample produces exactly one CSV row",
+        "BinaryFrameAccumulator: test feed() with a complete valid 108-byte packet \u00e2\u20ac\u201d verify one packet is emitted with correct sample values",
+        "BinaryFrameAccumulator: test feed() with a partial packet split across two calls \u00e2\u20ac\u201d verify packet is assembled and emitted on second call",
+        "BinaryFrameAccumulator: test feed() with wrong magic byte \u00e2\u20ac\u201d verify packet is dropped and getStats().dropped increments",
+        "flushStreamBuffer: test that calling flush with N packets in streamBufferRef moves all N to allStreamPacketsRef and clears streamBufferRef",
+        "flushStreamBuffer: test that calling flush with 0 packets is a no-op (no error, no state change)",
+        "All tests pass with npm test or the project test runner"
+      ],
+      "notes": "",
+      "dependencies": [
+        "US-021 US-022"
+      ],
+      "status": "Done",
+      "created_at": "2026-02-17T21:53:57.359874+00:00",
+      "updated_at": "2026-02-17T21:54:32.112864+00:00",
+      "created_by": "po",
+      "history": [
+        {
+          "action": "created",
+          "by": "po",
+          "at": "2026-02-17T21:53:57.359874+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "po",
+          "from": "Draft",
+          "to": "Ready",
+          "at": "2026-02-17T21:54:32.112864+00:00"
+        }
+      ]
+    },
+    {
+      "id": "US-026",
+      "title": "Integration test for full Bluetooth to CSV pipeline",
+      "feature_area": "Stream Bug: Testing",
+      "priority": "Should",
+      "role": "developer",
+      "want": "an integration test that simulates the full BT\u00e2\u2020\u2019decode\u00e2\u2020\u2019buffer\u00e2\u2020\u2019flush\u00e2\u2020\u2019CSV pipeline without a real device",
+      "benefit": "the complete data path from binary Bluetooth packet to CSV content can be verified in CI without requiring physical hardware",
+      "acceptance_criteria": [
+        "Test simulates receiving N binary BT packets (valid 108-byte frames) via a mocked onDataReceived callback",
+        "Test triggers the batch flush (or calls flushStreamBuffer directly) after packets are fed",
+        "Test calls getAllStreamPackets() and verifies the returned array length matches the number of simulated packets times samples-per-packet (50)",
+        "Test calls createCSVContent with the returned packets and verifies the CSV has the correct number of rows (N * 50 + 1 header)",
+        "Test covers the stop scenario: packets arrive, stopStream is called, getAllStreamPackets is called \u00e2\u20ac\u201d data is not lost",
+        "Test runs in the mobile app test environment (Jest + React Native Testing Library or equivalent)"
+      ],
+      "notes": "",
+      "dependencies": [
+        "US-025"
+      ],
+      "status": "Ready",
+      "created_at": "2026-02-17T21:54:16.714849+00:00",
+      "updated_at": "2026-02-17T21:54:32.241283+00:00",
+      "created_by": "po",
+      "history": [
+        {
+          "action": "created",
+          "by": "po",
+          "at": "2026-02-17T21:54:16.714849+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "po",
+          "from": "Draft",
+          "to": "Ready",
+          "at": "2026-02-17T21:54:32.241283+00:00"
+        }
+      ]
+    }
+  ],
+  "questions": []
+}

@@ -33,6 +33,7 @@ import { SavingModal } from '@/components/SavingModal';
 import { useStreamData } from '@/hooks/useStreamData';
 import { useRecordingTimer } from '@/hooks/useRecordingTimer';
 import type { StreamDataPacket, ChartDataPoint, NewRecordingData } from '@iris/domain';
+import { DEVICE_SAMPLE_RATE_HZ, SIMULATION_SAMPLE_RATE_HZ } from '@iris/domain';
 import { Square, Activity, Zap, Signal } from 'lucide-react-native';
 
 type Props = NativeStackScreenProps<HomeStackParamList, 'Capture'>;
@@ -48,7 +49,7 @@ export const CaptureScreen: FC<Props> = ({ route, navigation }) => {
     useBluetoothContext();
   const { addRecording } = useSession();
   const { elapsedSeconds, formattedTime } = useRecordingTimer();
-  const processedData = useStreamData(streamData, streamConfig.rate, 30);
+  const processedData = useStreamData(streamData, DEVICE_SAMPLE_RATE_HZ);
 
   // Saving modal state
   const [savingModalVisible, setSavingModalVisible] = useState(false);
@@ -60,7 +61,7 @@ export const CaptureScreen: FC<Props> = ({ route, navigation }) => {
   const simulationIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Process simulation data at top level (cannot call hooks conditionally)
-  const simulationProcessedData = useStreamData(simulationData, 50, 30);
+  const simulationProcessedData = useStreamData(simulationData, SIMULATION_SAMPLE_RATE_HZ);
 
   // Pulsing animation for recording indicator
   const pulseAnim = useRef(new Animated.Value(1)).current;
@@ -149,7 +150,7 @@ export const CaptureScreen: FC<Props> = ({ route, navigation }) => {
     if (dataSource.chartData.length === 0) {
       return {
         rms: 0,
-        frequency: selectedDevice ? streamConfig.rate : 50,
+        frequency: selectedDevice ? DEVICE_SAMPLE_RATE_HZ : SIMULATION_SAMPLE_RATE_HZ,
         signalQuality: 1,
       };
     }
@@ -174,10 +175,10 @@ export const CaptureScreen: FC<Props> = ({ route, navigation }) => {
 
     return {
       rms: Math.abs(rms),
-      frequency: selectedDevice ? streamConfig.rate : 50,
+      frequency: selectedDevice ? DEVICE_SAMPLE_RATE_HZ : SIMULATION_SAMPLE_RATE_HZ,
       signalQuality,
     };
-  }, [processedData, simulationProcessedData, selectedDevice, streamConfig]);
+  }, [processedData, simulationProcessedData, selectedDevice]);
 
   const metrics = calculateMetrics();
 
@@ -185,9 +186,13 @@ export const CaptureScreen: FC<Props> = ({ route, navigation }) => {
   const handleStopRecording = useCallback(async () => {
     console.log('[CaptureScreen] Stopping recording...');
 
-    // Stop streaming
-    if (selectedDevice && isStreaming) {
+    // Stop streaming — send StopStream whenever a device is connected, regardless
+    // of the isStreaming flag (which may be false if no JSON ACK was received yet).
+    if (selectedDevice) {
       await stopStream();
+      // Allow trailing BT packets (~50-500ms of in-flight data) to arrive and be decoded
+      // before snapshotting the buffer.
+      await new Promise(resolve => setTimeout(resolve, 200));
     } else if (simulationIntervalRef.current) {
       clearInterval(simulationIntervalRef.current);
       simulationIntervalRef.current = null;
@@ -201,7 +206,7 @@ export const CaptureScreen: FC<Props> = ({ route, navigation }) => {
     try {
       // Collect ALL packets from unbounded buffer (not the capped UI state)
       const dataToSave = selectedDevice ? getAllStreamPackets() : simulationData;
-      const sampleRate = selectedDevice ? streamConfig.rate : 50;
+      const sampleRate = selectedDevice ? DEVICE_SAMPLE_RATE_HZ : SIMULATION_SAMPLE_RATE_HZ;
 
       // Create CSV content with accurate timestamps
       const csvContent = createCSVContent(dataToSave, sampleRate);
@@ -228,7 +233,7 @@ export const CaptureScreen: FC<Props> = ({ route, navigation }) => {
         durationSeconds: elapsedSeconds,
         sampleCount: totalSamples,
         dataType: selectedDevice ? streamConfig.type : 'filtered',
-        sampleRate: selectedDevice ? sampleRate : 50,
+        sampleRate: sampleRate,
         filePath,
       };
 
@@ -249,13 +254,12 @@ export const CaptureScreen: FC<Props> = ({ route, navigation }) => {
     }
   }, [
     selectedDevice,
-    isStreaming,
     stopStream,
     getAllStreamPackets,
     simulationData,
     sessionId,
     elapsedSeconds,
-    streamConfig,
+    streamConfig.type,
     addRecording,
     navigation,
   ]);
@@ -287,9 +291,8 @@ export const CaptureScreen: FC<Props> = ({ route, navigation }) => {
         <View style={styles.chartArea}>
           <SEMGChart
             data={selectedDevice ? processedData.chartData : simulationProcessedData.chartData}
-            sampleRate={selectedDevice ? streamConfig.rate : 50}
+            sampleRate={selectedDevice ? DEVICE_SAMPLE_RATE_HZ : SIMULATION_SAMPLE_RATE_HZ}
             dataType={selectedDevice ? streamConfig.type : 'filtered'}
-            autoScroll={true}
             darkTheme={true}
           />
         </View>

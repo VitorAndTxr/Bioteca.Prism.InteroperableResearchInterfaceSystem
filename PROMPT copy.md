@@ -4,12 +4,15 @@ Corrigir fluxos de consumo e persistencias de dados de stream do protocolo bluet
 
 ## Problemas
 
-- Downloads de arquivos da sessão deveria ser um json com as informações da sessão e das sessões de gravação com arquivos csv referentes a cada canal
+-  Exportação de arquivos da dessão em histórico devolve apenas um csv com as informações desorganizadas
+    Comportamento esperado: Exportação de arquivos da sessão deveria ser zip composto por um json com as informações da sessão e das sessões de gravação com arquivos csv referentes a cada canal linkados com o JSON da sessão
 
-- O arquivo csv envoado para o blob
+- O arquivo csv enviado para o blob é um arquivo com cabeçalho vazio
+    Comportamento esperado: O arquivo csv enviado para o blob deve conter informações de sinal do stream do sinal sEMG do bluetooth
 
-## Comportamento esperado
+- Tela de Recording está com frequencia errada de captura e exibição de gráfico
+    Comportamento esperado: 
+    - Frequencia padrão de 215 hz inalteravel
+    - Grafico na tela exibindo apenas os ultimos 4 segundos do stream downsampled para 40hz atualizado 1 vez por segundo
 
-- Apenas ao finalizar uma sessão que deve ser limpo o formulário
-- Botão para limpar preenchimento também é interessante
 

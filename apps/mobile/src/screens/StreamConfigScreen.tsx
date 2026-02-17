@@ -7,17 +7,13 @@ import {
     ScrollView,
     Alert
 } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
 import { useBluetoothContext } from '@/context/BluetoothContext';
-import { StreamType } from '@iris/domain';
+import { StreamType, DEVICE_SAMPLE_RATE_HZ } from '@iris/domain';
 
 // Navigation props (will be provided by React Navigation)
 interface StreamConfigScreenProps {
     navigation: any;
 }
-
-// Sampling rate presets
-const SAMPLING_RATES = [10, 30, 50, 100, 200];
 
 // Data type options with descriptions
 const DATA_TYPES: { value: StreamType; label: string; description: string }[] = [
@@ -41,35 +37,13 @@ const DATA_TYPES: { value: StreamType; label: string; description: string }[] = 
 export function StreamConfigScreen({ navigation }: StreamConfigScreenProps) {
     const { streamConfig, configureStream } = useBluetoothContext();
 
-    // Local state for configuration
-    const [selectedRate, setSelectedRate] = useState<number>(streamConfig.rate);
+    // Local state for data type only (rate is fixed)
     const [selectedType, setSelectedType] = useState<StreamType>(streamConfig.type);
-
-    // Check if configuration requires high-speed Bluetooth (115200 baud)
-    const requiresHighSpeed = selectedRate > 30;
-
-    // Warning message for high sampling rates
-    const getWarningMessage = (): string | null => {
-        if (selectedRate <= 30) return null;
-
-        if (selectedRate <= 50) {
-            return '⚠️ Sampling rates above 30 Hz may require Bluetooth module upgrade to 115200 baud. ' +
-                   'With default 9600 baud, data loss may occur.';
-        }
-
-        return '⚠️ Sampling rates above 50 Hz REQUIRE Bluetooth module upgrade to 115200 baud. ' +
-               'Default 9600 baud WILL cause significant data loss. Ensure your device firmware ' +
-               'has been configured for high-speed communication.';
-    };
 
     const handleSave = async () => {
         try {
-            // Save configuration to BluetoothContext
-            await configureStream(selectedRate, selectedType);
-
-            // Navigate to streaming screen
+            await configureStream(DEVICE_SAMPLE_RATE_HZ, selectedType);
             navigation.navigate('Streaming');
-
         } catch (error) {
             console.error('Error saving stream configuration:', error);
             Alert.alert(
@@ -79,8 +53,6 @@ export function StreamConfigScreen({ navigation }: StreamConfigScreenProps) {
             );
         }
     };
-
-    const warningMessage = getWarningMessage();
 
     return (
         <ScrollView style={styles.container}>
@@ -97,31 +69,12 @@ export function StreamConfigScreen({ navigation }: StreamConfigScreenProps) {
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>Sampling Rate</Text>
                     <Text style={styles.sectionDescription}>
-                        Higher rates provide more detail but require more bandwidth
+                        Fixed at {DEVICE_SAMPLE_RATE_HZ} Hz by the ESP32 device hardware
                     </Text>
-
-                    <View style={styles.pickerContainer}>
-                        <Picker
-                            selectedValue={selectedRate}
-                            onValueChange={(value) => setSelectedRate(value)}
-                            style={styles.picker}
-                        >
-                            {SAMPLING_RATES.map(rate => (
-                                <Picker.Item
-                                    key={rate}
-                                    label={`${rate} Hz${rate === 30 ? ' (Recommended)' : ''}`}
-                                    value={rate}
-                                />
-                            ))}
-                        </Picker>
+                    <View style={styles.readOnlyBox}>
+                        <Text style={styles.readOnlyValue}>{DEVICE_SAMPLE_RATE_HZ} Hz</Text>
+                        <Text style={styles.readOnlyHint}>Hardware-defined, not configurable</Text>
                     </View>
-
-                    {/* Baud Rate Warning */}
-                    {warningMessage && (
-                        <View style={styles.warningBox}>
-                            <Text style={styles.warningText}>{warningMessage}</Text>
-                        </View>
-                    )}
                 </View>
 
                 {/* Data Type Section */}
@@ -165,21 +118,12 @@ export function StreamConfigScreen({ navigation }: StreamConfigScreenProps) {
                     <Text style={styles.summaryTitle}>Configuration Summary</Text>
                     <View style={styles.summaryRow}>
                         <Text style={styles.summaryLabel}>Sampling Rate:</Text>
-                        <Text style={styles.summaryValue}>{selectedRate} Hz</Text>
+                        <Text style={styles.summaryValue}>{DEVICE_SAMPLE_RATE_HZ} Hz (fixed)</Text>
                     </View>
                     <View style={styles.summaryRow}>
                         <Text style={styles.summaryLabel}>Data Type:</Text>
                         <Text style={styles.summaryValue}>
                             {DATA_TYPES.find(t => t.value === selectedType)?.label}
-                        </Text>
-                    </View>
-                    <View style={styles.summaryRow}>
-                        <Text style={styles.summaryLabel}>Bluetooth Speed:</Text>
-                        <Text style={[
-                            styles.summaryValue,
-                            requiresHighSpeed && styles.summaryValueWarning
-                        ]}>
-                            {requiresHighSpeed ? '115200 baud (High-speed)' : '9600 baud (Standard)'}
                         </Text>
                     </View>
                 </View>
@@ -247,27 +191,23 @@ const styles = StyleSheet.create({
         color: '#666',
         marginBottom: 16,
     },
-    pickerContainer: {
+    readOnlyBox: {
+        backgroundColor: '#f0f4f8',
         borderWidth: 1,
-        borderColor: '#ddd',
+        borderColor: '#d0dce8',
         borderRadius: 8,
-        overflow: 'hidden',
+        padding: 16,
+        alignItems: 'center',
     },
-    picker: {
-        height: 50,
+    readOnlyValue: {
+        fontSize: 24,
+        fontWeight: 'bold',
+        color: '#333',
+        marginBottom: 4,
     },
-    warningBox: {
-        backgroundColor: '#fff3cd',
-        borderLeftWidth: 4,
-        borderLeftColor: '#ffca28',
-        padding: 12,
-        marginTop: 16,
-        borderRadius: 4,
-    },
-    warningText: {
-        fontSize: 13,
-        color: '#856404',
-        lineHeight: 18,
+    readOnlyHint: {
+        fontSize: 12,
+        color: '#888',
     },
     radioOption: {
         flexDirection: 'row',
@@ -344,9 +284,6 @@ const styles = StyleSheet.create({
         fontSize: 15,
         fontWeight: '600',
         color: '#333',
-    },
-    summaryValueWarning: {
-        color: '#f57c00',
     },
     saveButton: {
         backgroundColor: '#2196F3',

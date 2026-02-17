@@ -1,94 +1,63 @@
-import React, { useMemo, useRef, useEffect } from 'react';
-import { View, Text, StyleSheet, Dimensions, ScrollView } from 'react-native';
+import React, { useMemo } from 'react';
+import { View, Text, StyleSheet, Dimensions } from 'react-native';
 import { LineChart } from 'react-native-gifted-charts';
-import { ChartDataPoint, StreamType } from '@iris/domain';
+import { ChartDataPoint, StreamType, CHART_WINDOW_SECONDS, CHART_DISPLAY_RATE_HZ } from '@iris/domain';
 
 interface SEMGChartProps {
     data: ChartDataPoint[];
     sampleRate: number;
     dataType: StreamType;
-    autoScroll?: boolean; // Enable auto-scroll for new data
-    darkTheme?: boolean; // Enable dark theme styling
+    darkTheme?: boolean;
 }
 
 /**
- * Optimized sEMG Chart Component using react-native-gifted-charts
+ * Optimized sEMG Chart Component using react-native-gifted-charts.
  *
  * Features:
  * - Fixed Y-axis: -500 to +500 (zero-centered, constant scale)
- * - Auto-scroll for continuous real-time data
- * - Grid divisions based on sample rate
+ * - Fixed 4-second viewport (no horizontal scrolling)
+ * - 160 data points displayed (4s at 40 Hz display rate)
+ * - Updates at 1 Hz cadence (driven by useStreamData)
  * - High performance for real-time streaming
- * - Memoized to prevent unnecessary re-renders
- * - Red zero-line (X-axis) for clear reference
  */
-export const SEMGChart = React.memo(function SEMGChart({ data, sampleRate, dataType, autoScroll = true, darkTheme = false }: SEMGChartProps) {
-    const scrollViewRef = useRef<ScrollView>(null);
-    const previousDataLength = useRef(0);
-    const lastScrollTime = useRef(0);
+export const SEMGChart = React.memo(function SEMGChart({ data, sampleRate, dataType, darkTheme = false }: SEMGChartProps) {
     const screenWidth = Dimensions.get('window').width;
-
-    // Auto-scroll effect with throttling (max 5 times per second)
-    useEffect(() => {
-        const now = Date.now();
-        const shouldScroll = autoScroll &&
-                           data.length > previousDataLength.current &&
-                           scrollViewRef.current &&
-                           (now - lastScrollTime.current) > 200; // Throttle to 200ms (5 Hz)
-
-        if (shouldScroll) {
-            lastScrollTime.current = now;
-            // Non-animated scroll for better performance
-            scrollViewRef.current?.scrollToEnd({ animated: false });
-        }
-        previousDataLength.current = data.length;
-    }, [data.length, autoScroll]);
+    const availableWidth = screenWidth - 80; // account for y-axis labels and padding
 
     // Transform data to gifted-charts format
     const chartData = useMemo(() => {
         if (data.length === 0) {
-            // Return empty array with placeholder points at boundaries
             return [
                 { value: 0, label: '0' },
                 { value: 500, label: '' },
-                { value: 0, label: '10' }
+                { value: 0, label: '4' }
             ];
         }
 
-        // Map data points to gifted-charts format
-        // For continuous scrolling, we need to show relative time
         const startTime = data[0].x;
 
-        return data.map((point, index) => {
+        return data.map((point) => {
             const relativeTime = point.x - startTime;
             let label = '';
 
-            // Add labels every 2.5 seconds
-            const roundedTime = Math.round(relativeTime * 2) / 2; // Round to nearest 0.5s
-            if (Math.abs(relativeTime - roundedTime) < 0.1 && roundedTime % 2.5 === 0) {
-                label = roundedTime.toFixed(1);
+            // Add labels at 1-second intervals
+            const rounded = Math.round(relativeTime);
+            if (Math.abs(relativeTime - rounded) < 0.05) {
+                label = rounded.toFixed(0);
             }
 
             return {
                 value: point.y,
-                label: label,
+                label,
                 labelTextStyle: { color: '#666', fontSize: 10 }
             };
         });
     }, [data]);
 
-    // Calculate optimal spacing for continuous scrolling
+    // Dynamic spacing so all data points fill the full available width
     const spacing = useMemo(() => {
-        if (data.length === 0) return 3;
-        // Fixed spacing per sample for consistent scrolling
-        // This allows the chart to grow horizontally as data arrives
-        return 3; // 3 pixels per sample provides good resolution
-    }, []);
-
-    // Calculate total chart width for scrolling
-    const chartWidth = useMemo(() => {
-        return Math.max(screenWidth - 80, data.length * spacing);
-    }, [data.length, spacing, screenWidth]);
+        return availableWidth / Math.max(data.length - 1, 1);
+    }, [data.length, availableWidth]);
 
     const containerStyle = darkTheme ? [styles.container, styles.containerDark] : styles.container;
     const headerTextStyle = darkTheme ? [styles.headerText, styles.textDark] : styles.headerText;
@@ -102,21 +71,15 @@ export const SEMGChart = React.memo(function SEMGChart({ data, sampleRate, dataT
                     sEMG Signal - {dataType === 'raw' ? 'Raw ADC' : dataType === 'filtered' ? 'Filtered' : 'RMS Envelope'}
                 </Text>
                 <Text style={subHeaderTextStyle}>
-                    {sampleRate} Hz | Continuous streaming {autoScroll ? '(auto-scroll)' : ''}
+                    {sampleRate} Hz | Last {CHART_WINDOW_SECONDS}s window | {CHART_DISPLAY_RATE_HZ} Hz display
                 </Text>
             </View>
 
-            {/* Chart with Horizontal Scroll */}
-            <ScrollView
-                ref={scrollViewRef}
-                horizontal
-                showsHorizontalScrollIndicator={true}
-                style={styles.scrollView}
-                contentContainerStyle={styles.scrollContent}
-            >
+            {/* Fixed viewport chart — no horizontal scroll */}
+            <View style={styles.chartContainer}>
                 <LineChart
                     data={chartData}
-                    width={chartWidth}
+                    width={availableWidth}
                     height={125}
                     maxValue={100}
                     mostNegativeValue={-100}
@@ -142,7 +105,7 @@ export const SEMGChart = React.memo(function SEMGChart({ data, sampleRate, dataT
                     startOpacity={1}
                     endOpacity={1}
                 />
-            </ScrollView>
+            </View>
 
             {/* Axis Labels */}
             <View style={styles.axisLabels}>
@@ -153,13 +116,8 @@ export const SEMGChart = React.memo(function SEMGChart({ data, sampleRate, dataT
             {/* Grid Info */}
             <View style={styles.gridInfo}>
                 <Text style={darkTheme ? [styles.gridInfoText, styles.textMutedDark] : styles.gridInfoText}>
-                    Grid: {(1 / sampleRate * 1000).toFixed(1)}ms per sample | {data.length} samples displayed
+                    {(1 / sampleRate * 1000).toFixed(1)}ms per sample | {data.length} points displayed
                 </Text>
-                {autoScroll && (
-                    <Text style={darkTheme ? [styles.gridInfoText, styles.textMutedDark] : styles.gridInfoText}>
-                        📊 Auto-scrolling to show latest data
-                    </Text>
-                )}
             </View>
         </View>
     );
@@ -192,10 +150,7 @@ const styles = StyleSheet.create({
         fontSize: 12,
         color: '#666',
     },
-    scrollView: {
-        maxHeight: 280,
-    },
-    scrollContent: {
+    chartContainer: {
         paddingVertical: 8,
     },
     axisLabels: {

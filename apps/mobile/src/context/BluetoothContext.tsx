@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { ReactNode, createContext, useContext } from "react";
 import { PermissionsAndroid, Platform, Linking } from 'react-native';
 import RNBluetoothClassic, { BluetoothDevice, BluetoothEventSubscription } from 'react-native-bluetooth-classic';
+import { toByteArray } from 'react-native-quick-base64';
 
 // Import shared domain types
 import {
@@ -16,8 +17,12 @@ import {
     StreamConfiguration,
     StreamDataPacket,
     FESParameters,
-    SessionStatus
+    SessionStatus,
+    DEVICE_SAMPLE_RATE_HZ,
+    SIMULATION_SAMPLE_RATE_HZ,
+    BINARY_PACKET_MAGIC,
 } from '@iris/domain';
+import { BinaryFrameAccumulator } from '@/utils/binaryDecoder';
 
 const BluetoothContext = createContext({} as BluetoothContextData);
 
@@ -54,8 +59,10 @@ export function BluetoothContextProvider(props: BluetoothContextProviderProps) {
 
     // Streaming state management
     const [isStreaming, setIsStreaming] = useState(false);
+    // Ref mirror of isStreaming — readable inside stale BT listener closures
+    const isStreamingRef = React.useRef(false);
     const [streamConfig, setStreamConfig] = useState<StreamConfiguration>({
-        rate: 100,
+        rate: DEVICE_SAMPLE_RATE_HZ,
         type: 'filtered'
     });
     const [streamData, setStreamData] = useState<StreamDataPacket[]>([]);
@@ -68,6 +75,9 @@ export function BluetoothContextProvider(props: BluetoothContextProviderProps) {
 
     // Unbounded capture buffer — accumulates ALL packets during streaming for CSV export
     const allStreamPacketsRef = React.useRef<StreamDataPacket[]>([]);
+
+    // Binary frame accumulator — buffers raw bytes across onDataReceived callbacks
+    const binaryAccumulatorRef = React.useRef(new BinaryFrameAccumulator());
 
     // Session state
     const [sessionStatus, setSessionStatus] = useState<SessionStatus | null>(null);
@@ -97,7 +107,7 @@ export function BluetoothContextProvider(props: BluetoothContextProviderProps) {
 
             setStreamData(prev => {
                 const updated = [...prev, ...packetsToAdd];
-                // Keep only last 500 packets (~5 seconds at 100Hz) for UI performance
+                // Keep last 500 packets (~2-3 seconds at 215 Hz) for UI performance
                 if (updated.length > 500) {
                     return updated.slice(-500);
                 }
@@ -316,7 +326,8 @@ export function BluetoothContextProvider(props: BluetoothContextProviderProps) {
     async function connectBluetooth(address: string) {
         try {
             let connectedDevice = await RNBluetoothClassic.connectToDevice(address, {
-                secureSocket: false
+                secureSocket: false,
+                connectionType: 'binary'
             });
 
             if (connectedDevice) {
@@ -356,89 +367,127 @@ export function BluetoothContextProvider(props: BluetoothContextProviderProps) {
 
     function decodeMessage(message: string) {
         try {
-            let messageBody = JSON.parse(message) as BluetoothProtocolPayload;
+            // Step 1: Sanitize Base64 input (native layer may insert line breaks per RFC 2045,
+            // and serial transport may append null terminators)
+            const sanitized = message.replace(/[\s\0]/g, '');
+            if (sanitized.length === 0) return;
 
-            switch (messageBody.cd) {
-                case BluetoothProtocolFunction.GyroscopeReading:
-                    console.log("Gyroscope Reading");
-                    console.log(messageBody);
-                    if (messageBody.bd && messageBody.bd.a !== undefined) {
-                        console.log("Wrist angle:", messageBody.bd.a);
-                    }
-                    break;
+            // Step 2: Decode Base64 to raw bytes (binary connection type delivers all data as Base64)
+            const bytes = toByteArray(sanitized);
 
-                case BluetoothProtocolFunction.Status:
-                    console.log("Session Status");
-                    console.log(messageBody);
-                    if (messageBody.bd) {
-                        const status: SessionStatus = {
-                            parameters: messageBody.bd.parameters as FESParameters,
-                            status: {
-                                csa: messageBody.bd.csa || 0,
-                                isa: messageBody.bd.isa || 0,
-                                tlt: messageBody.bd.tlt || 0,
-                                sd: messageBody.bd.sd || 0
-                            }
-                        };
-                        setSessionStatus(status);
-                    }
-                    break;
+            if (bytes.length === 0) return;
 
-                case BluetoothProtocolFunction.Trigger:
-                    console.log("sEMG Trigger Detected");
-                    break;
+            // Step 3: Route based on first byte
+            if (bytes[0] === BINARY_PACKET_MAGIC) {
+                // Binary sEMG packet(s) from firmware v3.1+
+                const packets = binaryAccumulatorRef.current.feed(bytes);
+                for (const packet of packets) {
+                    streamBufferRef.current.push(packet);
+                }
+                // Implicit stream-start: first binary packet proves the device is streaming.
+                // Using the ref avoids repeated setter calls from a stale closure.
+                if (!isStreamingRef.current) {
+                    isStreamingRef.current = true;
+                    setIsStreaming(true);
+                }
+                return;
+            }
 
-                case BluetoothProtocolFunction.PauseSession:
-                    console.log("Session Paused");
-                    break;
+            if (bytes[0] === 0x7B) {
+                // JSON command/control message (0x7B = '{')
+                const text = new TextDecoder().decode(bytes);
+                const messageBody = JSON.parse(text) as BluetoothProtocolPayload;
 
-                case BluetoothProtocolFunction.EmergencyStop:
-                    console.log("Emergency Stop Activated");
-                    setIsSessionActive(false);
-                    setIsStreaming(false);
-                    break;
+                switch (messageBody.cd) {
+                    case BluetoothProtocolFunction.GyroscopeReading:
+                        console.log("Gyroscope Reading");
+                        console.log(messageBody);
+                        if (messageBody.bd && messageBody.bd.a !== undefined) {
+                            console.log("Wrist angle:", messageBody.bd.a);
+                        }
+                        break;
 
-                case BluetoothProtocolFunction.StartStream:
-                    console.log("Stream Start Acknowledged");
-                    if (messageBody.mt === BluetoothProtocolMethod.ACK) {
-                        setIsStreaming(true);
-                    }
-                    break;
+                    case BluetoothProtocolFunction.Status:
+                        console.log("Session Status");
+                        console.log(messageBody);
+                        if (messageBody.bd) {
+                            const status: SessionStatus = {
+                                parameters: messageBody.bd.parameters as FESParameters,
+                                status: {
+                                    csa: messageBody.bd.csa || 0,
+                                    isa: messageBody.bd.isa || 0,
+                                    tlt: messageBody.bd.tlt || 0,
+                                    sd: messageBody.bd.sd || 0
+                                }
+                            };
+                            setSessionStatus(status);
+                        }
+                        break;
 
-                case BluetoothProtocolFunction.StopStream:
-                    console.log("Stream Stop Acknowledged");
-                    if (messageBody.mt === BluetoothProtocolMethod.ACK) {
+                    case BluetoothProtocolFunction.Trigger:
+                        console.log("sEMG Trigger Detected");
+                        break;
+
+                    case BluetoothProtocolFunction.PauseSession:
+                        console.log("Session Paused");
+                        break;
+
+                    case BluetoothProtocolFunction.EmergencyStop:
+                        console.log("Emergency Stop Activated");
+                        setIsSessionActive(false);
+                        isStreamingRef.current = false;
                         setIsStreaming(false);
-                    }
-                    break;
+                        break;
 
-                case BluetoothProtocolFunction.StreamData:
-                    // Add to buffer - will be flushed at 5 Hz (200ms interval)
-                    if (messageBody.bd && messageBody.bd.t !== undefined && messageBody.bd.v) {
-                        const packet: StreamDataPacket = {
-                            timestamp: messageBody.bd.t,
-                            values: messageBody.bd.v as number[]
-                        };
+                    case BluetoothProtocolFunction.StartStream:
+                        console.log("Stream Start Acknowledged");
+                        if (messageBody.mt === BluetoothProtocolMethod.ACK) {
+                            isStreamingRef.current = true;
+                            setIsStreaming(true);
+                        }
+                        break;
 
-                        // Add to buffer instead of updating state immediately
-                        streamBufferRef.current.push(packet);
-                    }
-                    break;
+                    case BluetoothProtocolFunction.StopStream:
+                        console.log("Stream Stop Acknowledged");
+                        if (messageBody.mt === BluetoothProtocolMethod.ACK) {
+                            isStreamingRef.current = false;
+                            setIsStreaming(false);
+                        }
+                        break;
 
-                case BluetoothProtocolFunction.ConfigStream:
-                    console.log("Stream Configuration Acknowledged");
-                    if (messageBody.mt === BluetoothProtocolMethod.ACK) {
-                        console.log("Stream configuration accepted by device");
-                    }
-                    break;
+                    case BluetoothProtocolFunction.StreamData:
+                        // Legacy JSON streaming format (simulation mode / firmware v2.x)
+                        if (messageBody.bd && messageBody.bd.t !== undefined && messageBody.bd.v) {
+                            const packet: StreamDataPacket = {
+                                timestamp: messageBody.bd.t,
+                                values: messageBody.bd.v as number[]
+                            };
+                            streamBufferRef.current.push(packet);
+                        }
+                        break;
 
-                default:
-                    console.log("Unknown message code:", messageBody.cd);
-                    break;
+                    case BluetoothProtocolFunction.ConfigStream:
+                        console.log("Stream Configuration Acknowledged");
+                        if (messageBody.mt === BluetoothProtocolMethod.ACK) {
+                            console.log("Stream configuration accepted by device");
+                        }
+                        break;
+
+                    default:
+                        console.log("Unknown message code:", messageBody.cd);
+                        break;
+                }
+                return;
+            }
+
+            // Neither 0xAA nor '{' — may be a continuation fragment of a binary packet
+            // that was split by the native layer before the magic byte boundary.
+            const packets = binaryAccumulatorRef.current.feed(bytes);
+            for (const packet of packets) {
+                streamBufferRef.current.push(packet);
             }
         } catch (error) {
-            console.error("Error decoding message:", error);
-            console.error("Raw message:", message);
+            console.warn('Error decoding message:', error);
         }
     }
 
@@ -463,6 +512,7 @@ export function BluetoothContextProvider(props: BluetoothContextProviderProps) {
                 setBtDeviceDisconnectSubscription(undefined);
             }
 
+            binaryAccumulatorRef.current.reset();
             setSelectedDevice(undefined);
         } catch (error) {
             console.error(error, 'BluetoothContext.disconnect.Error');
@@ -483,14 +533,14 @@ export function BluetoothContextProvider(props: BluetoothContextProviderProps) {
                 cd: BluetoothProtocolFunction.ConfigStream,
                 mt: BluetoothProtocolMethod.WRITE,
                 bd: {
-                    rate: rate,
+                    rate: DEVICE_SAMPLE_RATE_HZ,
                     type: type
                 }
             };
 
-            setStreamConfig({ rate, type });
+            setStreamConfig({ rate: DEVICE_SAMPLE_RATE_HZ, type });
             await writeToBluetooth(JSON.stringify(payload));
-            console.log(`Stream configured: ${rate}Hz, type: ${type}`);
+            console.log(`Stream configured: ${DEVICE_SAMPLE_RATE_HZ}Hz, type: ${type}`);
         } catch (error) {
             console.error("Error configuring stream:", error);
         }
@@ -503,10 +553,15 @@ export function BluetoothContextProvider(props: BluetoothContextProviderProps) {
                 mt: BluetoothProtocolMethod.EXECUTE
             };
 
+            // Reset ref before sending — guards against rapid start/stop cycles
+            // where the previous streaming session's ref could prevent detection of
+            // the new session's first binary packet.
+            isStreamingRef.current = false;
             setStreamData([]);
             setLastStreamTimestamp(0);
             streamBufferRef.current = [];
             allStreamPacketsRef.current = [];
+            binaryAccumulatorRef.current.reset();
 
             await writeToBluetooth(JSON.stringify(payload));
             console.log("Stream start requested");
@@ -638,6 +693,8 @@ export function BluetoothContextProvider(props: BluetoothContextProviderProps) {
     }
 
     function getAllStreamPackets(): StreamDataPacket[] {
+        // Flush any pending packets from the batch buffer before returning
+        flushStreamBuffer();
         return [...allStreamPacketsRef.current];
     }
 

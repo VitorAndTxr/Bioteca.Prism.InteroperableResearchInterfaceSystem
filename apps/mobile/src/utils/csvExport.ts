@@ -5,6 +5,7 @@
 
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
+import JSZip from 'jszip';
 
 /**
  * Stream data packet structure
@@ -247,6 +248,121 @@ export async function shareCSV(fileUri: string): Promise<void> {
 
     await Sharing.shareAsync(fileUri, {
         mimeType: 'text/csv',
+        dialogTitle: 'Export Session Data'
+    });
+}
+
+/**
+ * Internal shape of session.json written inside the ZIP archive.
+ */
+interface SessionJsonMetadata {
+    sessionId: string;
+    volunteerId: string;
+    volunteerName?: string;
+    bodyStructure: string;
+    laterality: string | null;
+    startedAt: string;
+    durationSeconds: number;
+    sampleRate: number;
+    dataType: string;
+    exportedAt: string;
+    recordings: Array<{
+        filename: string;
+        originalFilename: string;
+        recordedAt: string;
+        dataType: string;
+        sampleRate: number;
+        sampleCount: number;
+    }>;
+}
+
+/**
+ * Exports a session as a ZIP archive containing:
+ * - `session.json`: session metadata + recordings manifest
+ * - `recording_001.csv`, `recording_002.csv`, ...: per-recording CSV data
+ *
+ * The CSV content for each recording must be read from disk by the caller
+ * before passing to this function. Files are read sequentially to avoid OOM.
+ *
+ * @param metadata - Session metadata
+ * @param recordings - Array of recording descriptors
+ * @param csvContents - Pre-read CSV file contents (same length as recordings)
+ * @returns File URI of the written ZIP
+ */
+export async function exportSessionAsZip(
+    metadata: SessionMetadata,
+    recordings: RecordingForExport[],
+    csvContents: string[]
+): Promise<string> {
+    if (recordings.length === 0) {
+        throw new Error('No recordings to export');
+    }
+    if (recordings.length !== csvContents.length) {
+        throw new Error('Recordings and csvContents arrays must have the same length');
+    }
+
+    const zip = new JSZip();
+
+    // Build session.json
+    const sessionJson: SessionJsonMetadata = {
+        sessionId: metadata.sessionId,
+        volunteerId: metadata.volunteerId,
+        volunteerName: metadata.volunteerName,
+        bodyStructure: metadata.bodyStructure,
+        laterality: metadata.laterality,
+        startedAt: metadata.startedAt,
+        durationSeconds: metadata.durationSeconds,
+        sampleRate: metadata.sampleRate,
+        dataType: metadata.dataType,
+        exportedAt: new Date().toISOString(),
+        recordings: recordings.map((rec, index) => ({
+            filename: `recording_${String(index + 1).padStart(3, '0')}.csv`,
+            originalFilename: rec.filename,
+            recordedAt: rec.recordedAt,
+            dataType: rec.dataType,
+            sampleRate: rec.sampleRate,
+            sampleCount: rec.sampleCount
+        }))
+    };
+
+    zip.file('session.json', JSON.stringify(sessionJson, null, 2));
+
+    // Add per-recording CSV files
+    recordings.forEach((_rec, index) => {
+        const zipFilename = `recording_${String(index + 1).padStart(3, '0')}.csv`;
+        zip.file(zipFilename, csvContents[index]);
+    });
+
+    // Generate ZIP as base64
+    const base64Zip = await zip.generateAsync({ type: 'base64' });
+
+    // Write to filesystem
+    const now = new Date();
+    const timestamp = now.toISOString().replace(/[:.]/g, '-').slice(0, -5);
+    const zipFilename = `session_${metadata.sessionId.substring(0, 8)}_${timestamp}.zip`;
+    const zipPath = `${FileSystem.documentDirectory}${zipFilename}`;
+
+    await FileSystem.writeAsStringAsync(zipPath, base64Zip, {
+        encoding: FileSystem.EncodingType.Base64
+    });
+
+    return zipPath;
+}
+
+/**
+ * Share a ZIP file via native share sheet.
+ *
+ * @param fileUri - URI of the ZIP file to share
+ * @returns Promise that resolves when sharing is complete
+ */
+export async function shareZip(fileUri: string): Promise<void> {
+    const isAvailable = await Sharing.isAvailableAsync();
+    if (!isAvailable) {
+        throw new Error('Sharing is not available on this device');
+    }
+
+    await Sharing.shareAsync(fileUri, {
+        mimeType: 'application/zip',
         dialogTitle: 'Export Session Data'
     });
 }
