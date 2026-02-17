@@ -44,7 +44,7 @@ const RED_INDICATOR = '#EF4444';
 
 export const CaptureScreen: FC<Props> = ({ route, navigation }) => {
   const { sessionId } = route.params;
-  const { selectedDevice, streamData, streamConfig, startStream, stopStream, isStreaming } =
+  const { selectedDevice, streamData, streamConfig, startStream, stopStream, isStreaming, getAllStreamPackets } =
     useBluetoothContext();
   const { addRecording } = useSession();
   const { elapsedSeconds, formattedTime } = useRecordingTimer();
@@ -199,12 +199,12 @@ export const CaptureScreen: FC<Props> = ({ route, navigation }) => {
     setSavingError(undefined);
 
     try {
-      // Collect data
-      const dataToSave = selectedDevice ? streamData : simulationData;
-      const dataSource = selectedDevice ? processedData : simulationProcessedData;
+      // Collect ALL packets from unbounded buffer (not the capped UI state)
+      const dataToSave = selectedDevice ? getAllStreamPackets() : simulationData;
+      const sampleRate = selectedDevice ? streamConfig.rate : 50;
 
-      // Create CSV content
-      const csvContent = createCSVContent(dataToSave);
+      // Create CSV content with accurate timestamps
+      const csvContent = createCSVContent(dataToSave, sampleRate);
 
       // Generate filename
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
@@ -218,14 +218,17 @@ export const CaptureScreen: FC<Props> = ({ route, navigation }) => {
 
       console.log('[CaptureScreen] CSV file saved:', filePath);
 
+      // Count actual samples from the full capture buffer
+      const totalSamples = dataToSave.reduce((sum, p) => sum + p.values.length, 0);
+
       // Create recording entity
       const recordingData: NewRecordingData = {
         sessionId,
         filename,
         durationSeconds: elapsedSeconds,
-        sampleCount: dataSource.totalSamples,
+        sampleCount: totalSamples,
         dataType: selectedDevice ? streamConfig.type : 'filtered',
-        sampleRate: selectedDevice ? streamConfig.rate : 50,
+        sampleRate: selectedDevice ? sampleRate : 50,
         filePath,
       };
 
@@ -248,9 +251,8 @@ export const CaptureScreen: FC<Props> = ({ route, navigation }) => {
     selectedDevice,
     isStreaming,
     stopStream,
-    streamData,
+    getAllStreamPackets,
     simulationData,
-    processedData,
     sessionId,
     elapsedSeconds,
     streamConfig,
@@ -350,17 +352,18 @@ export const CaptureScreen: FC<Props> = ({ route, navigation }) => {
   );
 };
 
-function createCSVContent(packets: StreamDataPacket[]): string {
-  let csv = 'timestamp,value\n';
+function createCSVContent(packets: StreamDataPacket[], sampleRate: number): string {
+  const intervalMs = 1000 / sampleRate;
+  const lines: string[] = ['timestamp,value'];
 
-  packets.forEach((packet) => {
-    packet.values.forEach((value, index) => {
-      const sampleTimestamp = packet.timestamp + index;
-      csv += `${sampleTimestamp},${value}\n`;
-    });
-  });
+  for (const packet of packets) {
+    for (let i = 0; i < packet.values.length; i++) {
+      const sampleTimestamp = packet.timestamp + (i * intervalMs);
+      lines.push(`${sampleTimestamp.toFixed(2)},${packet.values[i]}`);
+    }
+  }
 
-  return csv;
+  return lines.join('\n') + '\n';
 }
 
 const styles = StyleSheet.create({

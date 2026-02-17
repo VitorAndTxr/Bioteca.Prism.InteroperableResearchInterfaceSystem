@@ -256,8 +256,15 @@ export class SyncService {
                                     payload: { ...uploadPayload },
                                 });
 
-                                // Update local recording with returned fileUrl
+                                // Delete local file and update recording with blob URL
                                 if (uploadResponse.fileUrl) {
+                                    if (recording.filePath) {
+                                        try {
+                                            await FileSystem.deleteAsync(recording.filePath, { idempotent: true });
+                                        } catch {
+                                            // Non-fatal: local cleanup failure does not block sync
+                                        }
+                                    }
                                     await this.recordingRepo.update(recording.id, { filePath: uploadResponse.fileUrl });
                                 }
                             }

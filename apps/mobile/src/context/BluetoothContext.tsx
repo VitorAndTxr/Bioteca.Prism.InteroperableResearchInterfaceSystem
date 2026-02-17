@@ -66,6 +66,9 @@ export function BluetoothContextProvider(props: BluetoothContextProviderProps) {
     const lastUpdateTimeRef = React.useRef<number>(0);
     const batchIntervalRef = React.useRef<NodeJS.Timeout | null>(null);
 
+    // Unbounded capture buffer — accumulates ALL packets during streaming for CSV export
+    const allStreamPacketsRef = React.useRef<StreamDataPacket[]>([]);
+
     // Session state
     const [sessionStatus, setSessionStatus] = useState<SessionStatus | null>(null);
     const [isSessionActive, setIsSessionActive] = useState(false);
@@ -78,8 +81,10 @@ export function BluetoothContextProvider(props: BluetoothContextProviderProps) {
 
     
     useEffect(() => {
-        updatePairedDevices();
-    }, [selectedDevice]);
+        if (permissionGranted) {
+            updatePairedDevices();
+        }
+    }, [selectedDevice, permissionGranted]);
 
     // Flush buffer function - updates UI with batched packets
     const flushStreamBuffer = React.useCallback(() => {
@@ -87,9 +92,12 @@ export function BluetoothContextProvider(props: BluetoothContextProviderProps) {
             const packetsToAdd = [...streamBufferRef.current];
             streamBufferRef.current = [];
 
+            // Accumulate ALL packets in unbounded ref (for CSV export)
+            allStreamPacketsRef.current.push(...packetsToAdd);
+
             setStreamData(prev => {
                 const updated = [...prev, ...packetsToAdd];
-                // Keep only last 500 packets (~5 seconds at 100Hz) for better performance
+                // Keep only last 500 packets (~5 seconds at 100Hz) for UI performance
                 if (updated.length > 500) {
                     return updated.slice(-500);
                 }
@@ -252,6 +260,18 @@ export function BluetoothContextProvider(props: BluetoothContextProviderProps) {
 
     async function updatePairedDevices() {
         try {
+            // Guard: verify BLUETOOTH_CONNECT permission before accessing bonded devices
+            if (Platform.OS === 'android' && Platform.Version >= 31) {
+                const hasPermission = await PermissionsAndroid.check(
+                    PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT
+                );
+                if (!hasPermission) {
+                    console.log('BLUETOOTH_CONNECT permission not granted, skipping updatePairedDevices');
+                    setPermissionGranted(false);
+                    return;
+                }
+            }
+
             let processedNeuraDevices: ActivableBluetoothDevice[] = [];
             let processedAllDevices: ActivableBluetoothDevice[] = [];
             let boundedDevices = await RNBluetoothClassic.getBondedDevices();
@@ -485,7 +505,8 @@ export function BluetoothContextProvider(props: BluetoothContextProviderProps) {
 
             setStreamData([]);
             setLastStreamTimestamp(0);
-            streamBufferRef.current = []; // Clear buffer
+            streamBufferRef.current = [];
+            allStreamPacketsRef.current = [];
 
             await writeToBluetooth(JSON.stringify(payload));
             console.log("Stream start requested");
@@ -616,9 +637,14 @@ export function BluetoothContextProvider(props: BluetoothContextProviderProps) {
         }
     }
 
+    function getAllStreamPackets(): StreamDataPacket[] {
+        return [...allStreamPacketsRef.current];
+    }
+
     function clearStreamData(): void {
         setStreamData([]);
         setLastStreamTimestamp(0);
+        allStreamPacketsRef.current = [];
     }
 
     async function exportStreamData(): Promise<void> {
@@ -635,6 +661,17 @@ export function BluetoothContextProvider(props: BluetoothContextProviderProps) {
     async function scanForDevices(): Promise<void> {
         try {
             setIsScanning(true);
+
+            // Re-request permissions if not granted (handles cleared app data)
+            if (!permissionGranted) {
+                const granted = await requestBluetoothPermissions();
+                setPermissionGranted(granted);
+                if (!granted) {
+                    console.log('Bluetooth permissions not granted, cannot scan');
+                    return;
+                }
+            }
+
             await updatePairedDevices();
             console.log('Device scan completed');
         } catch (error) {
@@ -695,6 +732,7 @@ export function BluetoothContextProvider(props: BluetoothContextProviderProps) {
             configureStream,
             startStream,
             stopStream,
+            getAllStreamPackets,
             clearStreamData,
             exportStreamData,
             startSession,
@@ -748,6 +786,7 @@ interface BluetoothContextData {
     configureStream: (rate: number, type: StreamType) => Promise<void>;
     startStream: () => Promise<void>;
     stopStream: () => Promise<void>;
+    getAllStreamPackets: () => StreamDataPacket[];
     clearStreamData: () => void;
     exportStreamData: () => Promise<void>;
     startSession: () => Promise<void>;

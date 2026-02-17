@@ -1,11 +1,12 @@
 ## Purpose
 
-Corrigir fluxos de navegação e persistencia de estados de `/apps/mobile` na tela de `NewSession`
+Corrigir fluxos de consumo e persistencias de dados de stream do protocolo bluetooth `/apps/mobile` na tela de `Session` que atualmente estão incorretos na plataforma
 
 ## Problemas
 
-1. Quando entramos na tela de seleção de modificadores topográficos, perdemos o estado de preenchimento da tela de novas sessões
-2. Quando navegamos nos sub menus, também perdemos o estado de preenchimento da tela
+- Downloads de arquivos da sessão deveria ser um json com as informações da sessão e das sessões de gravação com arquivos csv referentes a cada canal
+
+- O arquivo csv envoado para o blob
 
 ## Comportamento esperado
 
