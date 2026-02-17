@@ -40,9 +40,10 @@ import { useBluetoothContext } from '@/context/BluetoothContext';
 import { useSession } from '@/context/SessionContext';
 import { useAuth } from '@/context/AuthContext';
 import { Volunteer, SnomedBodyStructure, SnomedTopographicalModifier } from '@iris/domain';
-import { Search, Plus, ClipboardList, ChevronRight, Star, Settings } from 'lucide-react-native';
+import { Search, Plus, ClipboardList, ChevronRight, Star, Settings, RotateCcw } from 'lucide-react-native';
 import { favoriteRepository } from '@/data/repositories/FavoriteRepository';
 import { NamePromptModal } from '@/components/NamePromptModal';
+import { useSessionConfigForm } from '@/context/SessionConfigFormContext';
 
 type Props = NativeStackScreenProps<HomeStackParamList, 'SessionConfig'>;
 
@@ -50,26 +51,25 @@ export const SessionConfigScreen: FC<Props> = ({ navigation, route }) => {
   const { user } = useAuth();
   const { neuraDevices } = useBluetoothContext();
   const { startSession } = useSession();
+  const {
+    selectedVolunteer, setSelectedVolunteer,
+    selectedBodyStructure, setSelectedBodyStructure,
+    selectedTopographies, setSelectedTopographies,
+    selectedResearchId, setSelectedResearchId,
+    selectedResearchTitle, setSelectedResearchTitle,
+    selectedDeviceId, setSelectedDeviceId,
+    resetForm,
+  } = useSessionConfigForm();
 
-  // Volunteer state
+  // Volunteer state (transient UI — local)
   const [volunteerSearchQuery, setVolunteerSearchQuery] = useState('');
   const [volunteerSearchResults, setVolunteerSearchResults] = useState<Volunteer[]>([]);
-  const [selectedVolunteer, setSelectedVolunteer] = useState<Volunteer | null>(null);
   const [isSearching, setIsSearching] = useState(false);
   const [showVolunteerDropdown, setShowVolunteerDropdown] = useState(false);
 
-  // Clinical data state
+  // Reference data (fetched, not user selections — local)
   const [bodyStructures, setBodyStructures] = useState<SnomedBodyStructure[]>([]);
-  const [selectedBodyStructure, setSelectedBodyStructure] = useState<string>('');
-  const [selectedTopographies, setSelectedTopographies] = useState<SnomedTopographicalModifier[]>([]);
-
-  // Research state
   const [researchProjects, setResearchProjects] = useState<Research[]>([]);
-  const [selectedResearchId, setSelectedResearchId] = useState<string>('');
-  const [selectedResearchTitle, setSelectedResearchTitle] = useState<string>('');
-
-  // Device state
-  const [selectedDeviceId, setSelectedDeviceId] = useState<string>('');
 
   // Favorites state
   const [favorites, setFavorites] = useState<SessionFavorite[]>([]);
@@ -568,8 +568,22 @@ export const SessionConfigScreen: FC<Props> = ({ navigation, route }) => {
         <View style={styles.bottomSpacing} />
       </ScrollView>
 
-      {/* Footer - Save as Favorite + Start Session */}
+      {/* Footer - Reset + Save as Favorite + Start Session */}
       <View style={styles.footer}>
+        <Button
+          title="Reset Form"
+          variant="secondary"
+          size="md"
+          fullWidth
+          onPress={() =>
+            Alert.alert('Reset Form?', 'All fields will be cleared.', [
+              { text: 'Cancel', style: 'cancel' },
+              { text: 'Reset', style: 'destructive', onPress: () => resetForm() },
+            ])
+          }
+          leftIcon={<RotateCcw size={16} color={theme.colors.textMuted} />}
+        />
+        <View style={{ height: theme.spacing.sm }} />
         <Button
           title="Save as Favorite"
           variant="secondary"

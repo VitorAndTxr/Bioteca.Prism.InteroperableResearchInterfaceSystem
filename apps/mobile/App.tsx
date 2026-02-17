@@ -8,9 +8,10 @@
  * 1. BluetoothContextProvider - Device communication
  * 2. AuthProvider - Authentication state
  * 3. SessionProvider - Clinical session management
- * 4. SyncProvider - Data synchronization (starts when authenticated)
- * 5. NavigationContainer - React Navigation
- * 6. RootNavigator - Auth-gated navigation
+ * 4. SessionConfigFormProvider - Form state persistence across navigation
+ * 5. SyncProvider - Data synchronization (starts when authenticated)
+ * 6. NavigationContainer - React Navigation
+ * 7. RootNavigator - Auth-gated navigation
  */
 
 import React, { useCallback, useEffect, useState } from 'react';
@@ -34,6 +35,7 @@ import { BluetoothContextProvider } from './src/context/BluetoothContext';
 import { AuthProvider } from './src/context/AuthContext';
 import { SessionProvider } from './src/context/SessionContext';
 import { SyncProvider } from './src/context/SyncContext';
+import { SessionConfigFormProvider } from './src/context/SessionConfigFormContext';
 import { RootNavigator } from './src/navigation';
 import { databaseManager } from './src/data/database';
 
@@ -72,11 +74,13 @@ export default function App() {
       <BluetoothContextProvider>
         <AuthProvider>
           <SessionProvider>
-            <SyncProvider syncIntervalMs={60000} maxRetries={5}>
-              <NavigationContainer>
-                <RootNavigator />
-              </NavigationContainer>
-            </SyncProvider>
+            <SessionConfigFormProvider>
+              <SyncProvider syncIntervalMs={60000} maxRetries={5}>
+                <NavigationContainer>
+                  <RootNavigator />
+                </NavigationContainer>
+              </SyncProvider>
+            </SessionConfigFormProvider>
           </SessionProvider>
         </AuthProvider>
       </BluetoothContextProvider>
