@@ -611,15 +611,18 @@ export function BluetoothContextProvider(props: BluetoothContextProviderProps) {
 
     async function startStream(): Promise<void> {
         try {
-            const payload: BluetoothProtocolPayload = {
-                cd: BluetoothProtocolFunction.StartStream,
+            // Send StopStream first to ensure device firmware is in idle state.
+            // The ESP32 firmware may ignore StartStream if it thinks it's already
+            // streaming from a previous session that wasn't cleanly stopped.
+            const stopPayload: BluetoothProtocolPayload = {
+                cd: BluetoothProtocolFunction.StopStream,
                 mt: BluetoothProtocolMethod.EXECUTE
             };
+            await writeToBluetooth(JSON.stringify(stopPayload));
+            // Give firmware time to transition to idle state
+            await new Promise(resolve => setTimeout(resolve, 300));
 
-            // Reset ref and state before sending — guards against rapid start/stop cycles
-            // where the previous streaming session's ref could prevent detection of
-            // the new session's first binary packet. Also ensures the batch interval
-            // useEffect re-fires when isStreaming transitions false→true again.
+            // Reset all app-side streaming state
             isStreamingRef.current = false;
             setIsStreaming(false);
             setStreamData([]);
@@ -627,8 +630,12 @@ export function BluetoothContextProvider(props: BluetoothContextProviderProps) {
             streamBufferRef.current = [];
             binaryAccumulatorRef.current.reset();
 
+            const payload: BluetoothProtocolPayload = {
+                cd: BluetoothProtocolFunction.StartStream,
+                mt: BluetoothProtocolMethod.EXECUTE
+            };
             await writeToBluetooth(JSON.stringify(payload));
-            console.log("Stream start requested");
+            console.log("Stream start requested (stop→start sequence)");
         } catch (error) {
             console.error("Error starting stream:", error);
         }
