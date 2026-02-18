@@ -104,14 +104,14 @@ const mockSession = {
 const mockRecording = {
     id: 'rec-1',
     sessionId: 'session-1',
-    dataType: 'sEMG',
+    dataType: 'raw' as const,
     sampleRate: 215,
     sampleCount: 1000,
+    durationSeconds: 10,
     filePath: '/data/recording.csv',
     filename: 'recording.csv',
     recordedAt: '2026-01-01T00:00:00Z',
     syncStatus: 'pending' as const,
-    createdAt: '2026-01-01T00:00:00Z',
 };
 
 const mockAnnotation = {

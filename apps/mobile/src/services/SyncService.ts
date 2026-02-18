@@ -256,8 +256,12 @@ export class SyncService {
                                     payload: { ...uploadPayload },
                                 });
 
-                                // Delete local file and update recording with blob URL
+                                // Persist blob URL first, then delete local file, then clear local path.
+                                // This ordering guarantees at least one source survives a crash.
                                 if (uploadResponse.fileUrl) {
+                                    await this.recordingRepo.update(recording.id, {
+                                        blobUrl: uploadResponse.fileUrl,
+                                    });
                                     if (recording.filePath) {
                                         try {
                                             await FileSystem.deleteAsync(recording.filePath, { idempotent: true });
@@ -265,7 +269,9 @@ export class SyncService {
                                             // Non-fatal: local cleanup failure does not block sync
                                         }
                                     }
-                                    await this.recordingRepo.update(recording.id, { filePath: uploadResponse.fileUrl });
+                                    await this.recordingRepo.update(recording.id, {
+                                        filePath: undefined,  // Clear local path (maps to NULL in DB)
+                                    });
                                 }
                             }
                         }

@@ -21,6 +21,7 @@ interface RecordingRow {
     sample_rate: number;
     sync_status: string;
     file_path: string | null;
+    blob_url: string | null;
     recorded_at: string;
 }
 
@@ -96,8 +97,9 @@ export class RecordingRepository {
 
         await db.runAsync(
             `INSERT INTO recordings
-             (id, session_id, filename, duration_seconds, sample_count, data_type, sample_rate, sync_status, file_path, recorded_at)
-             VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?)`,
+             (id, session_id, filename, duration_seconds, sample_count, data_type,
+              sample_rate, sync_status, file_path, blob_url, recorded_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?)`,
             id,
             data.sessionId,
             data.filename,
@@ -106,6 +108,7 @@ export class RecordingRepository {
             data.dataType,
             data.sampleRate,
             data.filePath ?? null,
+            data.blobUrl ?? null,
             recordedAt
         );
 
@@ -153,6 +156,10 @@ export class RecordingRepository {
         if (data.filePath !== undefined) {
             fields.push('file_path = ?');
             values.push(data.filePath ?? null);
+        }
+        if (data.blobUrl !== undefined) {
+            fields.push('blob_url = ?');
+            values.push(data.blobUrl ?? null);
         }
 
         if (fields.length === 0) {
@@ -203,6 +210,7 @@ export class RecordingRepository {
             sampleRate: row.sample_rate,
             syncStatus: row.sync_status as 'synced' | 'pending' | 'failed',
             filePath: row.file_path ?? undefined,
+            blobUrl: row.blob_url ?? undefined,
             recordedAt: row.recorded_at
         };
     }

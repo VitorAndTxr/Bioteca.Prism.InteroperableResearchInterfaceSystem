@@ -10,6 +10,7 @@ import { v1_initial } from './migrations/v1_initial';
 import { v2_add_research_columns } from './migrations/v2_add_research_columns';
 import { v3_relax_laterality_constraint } from './migrations/v3_relax_laterality_constraint';
 import { v4_add_session_favorites } from './migrations/v4_add_session_favorites';
+import { v5_add_blob_url } from './migrations/v5_add_blob_url';
 
 interface Migration {
     version: number;
@@ -22,6 +23,7 @@ const MIGRATIONS: Migration[] = [
     { version: 2, name: 'v2_add_research_columns', sql: v2_add_research_columns },
     { version: 3, name: 'v3_relax_laterality_constraint', sql: v3_relax_laterality_constraint },
     { version: 4, name: 'v4_add_session_favorites', sql: v4_add_session_favorites },
+    { version: 5, name: 'v5_add_blob_url', sql: v5_add_blob_url },
 ];
 
 class DatabaseManager {

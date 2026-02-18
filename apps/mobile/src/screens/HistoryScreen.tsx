@@ -23,7 +23,7 @@ import type { CompositeScreenProps } from '@react-navigation/native';
 import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { MainTabParamList, RootStackParamList } from '@/navigation/types';
-import type { ClinicalSession, ClinicalData, PaginatedResponse } from '@iris/domain';
+import type { ClinicalSession, ClinicalData, PaginatedResponse, Recording } from '@iris/domain';
 import { theme } from '@/theme';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { SessionRepository } from '@/data/repositories/SessionRepository';
@@ -118,6 +118,44 @@ function mergeSessionData(
 
   return Array.from(mergedMap.values())
     .sort((a, b) => new Date(b.startedAt).getTime() - new Date(a.startedAt).getTime());
+}
+
+/**
+ * Resolve CSV content for a recording using local file first, then blob URL fallback.
+ * Downloads to a temp file to avoid loading large CSVs into JS heap on low-end devices.
+ */
+async function resolveRecordingContent(rec: Recording): Promise<string> {
+    // Case 1: Try local file first
+    if (rec.filePath) {
+        const fileInfo = await FileSystem.getInfoAsync(rec.filePath);
+        if (fileInfo.exists) {
+            return FileSystem.readAsStringAsync(rec.filePath, {
+                encoding: FileSystem.EncodingType.UTF8,
+            });
+        }
+    }
+
+    // Case 2: Fetch from blob URL via temp file
+    if (rec.blobUrl) {
+        try {
+            const tmpPath = FileSystem.cacheDirectory + `tmp_${rec.id}.csv`;
+            const download = await FileSystem.downloadAsync(rec.blobUrl, tmpPath);
+            if (download.status === 200) {
+                const content = await FileSystem.readAsStringAsync(tmpPath, {
+                    encoding: FileSystem.EncodingType.UTF8,
+                });
+                await FileSystem.deleteAsync(tmpPath, { idempotent: true });
+                return content;
+            }
+            await FileSystem.deleteAsync(tmpPath, { idempotent: true });
+            return '# Failed to download recording from server\n';
+        } catch {
+            return '# Recording data is on server (offline)\n';
+        }
+    }
+
+    // Case 3: Neither local file nor blob URL available
+    return '# No recording data available\n';
 }
 
 export const HistoryScreen: FC<Props> = ({ navigation }) => {
@@ -215,22 +253,11 @@ export const HistoryScreen: FC<Props> = ({ navigation }) => {
         sampleCount: rec.sampleCount,
       }));
 
-      // Read CSV file contents from disk sequentially to avoid OOM on low-end devices
+      // Resolve CSV content sequentially: local file first, blob URL fallback
       const csvContents: string[] = [];
       for (const rec of recordings) {
-        if (rec.filePath) {
-          const fileInfo = await FileSystem.getInfoAsync(rec.filePath);
-          if (fileInfo.exists) {
-            const content = await FileSystem.readAsStringAsync(rec.filePath, {
-              encoding: FileSystem.EncodingType.UTF8,
-            });
-            csvContents.push(content);
-          } else {
-            csvContents.push('# File not found on disk\n');
-          }
-        } else {
-          csvContents.push('# No file path recorded\n');
-        }
+        const content = await resolveRecordingContent(rec);
+        csvContents.push(content);
       }
 
       const zipUri = await exportSessionAsZip(metadata, recordingsForExport, csvContents);

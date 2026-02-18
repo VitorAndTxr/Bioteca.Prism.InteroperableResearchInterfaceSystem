@@ -27,6 +27,7 @@ export interface Recording {
     sampleRate: number;
     syncStatus: SyncStatus;
     filePath?: string;
+    blobUrl?: string;       // Remote blob storage URL (set after sync, NULL before)
     recordedAt: string; // ISO 8601
 }
 
@@ -43,4 +44,5 @@ export interface NewRecordingData {
     dataType: DataType;
     sampleRate: number;
     filePath?: string;
+    blobUrl?: string;       // Remote blob storage URL
 }
