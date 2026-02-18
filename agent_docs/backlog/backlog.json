@@ -2,7 +2,7 @@
   "metadata": {
     "version": "1.0",
     "created_at": "2026-02-17T20:20:25.131644+00:00",
-    "updated_at": "2026-02-17T21:54:32.241283+00:00"
+    "updated_at": "2026-02-17T22:29:21.580115+00:00"
   },
   "stories": [
     {
@@ -176,7 +176,7 @@
           "id": "AC4",
           "given": "any user interaction on the rate field",
           "when": "attempted",
-          "then": "no change is possible \u00e2\u20ac\u201d the field is non-interactive"
+          "then": "no change is possible â€” the field is non-interactive"
         },
         {
           "id": "AC5",
@@ -229,13 +229,13 @@
           "id": "AC1",
           "given": "a recording is captured from the real ESP32 device",
           "when": "createCSVContent() runs",
-          "then": "inter-sample timestamps use DEVICE_SAMPLE_RATE_HZ (215 Hz) \u00e2\u20ac\u201d interval = 1000/215 ms"
+          "then": "inter-sample timestamps use DEVICE_SAMPLE_RATE_HZ (215 Hz) â€” interval = 1000/215 ms"
         },
         {
           "id": "AC2",
           "given": "the app is in simulation mode",
           "when": "createCSVContent() runs",
-          "then": "inter-sample timestamps use 50 Hz \u00e2\u20ac\u201d interval = 1000/50 ms"
+          "then": "inter-sample timestamps use 50 Hz â€” interval = 1000/50 ms"
         },
         {
           "id": "AC3",
@@ -312,7 +312,7 @@
           "id": "AC2",
           "given": "the hook is queried for chart data",
           "when": "the caller reads the output array",
-          "then": "it contains ~160 points (4s \u00c3\u2014 40 Hz downsampled from 215 Hz buffer)"
+          "then": "it contains ~160 points (4s Ã— 40 Hz downsampled from 215 Hz buffer)"
         },
         {
           "id": "AC3",
@@ -330,7 +330,7 @@
           "id": "AC5",
           "given": "the hook implementation",
           "when": "reviewed",
-          "then": "it imports DEVICE_SAMPLE_RATE_HZ and CHART_DISPLAY_RATE_HZ from @iris/domain \u00e2\u20ac\u201d no magic numbers"
+          "then": "it imports DEVICE_SAMPLE_RATE_HZ and CHART_DISPLAY_RATE_HZ from @iris/domain â€” no magic numbers"
         },
         {
           "id": "AC6",
@@ -395,7 +395,7 @@
           "id": "AC3",
           "given": "the SEMGChart component",
           "when": "new data arrives",
-          "then": "auto-scroll behavior is absent \u00e2\u20ac\u201d the viewport does not scroll horizontally"
+          "then": "auto-scroll behavior is absent â€” the viewport does not scroll horizontally"
         },
         {
           "id": "AC4",
@@ -600,7 +600,7 @@
           "id": "AC4",
           "given": "recording CSV files exist on disk at recording.filePath",
           "when": "exportSessionAsZip runs",
-          "then": "it reads them via expo-file-system \u00e2\u20ac\u201d it does NOT regenerate data from memory"
+          "then": "it reads them via expo-file-system â€” it does NOT regenerate data from memory"
         },
         {
           "id": "AC5",
@@ -736,7 +736,7 @@
           "id": "AC2",
           "given": "any modified file is inspected",
           "when": "reviewing type annotations",
-          "then": "no any type is introduced \u00e2\u20ac\u201d all types are explicit"
+          "then": "no any type is introduced â€” all types are explicit"
         },
         {
           "id": "AC3",
@@ -1072,7 +1072,7 @@
           "id": "AC2",
           "given": "decodeMessage() receives data whose first char code is 0xAA",
           "when": "the function executes",
-          "then": "the data is converted to Uint8Array via char codes and passed to the accumulator feed() \u00e2\u20ac\u201d JSON.parse is NOT attempted"
+          "then": "the data is converted to Uint8Array via char codes and passed to the accumulator feed() â€” JSON.parse is NOT attempted"
         },
         {
           "id": "AC3",
@@ -1413,7 +1413,7 @@
         "Add console.log inside the isStreaming useEffect (BluetoothContext.tsx lines 124-147) that logs the transition when isStreaming changes to true",
         "Add console.log inside startStream() (line 538) that logs immediately after the BT command is sent",
         "Add console.log inside the JSON ACK handler for StartStream (lines 433-437) that logs when the ACK is received and parsed",
-        "Run a real device recording session and capture the logs \u00e2\u20ac\u201d document whether isStreaming transitions to true",
+        "Run a real device recording session and capture the logs â€” document whether isStreaming transitions to true",
         "If isStreaming never transitions to true with a binary device, confirm that streamBufferRef accumulates packets (log its length inside decodeMessage after each push)",
         "Document findings: which log appeared, which did not, and at what timestamps"
       ],
@@ -1451,7 +1451,7 @@
         "Add console.log at the end of flushStreamBuffer() that logs how many packets were moved to allStreamPacketsRef",
         "Add console.log at the start of getAllStreamPackets() (BluetoothContext.tsx line 682) that logs allStreamPacketsRef.current.length before and after the internal flushStreamBuffer call",
         "Run a real device recording session: start recording, record for 10+ seconds, stop recording, and capture the log sequence",
-        "Document the exact order of log lines and timestamps \u00e2\u20ac\u201d confirm whether getAllStreamPackets sees data that flushStreamBuffer placed during stopStream cleanup",
+        "Document the exact order of log lines and timestamps â€” confirm whether getAllStreamPackets sees data that flushStreamBuffer placed during stopStream cleanup",
         "If a race condition is confirmed, document the precise timing gap between the last flush and getAllStreamPackets execution"
       ],
       "notes": "",
@@ -1485,12 +1485,12 @@
       "benefit": "stream data flows to allStreamPacketsRef and streamData state during real device recording sessions, so both chart and CSV export receive data",
       "acceptance_criteria": [
         "The batch flush interval (BluetoothContext.tsx lines 124-147) starts as soon as the first binary stream packet is received, without requiring a JSON ACK",
-        "Alternatively, isStreaming is set to true when the first binary packet (0xAA magic byte) is received and routed to BinaryFrameAccumulator \u00e2\u20ac\u201d not gated on JSON ACK parsing",
+        "Alternatively, isStreaming is set to true when the first binary packet (0xAA magic byte) is received and routed to BinaryFrameAccumulator â€” not gated on JSON ACK parsing",
         "The fix does not break the existing JSON ACK path: if a JSON ACK arrives for StartStream, it still sets isStreaming to true (no regression for JSON protocol devices)",
         "Simulation mode is unaffected: the simulation data path does not use isStreaming or streamBufferRef",
         "After the fix, a real device recording session populates streamData with packets during recording",
         "After the fix, allStreamPacketsRef contains all accumulated packets when getAllStreamPackets is called on stop",
-        "The fix is a minimal code change \u00e2\u20ac\u201d no refactoring of unrelated logic"
+        "The fix is a minimal code change â€” no refactoring of unrelated logic"
       ],
       "notes": "",
       "dependencies": [
@@ -1526,7 +1526,7 @@
       "acceptance_criteria": [
         "getAllStreamPackets() guarantees that flushStreamBuffer() has completed before returning the packet array",
         "Any packets still in streamBufferRef at the time stopStream is called are included in the returned packet array",
-        "The fix handles the case where the BT StopStream ACK is async \u00e2\u20ac\u201d data arriving between stop command send and ACK receipt is not lost",
+        "The fix handles the case where the BT StopStream ACK is async â€” data arriving between stop command send and ACK receipt is not lost",
         "The fix does not introduce a deadlock or indefinite await",
         "After the fix, a real device recording session produces a CSV with all samples from start to stop",
         "Simulation mode CSV export is unaffected"
@@ -1599,14 +1599,14 @@
       "priority": "Should",
       "role": "developer",
       "want": "persistent diagnostic logging at BinaryFrameAccumulator output, allStreamPacketsRef before CSV write, and streamBufferRef at flush time",
-      "benefit": "future debugging of stream pipeline issues requires no code changes \u00e2\u20ac\u201d the data is already visible in the dev console",
+      "benefit": "future debugging of stream pipeline issues requires no code changes â€” the data is already visible in the dev console",
       "acceptance_criteria": [
         "BinaryFrameAccumulator.getStats() is logged at stream stop time: shows received packet count, dropped packet count, and last error if any",
         "allStreamPacketsRef.current.length is logged immediately before createCSVContent is called in handleStopRecording",
         "streamBufferRef.current.length is logged at the start and end of every flushStreamBuffer() call",
         "All diagnostic logs use a consistent prefix (e.g., [StreamPipeline]) to allow easy filtering",
-        "Diagnostic logs are dev-only \u00e2\u20ac\u201d they do not appear in production builds (use __DEV__ guard or equivalent)",
-        "No business logic is changed \u00e2\u20ac\u201d purely additive logging"
+        "Diagnostic logs are dev-only â€” they do not appear in production builds (use __DEV__ guard or equivalent)",
+        "No business logic is changed â€” purely additive logging"
       ],
       "notes": "",
       "dependencies": [],
@@ -1638,11 +1638,11 @@
       "want": "automated unit tests for the three most critical functions in the stream data pipeline",
       "benefit": "regressions in the binary decoder, CSV generation, or flush logic are caught automatically before they reach a real device recording session",
       "acceptance_criteria": [
-        "createCSVContent: test with 0 packets (output is header-only), 1 packet, and N packets \u00e2\u20ac\u201d verify row count and timestamp/value format",
-        "createCSVContent: test with packets containing multiple samples \u00e2\u20ac\u201d verify each sample produces exactly one CSV row",
-        "BinaryFrameAccumulator: test feed() with a complete valid 108-byte packet \u00e2\u20ac\u201d verify one packet is emitted with correct sample values",
-        "BinaryFrameAccumulator: test feed() with a partial packet split across two calls \u00e2\u20ac\u201d verify packet is assembled and emitted on second call",
-        "BinaryFrameAccumulator: test feed() with wrong magic byte \u00e2\u20ac\u201d verify packet is dropped and getStats().dropped increments",
+        "createCSVContent: test with 0 packets (output is header-only), 1 packet, and N packets â€” verify row count and timestamp/value format",
+        "createCSVContent: test with packets containing multiple samples â€” verify each sample produces exactly one CSV row",
+        "BinaryFrameAccumulator: test feed() with a complete valid 108-byte packet â€” verify one packet is emitted with correct sample values",
+        "BinaryFrameAccumulator: test feed() with a partial packet split across two calls â€” verify packet is assembled and emitted on second call",
+        "BinaryFrameAccumulator: test feed() with wrong magic byte â€” verify packet is dropped and getStats().dropped increments",
         "flushStreamBuffer: test that calling flush with N packets in streamBufferRef moves all N to allStreamPacketsRef and clears streamBufferRef",
         "flushStreamBuffer: test that calling flush with 0 packets is a no-op (no error, no state change)",
         "All tests pass with npm test or the project test runner"
@@ -1676,14 +1676,14 @@
       "feature_area": "Stream Bug: Testing",
       "priority": "Should",
       "role": "developer",
-      "want": "an integration test that simulates the full BT\u00e2\u2020\u2019decode\u00e2\u2020\u2019buffer\u00e2\u2020\u2019flush\u00e2\u2020\u2019CSV pipeline without a real device",
+      "want": "an integration test that simulates the full BTâ†’decodeâ†’bufferâ†’flushâ†’CSV pipeline without a real device",
       "benefit": "the complete data path from binary Bluetooth packet to CSV content can be verified in CI without requiring physical hardware",
       "acceptance_criteria": [
         "Test simulates receiving N binary BT packets (valid 108-byte frames) via a mocked onDataReceived callback",
         "Test triggers the batch flush (or calls flushStreamBuffer directly) after packets are fed",
         "Test calls getAllStreamPackets() and verifies the returned array length matches the number of simulated packets times samples-per-packet (50)",
         "Test calls createCSVContent with the returned packets and verifies the CSV has the correct number of rows (N * 50 + 1 header)",
-        "Test covers the stop scenario: packets arrive, stopStream is called, getAllStreamPackets is called \u00e2\u20ac\u201d data is not lost",
+        "Test covers the stop scenario: packets arrive, stopStream is called, getAllStreamPackets is called â€” data is not lost",
         "Test runs in the mobile app test environment (Jest + React Native Testing Library or equivalent)"
       ],
       "notes": "",
@@ -1706,6 +1706,495 @@
           "from": "Draft",
           "to": "Ready",
           "at": "2026-02-17T21:54:32.241283+00:00"
+        }
+      ]
+    },
+    {
+      "id": "US-027",
+      "title": "Recording lifecycle API in BluetoothContext",
+      "feature_area": "Incremental CSV Recording",
+      "priority": "Must",
+      "role": "developer integrating CSV recording",
+      "want": "BluetoothContext to expose startRecording(sessionId), stopRecording(), and isRecording so the recording lifecycle can be managed from any screen",
+      "benefit": "recording state is managed centrally with proper ref-based access from the stale BT listener closure, avoiding race conditions",
+      "acceptance_criteria": [
+        {
+          "id": "AC1",
+          "given": "startRecording(sessionId) is called",
+          "when": "no recording is active",
+          "then": "a CSV file is created at DocumentDirectory/{sessionId}.csv with header row timestamp,value, recordingFilePathRef and isRecordingRef are set, sampleCountRef is reset to 0, and the file path is returned"
+        },
+        {
+          "id": "AC2",
+          "given": "stopRecording() is called",
+          "when": "a recording is active",
+          "then": "isRecordingRef and recordingFilePathRef are cleared, and the function returns { filePath, sampleCount } with the total samples written"
+        },
+        {
+          "id": "AC3",
+          "given": "the BluetoothContext is inspected",
+          "when": "a recording is active",
+          "then": "isRecording boolean state is true and is accessible via the context interface"
+        },
+        {
+          "id": "AC4",
+          "given": "the BluetoothContextData interface is compiled",
+          "when": "TypeScript strict mode is enabled",
+          "then": "startRecording, stopRecording, and isRecording entries are present with correct types and no any"
+        },
+        {
+          "id": "AC5",
+          "given": "startRecording() is called",
+          "when": "a recording is already active (stale file handle)",
+          "then": "the existing recording is closed before a new one is created"
+        },
+        {
+          "id": "AC6",
+          "given": "all three refs are declared",
+          "when": "TypeScript compiles the file",
+          "then": "each ref is typed as React.MutableRefObject<string|null>, React.MutableRefObject<boolean>, and React.MutableRefObject<number> respectively with no any"
+        }
+      ],
+      "notes": "",
+      "dependencies": [],
+      "status": "Done",
+      "created_at": "2026-02-17T22:26:25.967669+00:00",
+      "updated_at": "2026-02-18T01:10:54.248857+00:00",
+      "created_by": "po",
+      "history": [
+        {
+          "action": "created",
+          "by": "po",
+          "at": "2026-02-17T22:26:25.967669+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "po",
+          "from": "Draft",
+          "to": "Ready",
+          "at": "2026-02-17T22:27:30.916804+00:00"
+        },
+        {
+          "action": "edited",
+          "by": "po",
+          "changes": [
+            "acceptance_criteria"
+          ],
+          "at": "2026-02-17T22:28:27.405954+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "tl",
+          "from": "Ready",
+          "to": "Done",
+          "at": "2026-02-18T01:10:54.248857+00:00"
+        }
+      ]
+    },
+    {
+      "id": "US-028",
+      "title": "Per-packet CSV append at full 215 Hz",
+      "feature_area": "Incremental CSV Recording",
+      "priority": "Must",
+      "role": "researcher conducting a sEMG session",
+      "want": "all 50 samples from each Bluetooth binary packet to be written to disk immediately when the packet arrives",
+      "benefit": "the CSV file contains the complete 215 Hz dataset regardless of session length or app lifecycle events, with no data held in RAM",
+      "acceptance_criteria": [
+        {
+          "id": "AC1",
+          "given": "a binary BT packet is decoded and isRecordingRef is true",
+          "when": "the decode path executes",
+          "then": "all 50 samples are appended to the CSV file at recordingFilePathRef before any downsample step"
+        },
+        {
+          "id": "AC2",
+          "given": "a packet with timestamp T and 50 values is appended",
+          "when": "the CSV lines are written",
+          "then": "each line is formatted as T+(i*(1000/215)).toFixed(2),value for i in 0..49, producing exactly 50 lines"
+        },
+        {
+          "id": "AC3",
+          "given": "an append completes successfully",
+          "when": "sampleCountRef is updated",
+          "then": "sampleCountRef is incremented by 50"
+        },
+        {
+          "id": "AC4",
+          "given": "the file system throws an error during append",
+          "when": "the error is caught",
+          "then": "the error is logged but the BT listener continues without crashing and streaming is not stopped"
+        },
+        {
+          "id": "AC5",
+          "given": "a simulated 10-second recording at 215 Hz completes",
+          "when": "the CSV file is opened",
+          "then": "it contains exactly 1 header row plus 2150 data rows"
+        },
+        {
+          "id": "AC6",
+          "given": "the CSV output is compared to createCSVContent()",
+          "when": "formatting is checked",
+          "then": "the incremental output is byte-for-byte identical for the same set of packets"
+        }
+      ],
+      "notes": "",
+      "dependencies": [
+        "US-027"
+      ],
+      "status": "Done",
+      "created_at": "2026-02-17T22:26:40.090771+00:00",
+      "updated_at": "2026-02-18T01:10:54.248857+00:00",
+      "created_by": "po",
+      "history": [
+        {
+          "action": "created",
+          "by": "po",
+          "at": "2026-02-17T22:26:40.091777+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "po",
+          "from": "Draft",
+          "to": "Ready",
+          "at": "2026-02-17T22:27:31.055545+00:00"
+        },
+        {
+          "action": "edited",
+          "by": "po",
+          "changes": [
+            "acceptance_criteria"
+          ],
+          "at": "2026-02-17T22:28:38.401709+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "tl",
+          "from": "Ready",
+          "to": "Done",
+          "at": "2026-02-18T01:10:54.248857+00:00"
+        }
+      ]
+    },
+    {
+      "id": "US-029",
+      "title": "Per-packet 50-to-10 downsample before chart pipeline",
+      "feature_area": "Incremental CSV Recording",
+      "priority": "Must",
+      "role": "developer optimizing chart rendering",
+      "want": "each 50-sample binary packet to be downsampled to 10 samples (every 5th sample) before being pushed into streamBufferRef",
+      "benefit": "the data volume flowing through React state and the chart pipeline is reduced by 80%, lowering memory pressure and render overhead while maintaining adequate chart resolution (~43 Hz effective rate)",
+      "acceptance_criteria": [
+        {
+          "id": "AC1",
+          "given": "a 50-sample packet is decoded and CSV append completes",
+          "when": "the downsample step runs",
+          "then": "a new StreamDataPacket is created with 10 values taken at indices 0, 5, 10, 15, 20, 25, 30, 35, 40, 45 of the original array"
+        },
+        {
+          "id": "AC2",
+          "given": "the downsampled packet is created",
+          "when": "it is pushed into streamBufferRef",
+          "then": "only the 10-sample packet is pushed — the original 50-sample packet is not pushed"
+        },
+        {
+          "id": "AC3",
+          "given": "simulation mode is active (no device)",
+          "when": "simulated data flows through the pipeline",
+          "then": "the BT decode path is not exercised and simulation behavior is unchanged"
+        },
+        {
+          "id": "AC4",
+          "given": "useStreamData receives the downsampled packets",
+          "when": "it renders the 4-second sliding window",
+          "then": "the chart displays correctly without any changes to the hook"
+        },
+        {
+          "id": "AC5",
+          "given": "the downsampled packet type is checked",
+          "when": "TypeScript strict mode compiles",
+          "then": "the packet conforms to StreamDataPacket from @iris/domain with no any types"
+        }
+      ],
+      "notes": "",
+      "dependencies": [
+        "US-028"
+      ],
+      "status": "Done",
+      "created_at": "2026-02-17T22:26:52.158908+00:00",
+      "updated_at": "2026-02-18T01:10:54.248857+00:00",
+      "created_by": "po",
+      "history": [
+        {
+          "action": "created",
+          "by": "po",
+          "at": "2026-02-17T22:26:52.158908+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "po",
+          "from": "Draft",
+          "to": "Ready",
+          "at": "2026-02-17T22:27:31.185038+00:00"
+        },
+        {
+          "action": "edited",
+          "by": "po",
+          "changes": [
+            "acceptance_criteria"
+          ],
+          "at": "2026-02-17T22:28:51.740116+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "tl",
+          "from": "Ready",
+          "to": "Done",
+          "at": "2026-02-18T01:10:54.248857+00:00"
+        }
+      ]
+    },
+    {
+      "id": "US-030",
+      "title": "CaptureScreen: use recording lifecycle API instead of bulk CSV",
+      "feature_area": "Incremental CSV Recording",
+      "priority": "Must",
+      "role": "researcher who presses Stop to end a session",
+      "want": "CaptureScreen to call startRecording on session start and stopRecording on session stop, receiving the file path and sample count without any in-memory bulk serialization",
+      "benefit": "the stop action is fast and deterministic regardless of recording duration, and the recording entity is created with accurate metadata from incremental writes",
+      "acceptance_criteria": [
+        {
+          "id": "AC1",
+          "given": "CaptureScreen mounts and a session is initiated",
+          "when": "recording begins",
+          "then": "startRecording(sessionId) is called and awaited, and the returned file path is stored for later use"
+        },
+        {
+          "id": "AC2",
+          "given": "the user presses Stop",
+          "when": "the stop handler executes",
+          "then": "stopRecording() is awaited and { filePath, sampleCount } is used to populate the NewRecordingData entity"
+        },
+        {
+          "id": "AC3",
+          "given": "the NewRecordingData entity is created",
+          "when": "fields are inspected",
+          "then": "filePath and sampleCount come from stopRecording(), sampleRate equals DEVICE_SAMPLE_RATE_HZ (215), and durationSeconds is computed from elapsed wall-clock time"
+        },
+        {
+          "id": "AC4",
+          "given": "CaptureScreen source is reviewed",
+          "when": "searching for createCSVContent()",
+          "then": "the function is absent — bulk CSV serialization is removed"
+        },
+        {
+          "id": "AC5",
+          "given": "CaptureScreen source is reviewed",
+          "when": "searching for getAllStreamPackets()",
+          "then": "the call is absent from the stop handler"
+        },
+        {
+          "id": "AC6",
+          "given": "a full session completes (start → stop)",
+          "when": "the recordings list is opened",
+          "then": "the new recording is visible with correct metadata and no regression in the happy path"
+        }
+      ],
+      "notes": "",
+      "dependencies": [
+        "US-027"
+      ],
+      "status": "Done",
+      "created_at": "2026-02-17T22:27:03.848949+00:00",
+      "updated_at": "2026-02-18T01:10:54.248857+00:00",
+      "created_by": "po",
+      "history": [
+        {
+          "action": "created",
+          "by": "po",
+          "at": "2026-02-17T22:27:03.848949+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "po",
+          "from": "Draft",
+          "to": "Ready",
+          "at": "2026-02-17T22:27:31.316939+00:00"
+        },
+        {
+          "action": "edited",
+          "by": "po",
+          "changes": [
+            "acceptance_criteria"
+          ],
+          "at": "2026-02-17T22:29:03.679886+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "tl",
+          "from": "Ready",
+          "to": "Done",
+          "at": "2026-02-18T01:10:54.248857+00:00"
+        }
+      ]
+    },
+    {
+      "id": "US-031",
+      "title": "Cleanup: remove allStreamPacketsRef and deprecated bulk CSV functions",
+      "feature_area": "Incremental CSV Recording",
+      "priority": "Must",
+      "role": "developer maintaining BluetoothContext",
+      "want": "allStreamPacketsRef, getAllStreamPackets(), and the bulk createCSVContent() function to be removed from BluetoothContext after incremental recording is in place",
+      "benefit": "the codebase is free of the unbounded in-memory packet accumulator that was the sole driver of CSV export, reducing RAM usage during long recordings",
+      "acceptance_criteria": [
+        {
+          "id": "AC1",
+          "given": "BluetoothContext source is reviewed",
+          "when": "searching for allStreamPacketsRef",
+          "then": "the ref declaration is absent"
+        },
+        {
+          "id": "AC2",
+          "given": "the BluetoothContextData interface is inspected",
+          "when": "searching for getAllStreamPackets",
+          "then": "the method is absent from the interface and its implementation"
+        },
+        {
+          "id": "AC3",
+          "given": "the codebase is searched with grep",
+          "when": "looking for getAllStreamPackets() or createCSVContent() calls",
+          "then": "no remaining callers are found in any file"
+        },
+        {
+          "id": "AC4",
+          "given": "the flushStreamBuffer interval runs",
+          "when": "it executes after cleanup",
+          "then": "it no longer references allStreamPacketsRef and continues to function correctly"
+        },
+        {
+          "id": "AC5",
+          "given": "the TypeScript compiler runs after removal",
+          "when": "all files are compiled",
+          "then": "no type errors are produced"
+        }
+      ],
+      "notes": "",
+      "dependencies": [
+        "US-028",
+        "US-030"
+      ],
+      "status": "Done",
+      "created_at": "2026-02-17T22:27:13.679060+00:00",
+      "updated_at": "2026-02-18T01:10:54.248857+00:00",
+      "created_by": "po",
+      "history": [
+        {
+          "action": "created",
+          "by": "po",
+          "at": "2026-02-17T22:27:13.679060+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "po",
+          "from": "Draft",
+          "to": "Ready",
+          "at": "2026-02-17T22:27:31.445567+00:00"
+        },
+        {
+          "action": "edited",
+          "by": "po",
+          "changes": [
+            "acceptance_criteria"
+          ],
+          "at": "2026-02-17T22:29:11.835778+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "tl",
+          "from": "Ready",
+          "to": "Done",
+          "at": "2026-02-18T01:10:54.248857+00:00"
+        }
+      ]
+    },
+    {
+      "id": "US-032",
+      "title": "Tests: downsample logic, CSV append format, recording lifecycle",
+      "feature_area": "Incremental CSV Recording",
+      "priority": "Should",
+      "role": "developer validating the incremental recording implementation",
+      "want": "unit tests that verify the downsample function, the CSV append format, and the recording lifecycle state transitions",
+      "benefit": "regressions in the 215 Hz CSV output or the chart downsample ratio are caught automatically before shipping",
+      "acceptance_criteria": [
+        {
+          "id": "AC1",
+          "given": "the downsample function receives a 50-element array",
+          "when": "it runs",
+          "then": "it returns exactly 10 elements at indices 0, 5, 10, 15, 20, 25, 30, 35, 40, 45"
+        },
+        {
+          "id": "AC2",
+          "given": "a packet with timestamp T and 50 values is processed",
+          "when": "CSV line generation runs",
+          "then": "the output contains 50 lines formatted as (T + i*(1000/215)).toFixed(2),value for i in 0..49"
+        },
+        {
+          "id": "AC3",
+          "given": "startRecording() is called",
+          "when": "the lifecycle state is inspected",
+          "then": "isRecordingRef is true and recordingFilePathRef is non-null"
+        },
+        {
+          "id": "AC4",
+          "given": "stopRecording() is called after N appends of 50 samples each",
+          "when": "the result is inspected",
+          "then": "both refs are cleared and sampleCount equals N * 50"
+        },
+        {
+          "id": "AC5",
+          "given": "all tests are run with the project test runner",
+          "when": "the suite completes",
+          "then": "all new tests pass and no existing tests regress"
+        }
+      ],
+      "notes": "",
+      "dependencies": [
+        "US-027",
+        "US-028",
+        "US-029",
+        "US-030",
+        "US-031"
+      ],
+      "status": "Done",
+      "created_at": "2026-02-17T22:27:25.171589+00:00",
+      "updated_at": "2026-02-18T01:10:54.248857+00:00",
+      "created_by": "po",
+      "history": [
+        {
+          "action": "created",
+          "by": "po",
+          "at": "2026-02-17T22:27:25.171589+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "po",
+          "from": "Draft",
+          "to": "Ready",
+          "at": "2026-02-17T22:27:31.573724+00:00"
+        },
+        {
+          "action": "edited",
+          "by": "po",
+          "changes": [
+            "acceptance_criteria"
+          ],
+          "at": "2026-02-17T22:29:21.579596+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "tl",
+          "from": "Ready",
+          "to": "Done",
+          "at": "2026-02-18T01:10:54.248857+00:00"
         }
       ]
     }

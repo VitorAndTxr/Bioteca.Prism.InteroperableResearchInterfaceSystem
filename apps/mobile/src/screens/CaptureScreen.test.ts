@@ -1,16 +1,19 @@
 /**
- * CaptureScreen — Stream Bug Fix Tests
+ * CaptureScreen — Stream Bug Fix Tests + CSV Hz Fix Tests
  *
  * Unit tests for:
- *   1. createCSVContent() — pure function, extracted for testability
+ *   1. createSimulationCSVContent() — pure function, extracted for testability
  *   2. Binary stream detection — first binary packet triggers isStreaming via isStreamingRef
  *   3. Stop recording guard — stopStream is called when selectedDevice is set, ignoring isStreaming
+ *   4. serializePacketToCSV() — incremental CSV line serialization (BluetoothContext.tsx)
+ *   5. downsamplePacket() — 50→10 sample decimation (BluetoothContext.tsx)
  *
  * Run with: npm test (requires vitest config — see TEST_REPORT_STREAM_BUG.md)
  *
  * These tests target the fixes described in:
  *   - IRIS/docs/ARCHITECTURE_STREAM_BUG_FIX.md
  *   - IRIS/docs/REVIEW_STREAM_BUG.md
+ *   - IRIS/docs/ARCHITECTURE_CSV_HZ_FIX.md
  */
 
 import { describe, it, expect } from 'vitest';
@@ -25,16 +28,16 @@ import {
 } from '@iris/domain';
 
 // ---------------------------------------------------------------------------
-// Re-export the pure function for testing.
-// createCSVContent is a module-level function in CaptureScreen.tsx but not
-// exported. Because it is a plain function (no React dependencies), we
+// Re-implement the simulation-mode pure function for testing.
+// createSimulationCSVContent is a module-level function in CaptureScreen.tsx
+// but not exported. Because it is a plain function (no React dependencies), we
 // duplicate the implementation here to allow isolated unit testing without
 // needing a React Native rendering environment.
 //
 // If the project later exports the function, replace this block with:
-//   import { createCSVContent } from '../screens/CaptureScreen';
+//   import { createSimulationCSVContent } from '../screens/CaptureScreen';
 // ---------------------------------------------------------------------------
-function createCSVContent(packets: StreamDataPacket[], sampleRate: number): string {
+function createSimulationCSVContent(packets: StreamDataPacket[], sampleRate: number): string {
     const intervalMs = 1000 / sampleRate;
     const lines: string[] = ['timestamp,value'];
 
@@ -69,9 +72,9 @@ function buildBinaryPacket(timestamp: number = 1000, values?: number[]): Uint8Ar
 }
 
 // ===========================================================================
-// Test Suite 1: createCSVContent()
+// Test Suite 1: createSimulationCSVContent()
 // ===========================================================================
-describe('createCSVContent()', () => {
+describe('createSimulationCSVContent()', () => {
 
     it('normal packet: header + 50 rows at 215 Hz', () => {
         const packet: StreamDataPacket = {
@@ -79,7 +82,7 @@ describe('createCSVContent()', () => {
             values: Array.from({ length: 50 }, (_, i) => i),
         };
 
-        const csv = createCSVContent([packet], DEVICE_SAMPLE_RATE_HZ);
+        const csv = createSimulationCSVContent([packet], DEVICE_SAMPLE_RATE_HZ);
         const lines = csv.trimEnd().split('\n');
 
         // Header + 50 data rows
@@ -93,7 +96,7 @@ describe('createCSVContent()', () => {
             values: [10, 20, 30],
         };
 
-        const csv = createCSVContent([packet], DEVICE_SAMPLE_RATE_HZ);
+        const csv = createSimulationCSVContent([packet], DEVICE_SAMPLE_RATE_HZ);
         const lines = csv.trimEnd().split('\n');
 
         // Line 1: timestamp=1000.00, value=10
@@ -109,7 +112,7 @@ describe('createCSVContent()', () => {
     });
 
     it('empty array: header only, no data rows', () => {
-        const csv = createCSVContent([], DEVICE_SAMPLE_RATE_HZ);
+        const csv = createSimulationCSVContent([], DEVICE_SAMPLE_RATE_HZ);
         const lines = csv.trimEnd().split('\n');
 
         expect(lines).toHaveLength(1);
@@ -122,7 +125,7 @@ describe('createCSVContent()', () => {
             values: [100],
         };
 
-        const csv = createCSVContent([packet], SIMULATION_SAMPLE_RATE_HZ);
+        const csv = createSimulationCSVContent([packet], SIMULATION_SAMPLE_RATE_HZ);
         const lines = csv.trimEnd().split('\n');
 
         expect(lines).toHaveLength(2);
@@ -135,7 +138,7 @@ describe('createCSVContent()', () => {
             values: Array.from({ length: 50 }, () => 0),
         }));
 
-        const csv = createCSVContent(packets, DEVICE_SAMPLE_RATE_HZ);
+        const csv = createSimulationCSVContent(packets, DEVICE_SAMPLE_RATE_HZ);
         const lines = csv.trimEnd().split('\n');
 
         // Header + 50 000 data rows
@@ -149,7 +152,7 @@ describe('createCSVContent()', () => {
             values: [1, 2],
         };
 
-        const csv = createCSVContent([packet], SIMULATION_SAMPLE_RATE_HZ);
+        const csv = createSimulationCSVContent([packet], SIMULATION_SAMPLE_RATE_HZ);
         const lines = csv.trimEnd().split('\n');
 
         expect(lines[1]).toBe('0.00,1');
@@ -157,7 +160,7 @@ describe('createCSVContent()', () => {
     });
 
     it('output always ends with newline', () => {
-        const csv = createCSVContent([], DEVICE_SAMPLE_RATE_HZ);
+        const csv = createSimulationCSVContent([], DEVICE_SAMPLE_RATE_HZ);
         expect(csv.endsWith('\n')).toBe(true);
     });
 
@@ -167,7 +170,7 @@ describe('createCSVContent()', () => {
             values: [-500, 500, -1],
         };
 
-        const csv = createCSVContent([packet], DEVICE_SAMPLE_RATE_HZ);
+        const csv = createSimulationCSVContent([packet], DEVICE_SAMPLE_RATE_HZ);
         const lines = csv.trimEnd().split('\n');
 
         expect(lines[1]).toBe('100.00,-500');
@@ -372,5 +375,297 @@ describe('Stop recording guard (Fix 2)', () => {
 
         expect(oldCalls).toHaveLength(0); // OLD: bug — stopStream skipped
         expect(newCalls).toHaveLength(1); // NEW: fix — stopStream called
+    });
+});
+
+// ===========================================================================
+// Test Suite 4: serializePacketToCSV()
+//
+// serializePacketToCSV is a module-level function in BluetoothContext.tsx
+// and is not exported. Because it is a plain pure function (no React
+// dependencies), we duplicate the implementation here for isolated unit
+// testing without needing a React Native rendering environment.
+//
+// Implementation source: BluetoothContext.tsx lines 32-40
+//   function serializePacketToCSV(packet: StreamDataPacket, sampleRate: number): string {
+//       const intervalMs = 1000 / sampleRate;
+//       let csv = '';
+//       for (let i = 0; i < packet.values.length; i++) {
+//           const ts = packet.timestamp + i * intervalMs;
+//           csv += `${ts.toFixed(2)},${packet.values[i]}\n`;
+//       }
+//       return csv;
+//   }
+//
+// Key difference from createSimulationCSVContent:
+//   - NO header line ("timestamp,value")
+//   - Each line ends with \n (not joined by \n)
+//   - Returns '' for an empty values array
+// ===========================================================================
+function serializePacketToCSV(packet: StreamDataPacket, sampleRate: number): string {
+    const intervalMs = 1000 / sampleRate;
+    let csv = '';
+    for (let i = 0; i < packet.values.length; i++) {
+        const ts = packet.timestamp + i * intervalMs;
+        csv += `${ts.toFixed(2)},${packet.values[i]}\n`;
+    }
+    return csv;
+}
+
+describe('serializePacketToCSV()', () => {
+
+    it('50 samples at 215 Hz → 50 lines, no header', () => {
+        const packet: StreamDataPacket = {
+            timestamp: 1000,
+            values: Array.from({ length: 50 }, (_, i) => i * 10),
+        };
+
+        const csv = serializePacketToCSV(packet, DEVICE_SAMPLE_RATE_HZ);
+        const lines = csv.split('\n').filter(l => l.length > 0);
+
+        expect(lines).toHaveLength(50);
+    });
+
+    it('50 samples at 215 Hz → timestamp spacing ≈ 4.65ms (1000/215)', () => {
+        const packet: StreamDataPacket = {
+            timestamp: 1000,
+            values: [0, 1, 2],
+        };
+
+        const csv = serializePacketToCSV(packet, DEVICE_SAMPLE_RATE_HZ);
+        const lines = csv.split('\n').filter(l => l.length > 0);
+
+        // First line: timestamp=1000.00
+        expect(lines[0]).toBe('1000.00,0');
+
+        // Second line: timestamp=1000 + 1000/215 * 1
+        const expectedT1 = (1000 + 1000 / DEVICE_SAMPLE_RATE_HZ).toFixed(2);
+        expect(lines[1]).toBe(`${expectedT1},1`);
+
+        // Third line: timestamp=1000 + 1000/215 * 2
+        const expectedT2 = (1000 + (1000 / DEVICE_SAMPLE_RATE_HZ) * 2).toFixed(2);
+        expect(lines[2]).toBe(`${expectedT2},2`);
+    });
+
+    it('single sample → 1 line', () => {
+        const packet: StreamDataPacket = {
+            timestamp: 500,
+            values: [42],
+        };
+
+        const csv = serializePacketToCSV(packet, DEVICE_SAMPLE_RATE_HZ);
+        const lines = csv.split('\n').filter(l => l.length > 0);
+
+        expect(lines).toHaveLength(1);
+        expect(lines[0]).toBe('500.00,42');
+    });
+
+    it('empty values → empty string', () => {
+        const packet: StreamDataPacket = {
+            timestamp: 1000,
+            values: [],
+        };
+
+        const csv = serializePacketToCSV(packet, DEVICE_SAMPLE_RATE_HZ);
+
+        expect(csv).toBe('');
+    });
+
+    it('each line ends with newline (\\n)', () => {
+        const packet: StreamDataPacket = {
+            timestamp: 0,
+            values: [1, 2, 3],
+        };
+
+        const csv = serializePacketToCSV(packet, DEVICE_SAMPLE_RATE_HZ);
+        const lines = csv.split('\n');
+
+        // After splitting by \n, the last element should be '' (trailing newline)
+        expect(lines[lines.length - 1]).toBe('');
+        // All non-empty lines should match the expected format
+        const nonEmpty = lines.filter(l => l.length > 0);
+        for (const line of nonEmpty) {
+            expect(line).toMatch(/^\d+\.\d{2},-?\d+$/);
+        }
+    });
+
+    it('format is exactly "timestamp.toFixed(2),value\\n" — no header', () => {
+        const packet: StreamDataPacket = {
+            timestamp: 2000,
+            values: [99],
+        };
+
+        const csv = serializePacketToCSV(packet, DEVICE_SAMPLE_RATE_HZ);
+
+        // Must NOT contain "timestamp,value" header
+        expect(csv).not.toContain('timestamp,value');
+        // Must start with the timestamp
+        expect(csv).toBe('2000.00,99\n');
+    });
+
+    it('negative values are serialized correctly', () => {
+        const packet: StreamDataPacket = {
+            timestamp: 100,
+            values: [-300, 0, 300],
+        };
+
+        const csv = serializePacketToCSV(packet, DEVICE_SAMPLE_RATE_HZ);
+        const lines = csv.split('\n').filter(l => l.length > 0);
+
+        expect(lines[0]).toBe('100.00,-300');
+        expect(lines[1]).toContain(',0');
+        expect(lines[2]).toContain(',300');
+    });
+
+    it('zero timestamp → first line starts at 0.00', () => {
+        const packet: StreamDataPacket = {
+            timestamp: 0,
+            values: [55],
+        };
+
+        const csv = serializePacketToCSV(packet, DEVICE_SAMPLE_RATE_HZ);
+
+        expect(csv.startsWith('0.00,55')).toBe(true);
+    });
+});
+
+// ===========================================================================
+// Test Suite 5: downsamplePacket()
+//
+// downsamplePacket is a module-level function in BluetoothContext.tsx
+// and is not exported. The implementation uses a module-level constant:
+//   const DOWNSAMPLE_FACTOR = 5; // 50 samples → 10 samples per packet
+//
+// Implementation source: BluetoothContext.tsx lines 42-48
+//   function downsamplePacket(packet: StreamDataPacket): StreamDataPacket {
+//       const downsampled: number[] = [];
+//       for (let i = 0; i < packet.values.length; i += DOWNSAMPLE_FACTOR) {
+//           downsampled.push(packet.values[i]);
+//       }
+//       return { timestamp: packet.timestamp, values: downsampled };
+//   }
+//
+// Note: The implementation does NOT expose `factor` as a parameter — it always
+// uses the module-level DOWNSAMPLE_FACTOR = 5. Tests reflect actual behavior.
+// ===========================================================================
+const DOWNSAMPLE_FACTOR = 5; // matches BluetoothContext.tsx
+
+function downsamplePacket(packet: StreamDataPacket): StreamDataPacket {
+    const downsampled: number[] = [];
+    for (let i = 0; i < packet.values.length; i += DOWNSAMPLE_FACTOR) {
+        downsampled.push(packet.values[i]);
+    }
+    return { timestamp: packet.timestamp, values: downsampled };
+}
+
+describe('downsamplePacket()', () => {
+
+    it('50 values, factor 5 → 10 values', () => {
+        const packet: StreamDataPacket = {
+            timestamp: 1000,
+            values: Array.from({ length: 50 }, (_, i) => i),
+        };
+
+        const result = downsamplePacket(packet);
+
+        expect(result.values).toHaveLength(10);
+    });
+
+    it('50 values, factor 5 → picks indices 0,5,10,15,20,25,30,35,40,45', () => {
+        const packet: StreamDataPacket = {
+            timestamp: 1000,
+            values: Array.from({ length: 50 }, (_, i) => i * 100), // values: 0,100,200,...,4900
+        };
+
+        const result = downsamplePacket(packet);
+
+        const expectedIndices = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45];
+        const expected = expectedIndices.map(i => i * 100);
+        expect(result.values).toEqual(expected);
+    });
+
+    it('timestamp is preserved unchanged', () => {
+        const packet: StreamDataPacket = {
+            timestamp: 98765,
+            values: Array.from({ length: 50 }, () => 0),
+        };
+
+        const result = downsamplePacket(packet);
+
+        expect(result.timestamp).toBe(98765);
+    });
+
+    it('empty values → empty result values, timestamp preserved', () => {
+        const packet: StreamDataPacket = {
+            timestamp: 500,
+            values: [],
+        };
+
+        const result = downsamplePacket(packet);
+
+        expect(result.values).toHaveLength(0);
+        expect(result.timestamp).toBe(500);
+    });
+
+    it('values fewer than factor (e.g. 3 values) → returns available values at index 0 only', () => {
+        // With factor=5, only index 0 is picked from a 3-value array (i=0; i+=5 → i=5 > 3)
+        const packet: StreamDataPacket = {
+            timestamp: 100,
+            values: [10, 20, 30],
+        };
+
+        const result = downsamplePacket(packet);
+
+        expect(result.values).toHaveLength(1);
+        expect(result.values[0]).toBe(10);
+    });
+
+    it('exactly factor count (5 values) → 1 value (index 0)', () => {
+        const packet: StreamDataPacket = {
+            timestamp: 200,
+            values: [1, 2, 3, 4, 5],
+        };
+
+        const result = downsamplePacket(packet);
+
+        expect(result.values).toHaveLength(1);
+        expect(result.values[0]).toBe(1);
+    });
+
+    it('output is a new object (does not mutate input packet)', () => {
+        const values = Array.from({ length: 50 }, (_, i) => i);
+        const packet: StreamDataPacket = { timestamp: 1000, values };
+
+        const result = downsamplePacket(packet);
+
+        // Result should be a different object reference
+        expect(result).not.toBe(packet);
+        // Original values array is untouched
+        expect(packet.values).toHaveLength(50);
+    });
+
+    it('single value → returned unchanged', () => {
+        const packet: StreamDataPacket = {
+            timestamp: 0,
+            values: [42],
+        };
+
+        const result = downsamplePacket(packet);
+
+        expect(result.values).toHaveLength(1);
+        expect(result.values[0]).toBe(42);
+    });
+
+    it('10 values (factor 5) → 2 values at indices 0 and 5', () => {
+        const packet: StreamDataPacket = {
+            timestamp: 300,
+            values: [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000],
+        };
+
+        const result = downsamplePacket(packet);
+
+        expect(result.values).toHaveLength(2);
+        expect(result.values[0]).toBe(100);
+        expect(result.values[1]).toBe(600);
     });
 });

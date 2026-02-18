@@ -7,7 +7,7 @@
  * Key Features:
  * - Dark theme (full-screen, no tab bar)
  * - Red pulsing recording indicator
- * - Real-time waveform chart with ±500µV range
+ * - Real-time waveform chart with ±3000µV range
  * - Three metric cards (RMS, Frequency, Signal Quality)
  * - Stop recording with save modal
  * - Simulation mode when no device connected
@@ -45,7 +45,7 @@ const RED_INDICATOR = '#EF4444';
 
 export const CaptureScreen: FC<Props> = ({ route, navigation }) => {
   const { sessionId } = route.params;
-  const { selectedDevice, streamData, streamConfig, startStream, stopStream, isStreaming, getAllStreamPackets } =
+  const { selectedDevice, streamData, streamConfig, startStream, stopStream, isStreaming, startRecording, stopRecording: stopBtRecording, clearStreamData, waitForStreamActive } =
     useBluetoothContext();
   const { addRecording } = useSession();
   const { elapsedSeconds, formattedTime } = useRecordingTimer();
@@ -92,10 +92,22 @@ export const CaptureScreen: FC<Props> = ({ route, navigation }) => {
   // Start streaming on mount
   useEffect(() => {
     const initializeStreaming = async () => {
-      if (selectedDevice && !isStreaming) {
+      if (selectedDevice) {
+        // Wipe any leftover data from previous recording session
+        clearStreamData();
+
         console.log('[CaptureScreen] Starting stream...');
         await startStream();
-      } else if (!selectedDevice) {
+
+        // Wait for the device to confirm streaming (first binary packet)
+        const active = await waitForStreamActive(5000);
+        if (!active) {
+          console.warn('[CaptureScreen] Stream did not activate within 5s');
+        }
+
+        console.log('[CaptureScreen] Stream active, starting recording...');
+        await startRecording(sessionId);
+      } else {
         console.log('[CaptureScreen] No device connected, entering simulation mode');
         startSimulation();
       }
@@ -190,9 +202,9 @@ export const CaptureScreen: FC<Props> = ({ route, navigation }) => {
     // of the isStreaming flag (which may be false if no JSON ACK was received yet).
     if (selectedDevice) {
       await stopStream();
-      // Allow trailing BT packets (~50-500ms of in-flight data) to arrive and be decoded
-      // before snapshotting the buffer.
-      await new Promise(resolve => setTimeout(resolve, 200));
+      // Allow trailing BT packets to arrive and be decoded before final flush.
+      // 500ms covers worst-case SPP latency for in-flight binary frames.
+      await new Promise(resolve => setTimeout(resolve, 500));
     } else if (simulationIntervalRef.current) {
       clearInterval(simulationIntervalRef.current);
       simulationIntervalRef.current = null;
@@ -204,27 +216,28 @@ export const CaptureScreen: FC<Props> = ({ route, navigation }) => {
     setSavingError(undefined);
 
     try {
-      // Collect ALL packets from unbounded buffer (not the capped UI state)
-      const dataToSave = selectedDevice ? getAllStreamPackets() : simulationData;
+      let filePath: string;
+      let totalSamples: number;
       const sampleRate = selectedDevice ? DEVICE_SAMPLE_RATE_HZ : SIMULATION_SAMPLE_RATE_HZ;
 
-      // Create CSV content with accurate timestamps
-      const csvContent = createCSVContent(dataToSave, sampleRate);
+      if (selectedDevice) {
+        // Incremental CSV already written to disk by BluetoothContext
+        const result = await stopBtRecording();
+        filePath = result.filePath;
+        totalSamples = result.sampleCount;
+      } else {
+        // Simulation mode: bulk export (unchanged path)
+        const csvContent = createSimulationCSVContent(simulationData, sampleRate);
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+        const filename = `recording_${timestamp}.csv`;
+        filePath = `${FileSystem.documentDirectory}${filename}`;
+        await FileSystem.writeAsStringAsync(filePath, csvContent, {
+          encoding: FileSystem.EncodingType.UTF8,
+        });
+        totalSamples = simulationData.reduce((sum, p) => sum + p.values.length, 0);
+      }
 
-      // Generate filename
-      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-      const filename = `recording_${timestamp}.csv`;
-      const filePath = `${FileSystem.documentDirectory}${filename}`;
-
-      // Write CSV file
-      await FileSystem.writeAsStringAsync(filePath, csvContent, {
-        encoding: FileSystem.EncodingType.UTF8,
-      });
-
-      console.log('[CaptureScreen] CSV file saved:', filePath);
-
-      // Count actual samples from the full capture buffer
-      const totalSamples = dataToSave.reduce((sum, p) => sum + p.values.length, 0);
+      const filename = filePath.split('/').pop() || 'recording.csv';
 
       // Create recording entity
       const recordingData: NewRecordingData = {
@@ -233,11 +246,14 @@ export const CaptureScreen: FC<Props> = ({ route, navigation }) => {
         durationSeconds: elapsedSeconds,
         sampleCount: totalSamples,
         dataType: selectedDevice ? streamConfig.type : 'filtered',
-        sampleRate: sampleRate,
+        sampleRate,
         filePath,
       };
 
       await addRecording(recordingData);
+
+      // Clean chart memory now that data is persisted
+      clearStreamData();
 
       // Show success
       setSavingStatus('success');
@@ -255,7 +271,8 @@ export const CaptureScreen: FC<Props> = ({ route, navigation }) => {
   }, [
     selectedDevice,
     stopStream,
-    getAllStreamPackets,
+    stopBtRecording,
+    clearStreamData,
     simulationData,
     sessionId,
     elapsedSeconds,
@@ -355,7 +372,7 @@ export const CaptureScreen: FC<Props> = ({ route, navigation }) => {
   );
 };
 
-function createCSVContent(packets: StreamDataPacket[], sampleRate: number): string {
+function createSimulationCSVContent(packets: StreamDataPacket[], sampleRate: number): string {
   const intervalMs = 1000 / sampleRate;
   const lines: string[] = ['timestamp,value'];
 

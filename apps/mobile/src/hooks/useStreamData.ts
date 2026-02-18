@@ -116,18 +116,18 @@ export function useStreamData(
 
 /**
  * Helper function to get Y-axis range.
- * Fixed range: [-500, 500] for all data types (zero-centered).
+ * Fixed range: [-3000, 3000] for all data types (zero-centered).
  *
  * @param dataType - 'raw', 'filtered', or 'rms' (kept for API compatibility)
  * @param minValue - Minimum value in current data (kept for API compatibility)
  * @param maxValue - Maximum value in current data (kept for API compatibility)
- * @returns [min, max] for Y-axis - always [-500, 500]
+ * @returns [min, max] for Y-axis - always [-3000, 3000]
  */
 export function getYAxisRange(
     dataType: StreamType,
     minValue: number,
     maxValue: number
 ): [number, number] {
-    // Fixed Y-axis range: -500 to +500 (zero-centered)
-    return [-500, 500];
+    // Fixed Y-axis range: -3000 to +3000 (zero-centered)
+    return [-3000, 3000];
 }

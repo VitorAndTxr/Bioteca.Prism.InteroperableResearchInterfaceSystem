@@ -3,6 +3,7 @@ import { ReactNode, createContext, useContext } from "react";
 import { PermissionsAndroid, Platform, Linking } from 'react-native';
 import RNBluetoothClassic, { BluetoothDevice, BluetoothEventSubscription } from 'react-native-bluetooth-classic';
 import { toByteArray } from 'react-native-quick-base64';
+import * as FileSystem from 'expo-file-system';
 
 // Import shared domain types
 import {
@@ -23,6 +24,28 @@ import {
     BINARY_PACKET_MAGIC,
 } from '@iris/domain';
 import { BinaryFrameAccumulator } from '@/utils/binaryDecoder';
+
+// Module-level pure helpers for CSV serialization and downsampling
+
+const DOWNSAMPLE_FACTOR = 5; // 50 samples → 10 samples per packet
+
+function serializePacketToCSV(packet: StreamDataPacket, sampleRate: number): string {
+    const intervalMs = 1000 / sampleRate;
+    let csv = '';
+    for (let i = 0; i < packet.values.length; i++) {
+        const ts = packet.timestamp + i * intervalMs;
+        csv += `${ts.toFixed(2)},${packet.values[i]}\n`;
+    }
+    return csv;
+}
+
+function downsamplePacket(packet: StreamDataPacket): StreamDataPacket {
+    const downsampled: number[] = [];
+    for (let i = 0; i < packet.values.length; i += DOWNSAMPLE_FACTOR) {
+        downsampled.push(packet.values[i]);
+    }
+    return { timestamp: packet.timestamp, values: downsampled };
+}
 
 const BluetoothContext = createContext({} as BluetoothContextData);
 
@@ -73,8 +96,15 @@ export function BluetoothContextProvider(props: BluetoothContextProviderProps) {
     const lastUpdateTimeRef = React.useRef<number>(0);
     const batchIntervalRef = React.useRef<NodeJS.Timeout | null>(null);
 
-    // Unbounded capture buffer — accumulates ALL packets during streaming for CSV export
-    const allStreamPacketsRef = React.useRef<StreamDataPacket[]>([]);
+    // Recording state — refs readable from stale BT listener closure
+    const isRecordingRef = React.useRef(false);
+    const recordingFilePathRef = React.useRef<string | null>(null);
+    const sampleCountRef = React.useRef(0);
+    const csvPendingRef = React.useRef('');
+    const isFlushingRef = React.useRef(false);
+
+    // Recording state — triggers UI re-render
+    const [isRecording, setIsRecording] = useState(false);
 
     // Binary frame accumulator — buffers raw bytes across onDataReceived callbacks
     const binaryAccumulatorRef = React.useRef(new BinaryFrameAccumulator());
@@ -96,29 +126,62 @@ export function BluetoothContextProvider(props: BluetoothContextProviderProps) {
         }
     }, [selectedDevice, permissionGranted]);
 
-    // Flush buffer function - updates UI with batched packets
-    const flushStreamBuffer = React.useCallback(() => {
-        if (streamBufferRef.current.length > 0) {
-            const packetsToAdd = [...streamBufferRef.current];
+    // Flush buffer function - CSV accumulation, downsample, and UI update
+    const flushStreamBuffer = React.useCallback(async () => {
+        if (streamBufferRef.current.length === 0) return;
+
+        // Re-entrancy guard: skip if a previous flush is still writing to disk
+        if (isFlushingRef.current) return;
+        isFlushingRef.current = true;
+
+        try {
+            const packets = [...streamBufferRef.current];
             streamBufferRef.current = [];
 
-            // Accumulate ALL packets in unbounded ref (for CSV export)
-            allStreamPacketsRef.current.push(...packetsToAdd);
+            // CSV accumulation (if recording)
+            if (isRecordingRef.current) {
+                for (const packet of packets) {
+                    csvPendingRef.current += serializePacketToCSV(packet, DEVICE_SAMPLE_RATE_HZ);
+                    sampleCountRef.current += packet.values.length;
+                }
+
+                // Flush pending CSV to disk (read + concat + write)
+                const filePath = recordingFilePathRef.current;
+                const pending = csvPendingRef.current;
+                if (filePath && pending.length > 0) {
+                    try {
+                        const existing = await FileSystem.readAsStringAsync(filePath);
+                        await FileSystem.writeAsStringAsync(
+                            filePath,
+                            existing + pending,
+                            { encoding: FileSystem.EncodingType.UTF8 }
+                        );
+                        csvPendingRef.current = '';
+                    } catch (error) {
+                        console.warn('[CSV] Flush error:', error);
+                        // Pending data retained for next flush attempt
+                    }
+                }
+            }
+
+            // Downsample 50 → 10 samples per packet for chart pipeline
+            const downsampledPackets = packets.map(downsamplePacket);
 
             setStreamData(prev => {
-                const updated = [...prev, ...packetsToAdd];
-                // Keep last 500 packets (~2-3 seconds at 215 Hz) for UI performance
+                const updated = [...prev, ...downsampledPackets];
+                // Keep last 500 packets for UI performance
                 if (updated.length > 500) {
                     return updated.slice(-500);
                 }
                 return updated;
             });
 
-            // Update last timestamp
-            const lastPacket = packetsToAdd[packetsToAdd.length - 1];
+            const lastPacket = downsampledPackets[downsampledPackets.length - 1];
             if (lastPacket) {
                 setLastStreamTimestamp(lastPacket.timestamp);
             }
+        } finally {
+            isFlushingRef.current = false;
         }
     }, []);
 
@@ -553,14 +616,15 @@ export function BluetoothContextProvider(props: BluetoothContextProviderProps) {
                 mt: BluetoothProtocolMethod.EXECUTE
             };
 
-            // Reset ref before sending — guards against rapid start/stop cycles
+            // Reset ref and state before sending — guards against rapid start/stop cycles
             // where the previous streaming session's ref could prevent detection of
-            // the new session's first binary packet.
+            // the new session's first binary packet. Also ensures the batch interval
+            // useEffect re-fires when isStreaming transitions false→true again.
             isStreamingRef.current = false;
+            setIsStreaming(false);
             setStreamData([]);
             setLastStreamTimestamp(0);
             streamBufferRef.current = [];
-            allStreamPacketsRef.current = [];
             binaryAccumulatorRef.current.reset();
 
             await writeToBluetooth(JSON.stringify(payload));
@@ -576,6 +640,11 @@ export function BluetoothContextProvider(props: BluetoothContextProviderProps) {
                 cd: BluetoothProtocolFunction.StopStream,
                 mt: BluetoothProtocolMethod.EXECUTE
             };
+
+            // Reset streaming state immediately — binary firmware does not send
+            // a JSON ACK for StopStream, so we cannot rely on the ACK handler.
+            isStreamingRef.current = false;
+            setIsStreaming(false);
 
             await writeToBluetooth(JSON.stringify(payload));
             console.log("Stream stop requested");
@@ -692,16 +761,104 @@ export function BluetoothContextProvider(props: BluetoothContextProviderProps) {
         }
     }
 
-    function getAllStreamPackets(): StreamDataPacket[] {
-        // Flush any pending packets from the batch buffer before returning
-        flushStreamBuffer();
-        return [...allStreamPacketsRef.current];
+    async function startRecording(sessionId: string): Promise<string> {
+        // Guard: close any stale recording before starting a new one
+        if (isRecordingRef.current && recordingFilePathRef.current) {
+            console.warn('[CSV] Closing stale recording before starting new one');
+            await stopRecording();
+        }
+
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+        const filename = `recording_${timestamp}.csv`;
+        const filePath = `${FileSystem.documentDirectory}${filename}`;
+
+        // Write CSV header
+        await FileSystem.writeAsStringAsync(filePath, 'timestamp,value\n', {
+            encoding: FileSystem.EncodingType.UTF8,
+        });
+
+        recordingFilePathRef.current = filePath;
+        sampleCountRef.current = 0;
+        csvPendingRef.current = '';
+        isRecordingRef.current = true;
+        setIsRecording(true);
+
+        console.log('[CSV] Recording started:', filePath);
+        return filePath;
+    }
+
+    async function stopRecording(): Promise<{ filePath: string; sampleCount: number }> {
+        isRecordingRef.current = false;
+        setIsRecording(false);
+
+        const filePath = recordingFilePathRef.current;
+
+        if (!filePath) {
+            throw new Error('No active recording to stop');
+        }
+
+        // Drain any remaining packets from the stream buffer that the batch
+        // interval didn't process (interval was cleared when isStreaming went false).
+        const remainingPackets = [...streamBufferRef.current];
+        streamBufferRef.current = [];
+        for (const packet of remainingPackets) {
+            csvPendingRef.current += serializePacketToCSV(packet, DEVICE_SAMPLE_RATE_HZ);
+            sampleCountRef.current += packet.values.length;
+        }
+
+        const sampleCount = sampleCountRef.current;
+
+        // Final flush of ALL pending CSV lines to disk
+        const pending = csvPendingRef.current;
+        if (pending.length > 0) {
+            try {
+                const existing = await FileSystem.readAsStringAsync(filePath);
+                await FileSystem.writeAsStringAsync(
+                    filePath,
+                    existing + pending,
+                    { encoding: FileSystem.EncodingType.UTF8 }
+                );
+            } catch (error) {
+                console.error('[CSV] Final flush error:', error);
+            }
+            csvPendingRef.current = '';
+        }
+
+        recordingFilePathRef.current = null;
+        sampleCountRef.current = 0;
+
+        console.log(`[CSV] Recording stopped: ${filePath}, ${sampleCount} samples`);
+        return { filePath, sampleCount };
     }
 
     function clearStreamData(): void {
         setStreamData([]);
         setLastStreamTimestamp(0);
-        allStreamPacketsRef.current = [];
+        streamBufferRef.current = [];
+        csvPendingRef.current = '';
+        binaryAccumulatorRef.current.reset();
+    }
+
+    function waitForStreamActive(timeoutMs: number = 5000): Promise<boolean> {
+        return new Promise<boolean>((resolve) => {
+            if (isStreamingRef.current) {
+                resolve(true);
+                return;
+            }
+            const start = Date.now();
+            const check = () => {
+                if (isStreamingRef.current) {
+                    resolve(true);
+                    return;
+                }
+                if (Date.now() - start > timeoutMs) {
+                    resolve(false);
+                    return;
+                }
+                setTimeout(check, 50);
+            };
+            check();
+        });
     }
 
     async function exportStreamData(): Promise<void> {
@@ -789,8 +946,11 @@ export function BluetoothContextProvider(props: BluetoothContextProviderProps) {
             configureStream,
             startStream,
             stopStream,
-            getAllStreamPackets,
+            isRecording,
+            startRecording,
+            stopRecording,
             clearStreamData,
+            waitForStreamActive,
             exportStreamData,
             startSession,
             stopSession,
@@ -843,8 +1003,11 @@ interface BluetoothContextData {
     configureStream: (rate: number, type: StreamType) => Promise<void>;
     startStream: () => Promise<void>;
     stopStream: () => Promise<void>;
-    getAllStreamPackets: () => StreamDataPacket[];
+    isRecording: boolean;
+    startRecording: (sessionId: string) => Promise<string>;
+    stopRecording: () => Promise<{ filePath: string; sampleCount: number }>;
     clearStreamData: () => void;
+    waitForStreamActive: (timeoutMs?: number) => Promise<boolean>;
     exportStreamData: () => Promise<void>;
     startSession: () => Promise<void>;
     stopSession: () => Promise<void>;

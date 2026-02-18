@@ -14,7 +14,7 @@ interface SEMGChartProps {
  * Optimized sEMG Chart Component using react-native-gifted-charts.
  *
  * Features:
- * - Fixed Y-axis: -500 to +500 (zero-centered, constant scale)
+ * - Fixed Y-axis: -3000 to +3000 (zero-centered, constant scale)
  * - Fixed 4-second viewport (no horizontal scrolling)
  * - 160 data points displayed (4s at 40 Hz display rate)
  * - Updates at 1 Hz cadence (driven by useStreamData)
@@ -29,7 +29,7 @@ export const SEMGChart = React.memo(function SEMGChart({ data, sampleRate, dataT
         if (data.length === 0) {
             return [
                 { value: 0, label: '0' },
-                { value: 500, label: '' },
+                { value: 3000, label: '' },
                 { value: 0, label: '4' }
             ];
         }
@@ -81,9 +81,9 @@ export const SEMGChart = React.memo(function SEMGChart({ data, sampleRate, dataT
                     data={chartData}
                     width={availableWidth}
                     height={125}
-                    maxValue={100}
-                    mostNegativeValue={-100}
-                    noOfSections={10}
+                    maxValue={3000}
+                    mostNegativeValue={-3000}
+                    noOfSections={6}
                     spacing={spacing}
                     thickness={darkTheme ? 2 : 1}
                     color={darkTheme ? "#49A2A8" : "#2196F3"}
@@ -110,7 +110,7 @@ export const SEMGChart = React.memo(function SEMGChart({ data, sampleRate, dataT
             {/* Axis Labels */}
             <View style={styles.axisLabels}>
                 <Text style={darkTheme ? [styles.xAxisLabel, styles.textMutedDark] : styles.xAxisLabel}>Time (seconds)</Text>
-                <Text style={darkTheme ? [styles.yAxisLabel, styles.textMutedDark] : styles.yAxisLabel}>Amplitude (-500 to +500, zero-centered)</Text>
+                <Text style={darkTheme ? [styles.yAxisLabel, styles.textMutedDark] : styles.yAxisLabel}>Amplitude (-3000 to +3000, zero-centered)</Text>
             </View>
 
             {/* Grid Info */}
