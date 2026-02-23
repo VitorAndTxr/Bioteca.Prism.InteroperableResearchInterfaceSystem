@@ -49,3 +49,6 @@ export * from './models/Recording';
 
 // Annotations
 export * from './models/Annotation';
+
+// Node Synchronization
+export * from './models/NodeSync';

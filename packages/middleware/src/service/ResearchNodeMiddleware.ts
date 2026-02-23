@@ -72,6 +72,14 @@ export class ResearchNodeMiddleware {
         return this.sessionRuntime;
     }
 
+    get certificate(): ResearchNodeCertificateConfig {
+        return this.options.certificate;
+    }
+
+    get signChallenge(): (context: ChallengeSignatureContext) => Promise<string> {
+        return this.options.signChallenge;
+    }
+
     async hydrate(): Promise<void> {
         const { initialChannel, initialSession, channelManager, sessionManager } = this.options;
 

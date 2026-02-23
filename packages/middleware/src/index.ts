@@ -54,3 +54,5 @@ export type {
     RefreshTokenResponse,
     UserAuthServiceOptions
 } from './auth/UserAuthService.types';
+
+// NodeSyncService removed in Phase 18 — sync orchestration moved to backend SyncPullService.

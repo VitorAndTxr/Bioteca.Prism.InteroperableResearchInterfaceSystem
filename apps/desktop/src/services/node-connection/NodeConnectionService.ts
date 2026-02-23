@@ -43,6 +43,8 @@ interface NodeConnectionDTO {
     institutionDetails?: string;
     registeredAt: string;
     updatedAt: string;
+    lastSyncedAt?: string;
+    lastSyncStatus?: string;
 }
 
 /**
@@ -452,7 +454,9 @@ export class NodeConnectionService extends BaseService {
             certificateFingerprint: dto.certificateFingerprint,
             institutionDetails: dto.institutionDetails,
             registeredAt: new Date(dto.registeredAt),
-            updatedAt: new Date(dto.updatedAt)
+            updatedAt: new Date(dto.updatedAt),
+            lastSyncedAt: dto.lastSyncedAt,
+            lastSyncStatus: dto.lastSyncStatus
         };
     }
 

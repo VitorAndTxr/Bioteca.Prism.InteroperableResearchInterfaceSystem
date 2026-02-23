@@ -4,6 +4,109 @@ All notable changes to the IRIS project are documented in this file.
 
 ---
 
+## [Phase 17] — 2026-02-18
+
+### Node-to-Node Data Synchronization
+
+Phase 17 introduces one-way incremental data pull between authorized PRISM research nodes. A researcher operating the IRIS desktop app can now click **Sync** on any active node connection to pull all remote data (SNOMED catalogs, volunteers, research projects, clinical sessions, and recording files) into the local node — atomically and incrementally.
+
+---
+
+### Added
+
+#### Backend — Sync Export and Import (`InteroperableResearchNode`)
+
+- **`SyncController`** — New ASP.NET Core controller exposing seven sync endpoints, all protected by `[PrismEncryptedChannelConnection]` and `[PrismAuthenticatedSession(RequiredCapability = ReadWrite)]`:
+  - `POST /api/sync/manifest` — Returns entity counts and latest timestamps per entity type so the requesting node can preview the transfer scope before committing.
+  - `GET /api/sync/snomed/{entityType}` — Exports SNOMED catalog data (body regions, body structures, topographical modifiers, lateralities, clinical conditions, clinical events, medications, allergy intolerances, severity codes). Supports `?since=ISO8601` incremental filtering and `page`/`pageSize` pagination.
+  - `GET /api/sync/volunteers` — Exports volunteers with nested clinical sub-entities.
+  - `GET /api/sync/research` — Exports research projects with applications, devices, sensors, and researcher assignments.
+  - `GET /api/sync/sessions` — Exports clinical sessions with records, record channels, annotations, and target areas.
+  - `GET /api/sync/recordings/{id}/file` — Returns a recording's binary file encoded as a base64 JSON payload for encrypted transport.
+  - `GET /api/sync/log` — Returns paginated sync history for a given remote node connection.
+
+- **`SyncExportService`** — Queries all syncable entities with `UpdatedAt > since` incremental filtering and eager-loaded sub-entities.
+
+- **`SyncImportService`** — Transactional upsert service that receives all collected sync data and persists it inside a single `IDbContextTransaction`. On any failure, all changes are rolled back. Implements "newer wins" conflict resolution by comparing `UpdatedAt` timestamps before overwriting any existing record.
+
+- **`SyncLog` entity + `AddSyncLog` EF Core migration** — New `sync_logs` table tracking sync history per remote node: status (`in_progress`, `completed`, `failed`, `rolled_back`), watermark timestamp (`LastSyncedAt`) for the next incremental run, entity counts (JSONB), and error messages. The migration also adds missing `UpdatedAt` and `CreatedAt` columns to `SnomedLaterality`, `SnomedTopographicalModifier`, and `RecordChannel`.
+
+- **`PrismSyncEndpointAttribute`** — Marker attribute that elevates the rate limit for sync endpoints from the standard 60 requests/minute to **600 requests/minute**, preventing paginated syncs from being throttled mid-transfer.
+
+- **`NodeChannelClient.InvokeAsync<TResponse>` and `InvokeStreamAsync`** — Two new methods on `INodeChannelClient` enabling arbitrary authenticated API calls through an established encrypted channel after the 4-phase handshake. `InvokeStreamAsync` uses `HttpCompletionOption.ResponseHeadersRead` for efficient binary streaming.
+
+- **Sync DTOs** — `SyncManifestRequest`, `SyncManifestResponse`, `SyncImportPayload`, `SyncResultDTO`, `PagedSyncResult<T>`, `VolunteerSyncDTO`, `ResearchSyncDTO`, `SessionSyncDTO`.
+
+#### Middleware — Sync Orchestration (`@iris/middleware`)
+
+- **`NodeSyncService`** — New TypeScript class that orchestrates the full pull flow:
+  1. Fetches the sync manifest to surface entity counts for user confirmation.
+  2. Pulls entities in dependency order: SNOMED catalogs → Volunteers → Research → Sessions → Recording files.
+  3. Uses paginated requests (100 records/page) per entity type.
+  4. Collects all data in memory before submitting a single `POST /api/sync/import` to the local backend, ensuring one atomic transaction boundary.
+  5. Reports progress via a `SyncProgressCallback` interface after each page and recording file.
+
+#### Domain — Shared Types (`@iris/domain`)
+
+- **`NodeSync.ts`** — New module exporting: `SyncManifest`, `SyncEntitySummary`, `SyncRecordingSummary`, `SyncProgress`, `SyncResult`, `SyncLogEntry`, `PaginatedSyncResponse<T>`.
+- **`ResearchNodeConnection`** — Extended with optional `lastSyncedAt?: string` and `lastSyncStatus?: string` fields for sync history display.
+
+#### Desktop — Sync UI (`IRIS/apps/desktop`)
+
+- **`SyncProgressModal`** — New React component with four states managed via a discriminated union type:
+  1. **Confirmation** — Displays manifest entity counts; user can start or cancel.
+  2. **In Progress** — Progress bar showing current entity type and completion percentage. Close is blocked during active sync.
+  3. **Success** — Summary of all synced entity counts.
+  4. **Error** — Displays error message and confirms all changes were rolled back.
+
+- **`NodeSyncServiceAdapter`** — Desktop adapter that constructs connection-specific `ResearchNodeMiddleware` instances targeting the correct remote node URL, wiring `NodeSyncService` with the remote middleware for pulling and the local middleware for importing.
+
+#### Testing
+
+- **`SyncImportServiceTests.cs`** — 19 passing unit tests (1 skipped due to EF Core InMemory provider limitation) covering: full sync insert flow, incremental sync (same watermark = zero inserts), "newer wins" conflict resolution in both directions, transaction rollback, `SyncLog` failure tracking, manifest `since`-filter, pagination, unknown SNOMED entity type handling, rate limit override (600 req/min), and `ReadWrite`/`Admin`/`ReadOnly` capability enforcement.
+
+---
+
+### Changed
+
+- **`NodeConnectionsScreen`** — Sync button stub (`console.log`) replaced with a real handler that validates access level, opens `SyncProgressModal`, and reloads connection data after sync completes.
+- **`PrismAuthenticatedSessionAttribute`** — Checks for `PrismSyncEndpointAttribute` in endpoint metadata and passes an elevated rate limit to `SessionService.RecordRequestAsync`.
+- **`SessionService.RecordRequestAsync`** — Added optional `overrideLimit` parameter; when non-zero, it replaces `MaxRequestsPerMinute` for that call.
+- **`INodeChannelClient`** — Extended with `InvokeAsync<TResponse>` and `InvokeStreamAsync` signatures.
+- **`NativeInjectorBootStrapper`** — DI registrations added for `ISyncExportService`, `ISyncImportService`, and `ISyncLogRepository` (all `Scoped`).
+- **`PrismDbContext`** — `DbSet<SyncLog>` added.
+- **`@iris/middleware` index** — Re-exports `NodeSyncService` sync types.
+- **`@iris/domain` index** — Exports new `NodeSync` module.
+
+---
+
+### Fixed
+
+- **B-001 — Transaction boundary for `SyncLog` creation**: `SyncLog` was previously committed to the database before `BeginTransactionAsync()` was called, leaving orphaned `in_progress` entries when the import transaction rolled back. Fixed by opening the transaction first and including the `SyncLog` insert inside it. The failure log path uses `ChangeTracker.Clear()` + a fresh implicit transaction so the error entry is persisted independently of the rollback.
+
+- **B-002 — Recording file response format mismatch**: `SyncController.GetRecordingFile` returned a binary `FileResult` while `ResearchNodeMiddleware.invoke()` expected an encrypted JSON envelope, causing a JSON parse failure for every sync containing recording files. Fixed by returning the file as `{ contentBase64, contentType, fileName }` JSON, consistent with all other sync endpoints.
+
+- **S-005 — Remote middleware wiring in `NodeSyncServiceAdapter`**: Both `remoteMiddleware` and `localMiddleware` pointed to the same local middleware instance, causing the sync to pull from the local node into itself. Fixed by constructing a connection-specific middleware instance targeting the remote node's URL for the pull step.
+
+---
+
+### Known Limitations (Accepted for Phase 17)
+
+- Sync is **one-way pull only** — bidirectional sync is deferred to a future phase.
+- Sync is **manual only** — no scheduled or event-driven sync.
+- Volunteer deduplication across nodes (same person, different GUIDs) is deferred.
+- Recording files are held in memory before import; streaming optimization is future work.
+- `POST /api/sync/import` endpoint lacks application-layer authentication (S-002) — relies on network-level access control.
+- `SyncController.GetSyncLog` uses service-locator pattern for `ISyncLogRepository` instead of constructor injection (S-001).
+- Manifest `LastSyncedAt` is always `null` in the response — UI shows "Never synced" after the first sync until S-004 is fixed.
+- 68 pre-existing integration test failures in `TestWebApplicationFactory` suites (DI startup validation failure) were not introduced by Phase 17 but remain unresolved.
+
+---
+
+*Phase 17 delivered: 7 backend sync endpoints, SyncImportService (transactional upsert across 28 tables), SyncLog entity + EF Core migration, NodeChannelClient.InvokeAsync extension, PrismSyncEndpointAttribute (600 req/min), NodeSyncService pull orchestrator, SyncProgressModal, sync button wiring, sync history display, NodeSync domain types, 19 unit tests.*
+
+---
+
 ## [Phase 16] — 2026-02-18
 
 ### Fixed

@@ -29,6 +29,7 @@ import * as forge from 'node-forge';
 import { SnomedService } from './snomed/SnomedService';
 import { NodeConnectionService } from './node-connection/NodeConnectionService';
 import { VolunteerService } from './volunteer/VolunteerService';
+import { NodeSyncServiceAdapter } from './NodeSyncServiceAdapter';
 
 /**
  * Backend configuration
@@ -289,6 +290,8 @@ function initializeMiddleware() {
 
     const volunteerService = new VolunteerService(middlewareServices);
 
+    const nodeSyncServiceAdapter = new NodeSyncServiceAdapter(middlewareServices);
+
     return {
         middleware,
         userAuthService,
@@ -301,6 +304,7 @@ function initializeMiddleware() {
         snomedService,
         nodeConnectionService,
         volunteerService,
+        nodeSyncServiceAdapter,
         cryptoDriver,
         channelManager,
         sessionManager,
@@ -349,7 +353,7 @@ export async function initializeAndHydrate(): Promise<void> {
 }
 
 // Export commonly used services directly for synchronous imports
-export const { middleware, authService, userAuthService, userService, researcherService, researchService, snomedService, nodeConnectionService, volunteerService } = getMiddlewareServices();
+export const { middleware, authService, userAuthService, userService, researcherService, researchService, snomedService, nodeConnectionService, volunteerService, nodeSyncServiceAdapter } = getMiddlewareServices();
 
 /**
  * Cleanup middleware resources (preserves persisted session for page refresh support)

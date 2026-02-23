@@ -58,6 +58,8 @@ export interface ResearchNodeConnection {
     institutionDetails?: string;
     registeredAt: Date;
     updatedAt: Date;
+    lastSyncedAt?: string;
+    lastSyncStatus?: string;
 }
 
 /**

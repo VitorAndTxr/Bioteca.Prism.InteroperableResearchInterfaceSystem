@@ -2,420 +2,1764 @@
   "metadata": {
     "version": "1.0",
     "created_at": "2026-02-18T03:07:48.783259+00:00",
-    "updated_at": "2026-02-18T03:09:48.520070+00:00"
+    "updated_at": "2026-02-22T20:50:59.187768+00:00"
   },
   "stories": [
     {
-      "id": "US-001",
-      "title": "Add blob_url column to recordings table via SQLite v5 migration",
-      "feature_area": "Data Migration",
+      "id": "US-007",
+      "title": "Add SyncLog entity and EF Core migration for sync infrastructure",
+      "feature_area": "Backend - Sync Infrastructure",
       "priority": "Must",
-      "role": "mobile app",
-      "want": "a v5 SQLite migration that adds a blob_url TEXT column (DEFAULT NULL) to the recordings table and retroactively repairs existing synced recordings by moving any file_path value that starts with http:// or https:// into the new blob_url column and setting file_path to NULL",
-      "benefit": "the schema cleanly separates local filesystem paths from remote blob storage URLs, and recordings synced under the old behavior immediately become exportable once the app updates",
+      "role": "backend developer",
+      "want": "a SyncLog table that records RemoteNodeId, StartedAt, CompletedAt, Status, LastSyncedAt, EntitiesReceived, and ErrorMessage per sync operation, along with an EF Core migration that creates the sync_logs table",
+      "benefit": "the SyncImportService can track sync history per remote node and use the LastSyncedAt watermark to drive incremental delta queries on subsequent syncs",
       "acceptance_criteria": [
         {
           "id": "AC-1",
-          "given": "the app is starting up on a device with schema version 4",
-          "when": "the migration runner processes v5",
-          "then": "it executes ALTER TABLE recordings ADD COLUMN blob_url TEXT DEFAULT NULL without error"
+          "given": "the backend solution is built and EF Core migrations are applied",
+          "when": "the sync_logs table is inspected",
+          "then": "it contains columns: Id (UUID PK), RemoteNodeId (UUID FK → research_nodes.id), StartedAt (UTC NOT NULL), CompletedAt (UTC nullable), Status (string: in_progress / completed / failed / rolled_back), LastSyncedAt (UTC nullable), EntitiesReceived (JSONB nullable), ErrorMessage (TEXT nullable)"
         },
         {
           "id": "AC-2",
-          "given": "existing recordings where file_path starts with http:// or https://",
-          "when": "the v5 retroactive UPDATE runs",
-          "then": "blob_url is set to the former file_path value and file_path is set to NULL"
+          "given": "a SyncLog row is created with status=in_progress at the start of ImportAsync",
+          "when": "ImportAsync commits successfully",
+          "then": "the same row is updated in the same transaction to status=completed with CompletedAt=UtcNow, LastSyncedAt=payload.ManifestGeneratedAt, and EntitiesReceived populated as a JSON object with per-entity-type counts"
         },
         {
           "id": "AC-3",
-          "given": "existing recordings where file_path starts with file:/// or is NULL",
-          "when": "the v5 retroactive UPDATE runs",
-          "then": "those rows are not modified"
+          "given": "ImportAsync throws during the main transaction and rolls back",
+          "when": "a separate follow-up transaction runs",
+          "then": "a new SyncLog row is written with status=failed and ErrorMessage containing the exception message"
         },
         {
           "id": "AC-4",
-          "given": "the migration file exists at apps/mobile/src/data/migrations/v5_add_blob_url.ts",
-          "when": "database.ts is inspected",
-          "then": "the v5 migration is registered and will run on app startup before any user interaction"
+          "given": "all syncable entities (Research, Volunteer, RecordSession, Record, RecordChannel, TargetArea, SessionAnnotation, SnomedBodyRegion, SnomedBodyStructure, etc.)",
+          "when": "the codebase is inspected",
+          "then": "each entity already carries an UpdatedAt column via BaseEntity — no new column migration is needed; this AC is a verification step, not a schema change"
+        },
+        {
+          "id": "AC-5",
+          "given": "the migration AddSyncLog is applied to a database with existing data",
+          "when": "the migration completes",
+          "then": "no existing records are lost or corrupted and the sync_logs table is empty (no seeded data)"
+        }
+      ],
+      "notes": "",
+      "dependencies": [],
+      "status": "Done",
+      "created_at": "2026-02-18T22:02:06.708608+00:00",
+      "updated_at": "2026-02-18T23:10:07.662865+00:00",
+      "created_by": "po",
+      "history": [
+        {
+          "action": "created",
+          "by": "po",
+          "at": "2026-02-18T22:02:06.708608+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "po",
+          "from": "Draft",
+          "to": "Ready",
+          "at": "2026-02-18T22:03:38.820411+00:00"
+        },
+        {
+          "action": "edited",
+          "by": "po",
+          "changes": [
+            "acceptance_criteria"
+          ],
+          "at": "2026-02-18T22:04:51.971475+00:00"
+        },
+        {
+          "action": "edited",
+          "by": "po",
+          "changes": [
+            "title",
+            "want",
+            "benefit",
+            "acceptance_criteria"
+          ],
+          "at": "2026-02-18T22:48:41.856081+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "dev",
+          "from": "Ready",
+          "to": "In Progress",
+          "at": "2026-02-18T22:56:41.546567+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "dev",
+          "from": "In Progress",
+          "to": "Done",
+          "at": "2026-02-18T23:10:07.662865+00:00"
+        }
+      ]
+    },
+    {
+      "id": "US-008",
+      "title": "Implement SyncExportService and SyncController export endpoints (pull model)",
+      "feature_area": "Backend - Sync Export",
+      "priority": "Must",
+      "role": "backend developer",
+      "want": "a SyncExportService with per-entity export methods and a SyncController that exposes six export endpoints so that a requesting node can pull SNOMED catalogs, volunteers, research, sessions, and recording files from this node through the encrypted channel",
+      "benefit": "the requesting node can pull exactly the records it needs using incremental since-filtering and pagination, without receiving redundant data or exceeding memory limits",
+      "acceptance_criteria": [
+        {
+          "id": "AC-1",
+          "given": "POST /api/sync/manifest is called with an optional since timestamp in the request body",
+          "when": "SyncExportService.GetManifestAsync(since) runs",
+          "then": "it returns a SyncManifest containing nodeId, nodeName, generatedAt, lastSyncedAt, and per-entity counts (snomed, volunteers, research, sessions, recordings) filtered by UpdatedAt > since when since is provided, or all records when since is null"
+        },
+        {
+          "id": "AC-2",
+          "given": "GET /api/sync/snomed/{entityType}?since=ISO8601&page=1&pageSize=100 is called",
+          "when": "SyncExportService.GetSnomedEntitiesAsync runs for the given entityType",
+          "then": "it returns a paginated response { data, page, pageSize, totalRecords, totalPages } containing only records with UpdatedAt > since; supported entityType values are: body-regions, body-structures, topographical-modifiers, lateralities, clinical-conditions, clinical-events, medications, allergy-intolerances, severity-codes"
+        },
+        {
+          "id": "AC-3",
+          "given": "GET /api/sync/volunteers?since=ISO8601&page=1&pageSize=100 is called",
+          "when": "SyncExportService.GetVolunteersAsync runs",
+          "then": "it returns paginated VolunteerSyncDTOs each including nested VitalSigns, ClinicalConditions, Medications, and AllergyIntolerances, filtered by Volunteer.UpdatedAt > since"
+        },
+        {
+          "id": "AC-4",
+          "given": "GET /api/sync/research?since=ISO8601&page=1&pageSize=100 is called",
+          "when": "SyncExportService.GetResearchAsync runs",
+          "then": "it returns paginated ResearchSyncDTOs each including nested Applications, ResearchDevices (with Device and Sensors), and ResearchResearchers, filtered by Research.UpdatedAt > since"
+        },
+        {
+          "id": "AC-5",
+          "given": "GET /api/sync/sessions?since=ISO8601&page=1&pageSize=100 is called",
+          "when": "SyncExportService.GetSessionsAsync runs",
+          "then": "it returns paginated SessionSyncDTOs each including nested Records (with RecordChannels), SessionAnnotations, and TargetAreas, filtered by RecordSession.UpdatedAt > since"
+        },
+        {
+          "id": "AC-6",
+          "given": "GET /api/sync/recordings/{id:guid}/file is called for a valid recording ID",
+          "when": "SyncExportService.GetRecordingFileAsync runs",
+          "then": "it returns the binary file content with appropriate Content-Type and Content-Disposition headers; if the file does not exist it returns 404"
+        },
+        {
+          "id": "AC-7",
+          "given": "any of the six endpoints is called",
+          "when": "the request reaches the controller",
+          "then": "both [PrismEncryptedChannelConnection] and [PrismAuthenticatedSession(RequiredCapability = NodeAccessTypeEnum.ReadWrite)] must be satisfied; a missing or invalid channel/session returns 401, an insufficient capability returns 403"
+        },
+        {
+          "id": "AC-8",
+          "given": "since is null on any paginated endpoint",
+          "when": "the query runs",
+          "then": "all records (no UpdatedAt filter) are returned in ascending UpdatedAt order"
+        },
+        {
+          "id": "AC-9",
+          "given": "since is provided on any paginated endpoint",
+          "when": "the query runs",
+          "then": "only records with UpdatedAt strictly greater than since are returned in ascending UpdatedAt order"
+        },
+        {
+          "id": "AC-10",
+          "given": "SyncController does not use BaseController or HandleQueryParameters()",
+          "when": "pagination parameters are inspected",
+          "then": "page and pageSize are received directly as [FromQuery] parameters and forwarded to SyncExportService; the since parameter is also received directly as [FromQuery] DateTime?"
+        }
+      ],
+      "notes": "",
+      "dependencies": [
+        "US-007",
+        "US-017",
+        "US-018"
+      ],
+      "status": "Done",
+      "created_at": "2026-02-18T22:02:15.779721+00:00",
+      "updated_at": "2026-02-19T00:22:00.061471+00:00",
+      "created_by": "po",
+      "history": [
+        {
+          "action": "created",
+          "by": "po",
+          "at": "2026-02-18T22:02:15.779721+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "po",
+          "from": "Draft",
+          "to": "Ready",
+          "at": "2026-02-18T22:03:38.945054+00:00"
+        },
+        {
+          "action": "edited",
+          "by": "po",
+          "changes": [
+            "acceptance_criteria"
+          ],
+          "at": "2026-02-18T22:04:52.071242+00:00"
+        },
+        {
+          "action": "edited",
+          "by": "po",
+          "changes": [
+            "title",
+            "want",
+            "benefit",
+            "feature_area",
+            "acceptance_criteria",
+            "dependencies"
+          ],
+          "at": "2026-02-18T22:49:06.033141+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "dev",
+          "from": "Ready",
+          "to": "In Progress",
+          "at": "2026-02-18T23:11:59.178895+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "tl",
+          "from": "In Progress",
+          "to": "Done",
+          "at": "2026-02-19T00:22:00.062473+00:00"
+        }
+      ]
+    },
+    {
+      "id": "US-009",
+      "title": "Implement SyncImportService and POST /api/sync/import endpoint for transactional upsert",
+      "feature_area": "Backend - Sync Import",
+      "priority": "Must",
+      "role": "backend developer",
+      "want": "a SyncImportService that receives a SyncImportPayload (collected by the middleware after pulling all entities from the remote node) and persists all entities within a single EF Core transaction using newer-wins conflict resolution in dependency order, plus a POST /api/sync/import endpoint that invokes it",
+      "benefit": "all pulled data is atomically committed or rolled back together so no partial sync state ever persists on the requesting node, satisfying the no-partial-data requirement from the project brief",
+      "acceptance_criteria": [
+        {
+          "id": "AC-1",
+          "given": "POST /api/sync/import is called with a SyncImportPayload containing { snomed[], volunteers[], research[], sessions[], recordings[], manifestGeneratedAt }",
+          "when": "the request reaches SyncImportService.ImportAsync(payload, remoteNodeId)",
+          "then": "it opens a single EF Core transaction via PrismDbContext.Database.BeginTransactionAsync() before touching any entity"
+        },
+        {
+          "id": "AC-2",
+          "given": "ISyncImportService is implemented",
+          "when": "the class is inspected",
+          "then": "it injects PrismDbContext directly — it does NOT inject BaseRepository<T,K> — because bulk upsert within a shared transaction requires direct DbContext access"
+        },
+        {
+          "id": "AC-3",
+          "given": "the transaction is open",
+          "when": "entities are processed",
+          "then": "upsert order is strictly: SNOMED entities first, then Volunteers (with clinical sub-entities), then Research (with Applications, Devices, Researchers), then Sessions (with Records, RecordChannels, SessionAnnotations, TargetAreas), then recording files last; this order prevents FK constraint violations"
+        },
+        {
+          "id": "AC-4",
+          "given": "an entity in the payload has the same primary key as an existing local record and the incoming UpdatedAt is strictly newer",
+          "when": "upsert runs for that entity",
+          "then": "_context.Entry(existingEntity).CurrentValues.SetValues(incomingEntity) is called to overwrite all columns"
+        },
+        {
+          "id": "AC-5",
+          "given": "an entity in the payload has the same primary key as an existing local record and the incoming UpdatedAt is equal or older",
+          "when": "upsert runs for that entity",
+          "then": "the existing record is kept unchanged (no update issued)"
+        },
+        {
+          "id": "AC-6",
+          "given": "an entity in the payload has no matching primary key in the local database",
+          "when": "upsert runs for that entity",
+          "then": "_context.Add(entity) is called to insert it as a new record"
+        },
+        {
+          "id": "AC-7",
+          "given": "Research or Volunteer entities are being upserted",
+          "when": "the ResearchNodeId FK is set",
+          "then": "it is set to the local node own ID — the remote nodes ResearchNodeId is discarded to preserve data ownership semantics"
+        },
+        {
+          "id": "AC-8",
+          "given": "SNOMED entities are being upserted",
+          "when": "matching is performed",
+          "then": "matching uses SnomedCode (string natural key) not the GUID surrogate key"
+        },
+        {
+          "id": "AC-9",
+          "given": "SaveChangesAsync is called",
+          "when": "inspecting the implementation",
+          "then": "SaveChangesAsync() is called once after each entity type batch (after all SNOMEDs, after all Volunteers, etc.) within the still-open transaction; this pattern releases EF Core change tracker memory for large batches while keeping the transaction boundary intact"
+        },
+        {
+          "id": "AC-10",
+          "given": "all entity batches and file storage succeed",
+          "when": "the final SaveChangesAsync completes",
+          "then": "the SyncLog row is updated (status=completed, CompletedAt=UtcNow, LastSyncedAt=payload.ManifestGeneratedAt, EntitiesReceived=JSON counts) and the transaction is committed; SyncResult { status: completed, entitiesReceived } is returned"
+        },
+        {
+          "id": "AC-11",
+          "given": "any step throws an exception",
+          "when": "the catch block runs",
+          "then": "the main transaction is rolled back; a new separate transaction writes a SyncLog row with status=failed and ErrorMessage; SyncResult { status: rolled_back, errorMessage } is returned"
+        },
+        {
+          "id": "AC-12",
+          "given": "the same SyncImportPayload is submitted twice",
+          "when": "both calls complete",
+          "then": "the second call produces identical database state with no duplicates (idempotent upsert by primary key)"
+        },
+        {
+          "id": "AC-13",
+          "given": "a node with ReadOnly access level calls POST /api/sync/import",
+          "when": "the request is processed",
+          "then": "403 Forbidden is returned and no data is written"
+        }
+      ],
+      "notes": "",
+      "dependencies": [
+        "US-007",
+        "US-008",
+        "US-016"
+      ],
+      "status": "Done",
+      "created_at": "2026-02-18T22:02:27.058922+00:00",
+      "updated_at": "2026-02-19T00:22:00.192556+00:00",
+      "created_by": "po",
+      "history": [
+        {
+          "action": "created",
+          "by": "po",
+          "at": "2026-02-18T22:02:27.058922+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "po",
+          "from": "Draft",
+          "to": "Ready",
+          "at": "2026-02-18T22:03:39.068125+00:00"
+        },
+        {
+          "action": "edited",
+          "by": "po",
+          "changes": [
+            "acceptance_criteria"
+          ],
+          "at": "2026-02-18T22:04:52.167395+00:00"
+        },
+        {
+          "action": "edited",
+          "by": "po",
+          "changes": [
+            "title",
+            "want",
+            "benefit",
+            "feature_area",
+            "acceptance_criteria",
+            "dependencies"
+          ],
+          "at": "2026-02-18T22:49:35.913713+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "tl",
+          "from": "Ready",
+          "to": "Done",
+          "at": "2026-02-19T00:22:00.192556+00:00"
+        }
+      ]
+    },
+    {
+      "id": "US-010",
+      "title": "Implement NodeSyncService in @iris/middleware to orchestrate pull-based node sync",
+      "feature_area": "Desktop - Sync Service",
+      "priority": "Must",
+      "role": "desktop developer",
+      "want": "a NodeSyncService class in packages/middleware/src/sync/ that orchestrates the full pull-sync flow: fetch manifest from remote, pull all entity types via paginated GET endpoints in dependency order, collect all data in memory, then submit a single POST /api/sync/import to the local backend, with progress callbacks throughout",
+      "benefit": "the desktop sync button has a concrete, tested implementation that drives accurate UI feedback while ensuring the local backend handles all persistence in a single atomic transaction",
+      "acceptance_criteria": [
+        {
+          "id": "AC-1",
+          "given": "NodeSyncService.pull(since?) is invoked with an optional watermark timestamp",
+          "when": "the service starts",
+          "then": "it calls POST /api/sync/manifest on the remote node via middleware.invoke() with { since } in the body and returns a SyncManifest for the caller to show in the confirmation dialog; no entity data is fetched yet"
+        },
+        {
+          "id": "AC-2",
+          "given": "the user confirms sync and executePull() begins",
+          "when": "SNOMED entities are fetched",
+          "then": "the service iterates all 9 SNOMED sub-types (body-regions, body-structures, topographical-modifiers, lateralities, clinical-conditions, clinical-events, medications, allergy-intolerances, severity-codes) via GET /api/sync/snomed/{entityType}?since=&page=N&pageSize=100"
+        },
+        {
+          "id": "AC-3",
+          "given": "fetchAllPages() is called for any entity endpoint",
+          "when": "it iterates pages",
+          "then": "it calls GET {path}?page=N&pageSize=100&since=X, accumulates response.data into a local array, and continues until page > response.totalPages; all pages are collected before returning"
+        },
+        {
+          "id": "AC-4",
+          "given": "SNOMED fetching completes",
+          "when": "the service continues",
+          "then": "it fetches Volunteers via GET /api/sync/volunteers, then Research via GET /api/sync/research, then Sessions via GET /api/sync/sessions, in that dependency order"
+        },
+        {
+          "id": "AC-5",
+          "given": "session data has been collected",
+          "when": "recording file references are extracted",
+          "then": "the service calls GET /api/sync/recordings/{id}/file for each recording ID that has a file reference, accumulating binary data in memory"
+        },
+        {
+          "id": "AC-6",
+          "given": "all entities and files are collected in memory",
+          "when": "the import step runs",
+          "then": "the service submits a single POST /api/sync/import to the LOCAL backend (not the remote node) with the complete SyncImportPayload; it does not send incremental batches"
+        },
+        {
+          "id": "AC-7",
+          "given": "progress events are emitted",
+          "when": "each page or file is fetched",
+          "then": "the onProgress callback receives { phase: manifest | snomed | volunteers | research | sessions | recordings, current: number, total: number, entityType: string } matching the SyncProgress interface in @iris/domain"
+        },
+        {
+          "id": "AC-8",
+          "given": "the connection nodeAccessLevel is READ_ONLY",
+          "when": "pull() is called",
+          "then": "the service rejects immediately with a clear error message before making any network call"
+        },
+        {
+          "id": "AC-9",
+          "given": "any page fetch fails with a network error or non-2xx response",
+          "when": "the error is caught",
+          "then": "no data has been written to the database (all collection was in-memory); the error propagates to the caller and the user can retry the entire sync"
+        },
+        {
+          "id": "AC-10",
+          "given": "NodeSyncService is used from the desktop",
+          "when": "the service file is inspected",
+          "then": "it is located at packages/middleware/src/sync/NodeSyncService.ts and its types (SyncManifest, SyncProgress, SyncResult) are re-exported from packages/middleware/src/index.ts"
+        }
+      ],
+      "notes": "",
+      "dependencies": [
+        "US-009",
+        "US-016"
+      ],
+      "status": "Done",
+      "created_at": "2026-02-18T22:03:32.818192+00:00",
+      "updated_at": "2026-02-18T23:30:14.934809+00:00",
+      "created_by": "po",
+      "history": [
+        {
+          "action": "created",
+          "by": "po",
+          "at": "2026-02-18T22:03:32.818192+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "po",
+          "from": "Draft",
+          "to": "Ready",
+          "at": "2026-02-18T22:03:39.193540+00:00"
+        },
+        {
+          "action": "edited",
+          "by": "po",
+          "changes": [
+            "acceptance_criteria"
+          ],
+          "at": "2026-02-18T22:04:52.266229+00:00"
+        },
+        {
+          "action": "edited",
+          "by": "po",
+          "changes": [
+            "title",
+            "want",
+            "benefit",
+            "feature_area",
+            "acceptance_criteria",
+            "dependencies"
+          ],
+          "at": "2026-02-18T22:50:02.418195+00:00"
+        },
+        {
+          "action": "edited",
+          "by": "po",
+          "changes": [
+            "dependencies"
+          ],
+          "at": "2026-02-18T22:51:38.631627+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "dev",
+          "from": "Ready",
+          "to": "In Progress",
+          "at": "2026-02-18T23:29:24.712596+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "dev",
+          "from": "In Progress",
+          "to": "Done",
+          "at": "2026-02-18T23:30:14.934809+00:00"
+        }
+      ]
+    },
+    {
+      "id": "US-011",
+      "title": "Wire the Sync button on NodeConnectionsScreen to invoke NodeSyncService.synchronize()",
+      "feature_area": "Desktop - Sync Trigger",
+      "priority": "Must",
+      "role": "desktop developer",
+      "want": "the existing Sync button on NodeConnectionsScreen.tsx to call NodeSyncService.synchronize(connectionId) and open the sync progress modal",
+      "benefit": "users can trigger sync with a single click without navigating away from the connections list",
+      "acceptance_criteria": [
+        {
+          "id": "AC-1",
+          "given": "the user clicks the Sync button on a valid Authorized ReadWrite connection",
+          "when": "the click handler fires",
+          "then": "NodeSyncService.synchronize(connectionId) is called and the SyncProgressModal opens"
+        },
+        {
+          "id": "AC-2",
+          "given": "a connection has accessLevel === ReadOnly",
+          "when": "the Sync button is rendered",
+          "then": "it is visually disabled and unclickable"
+        },
+        {
+          "id": "AC-3",
+          "given": "a connection has status !== Authorized",
+          "when": "the Sync button is rendered",
+          "then": "it is visually disabled and unclickable"
+        },
+        {
+          "id": "AC-4",
+          "given": "a sync is already in progress for a connection",
+          "when": "the Sync button is rendered",
+          "then": "it is disabled until the sync completes or fails"
+        },
+        {
+          "id": "AC-5",
+          "given": "the user clicks Sync",
+          "when": "the sync operation starts",
+          "then": "the user remains on the NodeConnectionsScreen (no page navigation occurs)"
+        }
+      ],
+      "notes": "",
+      "dependencies": [
+        "US-010"
+      ],
+      "status": "Done",
+      "created_at": "2026-02-18T22:03:32.919494+00:00",
+      "updated_at": "2026-02-18T23:33:13.873113+00:00",
+      "created_by": "po",
+      "history": [
+        {
+          "action": "created",
+          "by": "po",
+          "at": "2026-02-18T22:03:32.919494+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "po",
+          "from": "Draft",
+          "to": "Ready",
+          "at": "2026-02-18T22:03:39.315316+00:00"
+        },
+        {
+          "action": "edited",
+          "by": "po",
+          "changes": [
+            "acceptance_criteria"
+          ],
+          "at": "2026-02-18T22:04:52.368314+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "dev",
+          "from": "Ready",
+          "to": "In Progress",
+          "at": "2026-02-18T23:30:15.101306+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "dev",
+          "from": "In Progress",
+          "to": "Done",
+          "at": "2026-02-18T23:33:13.873113+00:00"
+        }
+      ]
+    },
+    {
+      "id": "US-012",
+      "title": "Build SyncProgressModal with in-progress counts, success confirmation, and error display",
+      "feature_area": "Desktop - Sync Progress UI",
+      "priority": "Must",
+      "role": "desktop developer",
+      "want": "a modal that opens when sync starts and shows real-time progress (e.g., 'Syncing 12/48 records...'), a success summary, or an actionable error message when sync fails",
+      "benefit": "users have clear, real-time visibility into the sync operation and know exactly what happened without inspecting logs",
+      "acceptance_criteria": [
+        {
+          "id": "AC-1",
+          "given": "a sync operation starts",
+          "when": "the SyncProgressModal opens",
+          "then": "it shows an animated spinner and text 'Syncing N/M records...' that updates as progress events arrive"
+        },
+        {
+          "id": "AC-2",
+          "given": "the sync completes successfully",
+          "when": "the modal updates its state",
+          "then": "it displays 'Sync complete. N records sent.' along with the completion timestamp"
+        },
+        {
+          "id": "AC-3",
+          "given": "the sync fails",
+          "when": "the modal updates its state",
+          "then": "it displays a human-readable error message mapped from the SyncError code and a Retry button"
+        },
+        {
+          "id": "AC-4",
+          "given": "the user clicks Retry in the error state",
+          "when": "the retry is triggered",
+          "then": "NodeSyncService.synchronize() is called again and the modal returns to in-progress state"
+        },
+        {
+          "id": "AC-5",
+          "given": "a sync is in progress",
+          "when": "the user attempts to close the modal",
+          "then": "the close button is absent or disabled; modal cannot be dismissed mid-sync"
+        },
+        {
+          "id": "AC-6",
+          "given": "the sync completes or fails",
+          "when": "the user closes the modal",
+          "then": "the modal closes and the connections table reflects the updated sync history"
+        },
+        {
+          "id": "AC-7",
+          "given": "the modal opens",
+          "when": "accessibility tools inspect the DOM",
+          "then": "focus is trapped inside the modal and success/error state changes are announced via aria-live"
+        }
+      ],
+      "notes": "",
+      "dependencies": [
+        "US-011"
+      ],
+      "status": "Done",
+      "created_at": "2026-02-18T22:03:33.019699+00:00",
+      "updated_at": "2026-02-18T23:33:14.001418+00:00",
+      "created_by": "po",
+      "history": [
+        {
+          "action": "created",
+          "by": "po",
+          "at": "2026-02-18T22:03:33.019699+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "po",
+          "from": "Draft",
+          "to": "Ready",
+          "at": "2026-02-18T22:03:39.436871+00:00"
+        },
+        {
+          "action": "edited",
+          "by": "po",
+          "changes": [
+            "acceptance_criteria"
+          ],
+          "at": "2026-02-18T22:04:52.466847+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "dev",
+          "from": "Ready",
+          "to": "Done",
+          "at": "2026-02-18T23:33:14.001418+00:00"
+        }
+      ]
+    },
+    {
+      "id": "US-013",
+      "title": "Display last sync timestamp and status on each connection row in the connections table",
+      "feature_area": "Desktop - Sync History",
+      "priority": "Must",
+      "role": "desktop developer",
+      "want": "each connection row in NodeConnectionsScreen to show 'Last synced: <relative time>' (e.g., '2 hours ago') and a coloured status badge (Success / Failed / Never)",
+      "benefit": "admins can instantly see which connections are up-to-date and which need attention without opening each connection",
+      "acceptance_criteria": [
+        {
+          "id": "AC-1",
+          "given": "a connection has at least one SyncLog entry with status=Success",
+          "when": "the connection row is rendered",
+          "then": "the 'Last Sync' column shows a relative timestamp (e.g., '2 hours ago') and a green badge"
+        },
+        {
+          "id": "AC-2",
+          "given": "a connection's most recent SyncLog entry has status=Failed",
+          "when": "the connection row is rendered",
+          "then": "the 'Last Sync' column shows the relative timestamp and a red badge"
+        },
+        {
+          "id": "AC-3",
+          "given": "a connection has no SyncLog entries",
+          "when": "the connection row is rendered",
+          "then": "the 'Last Sync' column shows 'Never' with a grey badge"
+        },
+        {
+          "id": "AC-4",
+          "given": "the user hovers over the relative timestamp",
+          "when": "the tooltip appears",
+          "then": "it shows the full ISO-8601 UTC datetime of the last sync"
+        },
+        {
+          "id": "AC-5",
+          "given": "a sync operation completes or fails",
+          "when": "the modal closes",
+          "then": "the 'Last Sync' column for that connection refreshes without a full page reload"
+        }
+      ],
+      "notes": "",
+      "dependencies": [
+        "US-010"
+      ],
+      "status": "Done",
+      "created_at": "2026-02-18T22:03:33.122319+00:00",
+      "updated_at": "2026-02-18T23:33:14.140651+00:00",
+      "created_by": "po",
+      "history": [
+        {
+          "action": "created",
+          "by": "po",
+          "at": "2026-02-18T22:03:33.122319+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "po",
+          "from": "Draft",
+          "to": "Ready",
+          "at": "2026-02-18T22:03:39.561377+00:00"
+        },
+        {
+          "action": "edited",
+          "by": "po",
+          "changes": [
+            "acceptance_criteria"
+          ],
+          "at": "2026-02-18T22:04:52.565670+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "dev",
+          "from": "Ready",
+          "to": "Done",
+          "at": "2026-02-18T23:33:14.140651+00:00"
+        }
+      ]
+    },
+    {
+      "id": "US-014",
+      "title": "Add SyncLog query endpoint GET /api/sync/log to support desktop sync history display",
+      "feature_area": "Backend - Sync Infrastructure",
+      "priority": "Must",
+      "role": "backend developer",
+      "want": "a paginated GET endpoint that returns SyncLog entries for a given connectionId, ordered by StartedAt descending",
+      "benefit": "the desktop can display accurate last-sync timestamps and status without storing sync history locally in a separate store",
+      "acceptance_criteria": [
+        {
+          "id": "AC-1",
+          "given": "a valid remoteNodeId (UUID) is provided",
+          "when": "GET /api/sync/log?remoteNodeId={uuid}&page=1&pageSize=10 is called by an authenticated session",
+          "then": "a paginated list of SyncLog entries ordered by startedAt descending is returned"
+        },
+        {
+          "id": "AC-2",
+          "given": "no SyncLog entries exist for the remoteNodeId",
+          "when": "the endpoint is called",
+          "then": "it returns 200 with an empty data array"
+        },
+        {
+          "id": "AC-3",
+          "given": "a missing or invalid (non-UUID) remoteNodeId is provided",
+          "when": "the endpoint is called",
+          "then": "it returns 400 Bad Request with a descriptive error"
+        },
+        {
+          "id": "AC-4",
+          "given": "an unauthenticated request reaches the endpoint",
+          "when": "the middleware processes it",
+          "then": "it returns 401 Unauthorized"
+        },
+        {
+          "id": "AC-5",
+          "given": "a valid response is returned",
+          "when": "the response body is inspected",
+          "then": "each SyncLog entry contains: id, remoteNodeId, startedAt, completedAt, status, lastSyncedAt, entitiesReceived (Record<string,number> or null), errorMessage (string or null)"
+        }
+      ],
+      "notes": "",
+      "dependencies": [
+        "US-007"
+      ],
+      "status": "Done",
+      "created_at": "2026-02-18T22:03:33.219450+00:00",
+      "updated_at": "2026-02-19T00:22:00.317655+00:00",
+      "created_by": "po",
+      "history": [
+        {
+          "action": "created",
+          "by": "po",
+          "at": "2026-02-18T22:03:33.219450+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "po",
+          "from": "Draft",
+          "to": "Ready",
+          "at": "2026-02-18T22:03:39.687167+00:00"
+        },
+        {
+          "action": "edited",
+          "by": "po",
+          "changes": [
+            "acceptance_criteria"
+          ],
+          "at": "2026-02-18T22:04:52.663054+00:00"
+        },
+        {
+          "action": "edited",
+          "by": "po",
+          "changes": [
+            "acceptance_criteria"
+          ],
+          "at": "2026-02-18T22:50:13.665321+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "tl",
+          "from": "Ready",
+          "to": "Done",
+          "at": "2026-02-19T00:22:00.317655+00:00"
+        }
+      ]
+    },
+    {
+      "id": "US-015",
+      "title": "Write integration tests validating the end-to-end sync flow between NodeA and NodeB",
+      "feature_area": "Testing",
+      "priority": "Must",
+      "role": "QA engineer",
+      "want": "automated integration tests that spin up the two Docker nodes, push research data from NodeA to NodeB, and assert the data appears correctly on NodeB",
+      "benefit": "regressions in the sync pipeline are caught before merge without manual Docker setup",
+      "acceptance_criteria": [
+        {
+          "id": "AC-1",
+          "given": "NodeA has research data and NodeB has none",
+          "when": "a full sync is triggered from NodeA to NodeB",
+          "then": "all records appear correctly on NodeB after sync with no data loss or corruption"
+        },
+        {
+          "id": "AC-2",
+          "given": "a prior sync established a LastSyncedAt watermark at time T and new records were created after T on NodeA",
+          "when": "a delta sync is triggered using T as the since parameter",
+          "then": "only the records with UpdatedAt > T are fetched from NodeA and imported into NodeB"
+        },
+        {
+          "id": "AC-3",
+          "given": "an identical SyncImportPayload is submitted twice to POST /api/sync/import",
+          "when": "both requests complete",
+          "then": "NodeB contains no duplicate records (idempotent upsert by primary key)"
+        },
+        {
+          "id": "AC-4",
+          "given": "a ReadOnly connection is used",
+          "when": "sync is attempted via NodeSyncService",
+          "then": "the service rejects with a clear permission error and no network calls are made to the remote node"
+        },
+        {
+          "id": "AC-5",
+          "given": "a non-Authorized connection is used",
+          "when": "sync is attempted",
+          "then": "the service rejects before any handshake with a clear error and no data is transmitted"
+        },
+        {
+          "id": "AC-6",
+          "given": "the sync transaction fails mid-import (e.g., network error during file download or FK constraint violation)",
+          "when": "the exception propagates to SyncImportService",
+          "then": "the entire EF Core transaction is rolled back on the requesting node — zero entity rows are persisted; a SyncLog entry with status=failed is written in a separate follow-up transaction; retrying the sync restarts from the last successful LastSyncedAt watermark"
+        },
+        {
+          "id": "AC-7",
+          "given": "tests run",
+          "when": "the test setup executes",
+          "then": "Docker Compose (docker-compose.application.yml) is used with a clean database state per test run; NodeA and NodeB start with no SyncLog entries for each other"
+        }
+      ],
+      "notes": "",
+      "dependencies": [
+        "US-009",
+        "US-010"
+      ],
+      "status": "Done",
+      "created_at": "2026-02-18T22:03:33.321247+00:00",
+      "updated_at": "2026-02-19T00:22:00.443992+00:00",
+      "created_by": "po",
+      "history": [
+        {
+          "action": "created",
+          "by": "po",
+          "at": "2026-02-18T22:03:33.321247+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "po",
+          "from": "Draft",
+          "to": "Ready",
+          "at": "2026-02-18T22:03:39.819294+00:00"
+        },
+        {
+          "action": "edited",
+          "by": "po",
+          "changes": [
+            "acceptance_criteria"
+          ],
+          "at": "2026-02-18T22:04:52.758432+00:00"
+        },
+        {
+          "action": "edited",
+          "by": "po",
+          "changes": [
+            "acceptance_criteria"
+          ],
+          "at": "2026-02-18T22:50:28.350503+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "tl",
+          "from": "Ready",
+          "to": "Done",
+          "at": "2026-02-19T00:22:00.443992+00:00"
+        }
+      ]
+    },
+    {
+      "id": "US-016",
+      "title": "Add NodeSync domain types to @iris/domain package",
+      "feature_area": "Domain - Shared Types",
+      "priority": "Must",
+      "role": "developer",
+      "want": "a new NodeSync.ts file in packages/domain/src/models/ containing all shared TypeScript interfaces for the sync protocol (SyncManifest, SyncEntitySummary, SyncRecordingSummary, SyncProgress, SyncResult, SyncLogEntry, PaginatedSyncResponse<T>) plus an extension to the existing ResearchNodeConnection interface",
+      "benefit": "all layers (middleware, desktop, tests) share a single source of truth for sync-related types under strict TypeScript, preventing the type drift that caused schema mismatches in the original backlog",
+      "acceptance_criteria": [
+        {
+          "id": "AC-1",
+          "given": "packages/domain/src/models/NodeSync.ts is created",
+          "when": "the file is inspected",
+          "then": "it exports: SyncManifest (nodeId, nodeName, generatedAt, lastSyncedAt, entities: { snomed, volunteers, research, sessions, recordings }), SyncEntitySummary (count, latestUpdate), SyncRecordingSummary (count, totalSizeBytes), SyncProgress (phase: manifest|snomed|volunteers|research|sessions|recordings, current, total, entityType), SyncResult (status: completed|failed|rolled_back, startedAt, completedAt, entitiesReceived, errorMessage?), SyncLogEntry (id, remoteNodeId, startedAt, completedAt, status, lastSyncedAt, entitiesReceived, errorMessage), PaginatedSyncResponse<T> (data, page, pageSize, totalRecords, totalPages)"
+        },
+        {
+          "id": "AC-2",
+          "given": "the ResearchNodeConnection interface in packages/domain/src/models/Research.ts",
+          "when": "it is inspected",
+          "then": "it contains two new optional fields: lastSyncedAt?: string and lastSyncStatus?: string"
+        },
+        {
+          "id": "AC-3",
+          "given": "packages/domain/src/index.ts",
+          "when": "it is inspected",
+          "then": "it exports all types from NodeSync.ts so consumers can import directly from @iris/domain"
+        },
+        {
+          "id": "AC-4",
+          "given": "the domain package change is applied",
+          "when": "npm run type-check:all is executed from the IRIS monorepo root",
+          "then": "TypeScript strict mode compilation succeeds with zero type errors"
+        }
+      ],
+      "notes": "",
+      "dependencies": [],
+      "status": "Done",
+      "created_at": "2026-02-18T22:50:44.725321+00:00",
+      "updated_at": "2026-02-18T22:56:34.804421+00:00",
+      "created_by": "po",
+      "history": [
+        {
+          "action": "created",
+          "by": "po",
+          "at": "2026-02-18T22:50:44.725321+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "po",
+          "from": "Draft",
+          "to": "Ready",
+          "at": "2026-02-18T22:51:51.988117+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "dev",
+          "from": "Ready",
+          "to": "In Progress",
+          "at": "2026-02-18T22:55:47.970832+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "dev",
+          "from": "In Progress",
+          "to": "Done",
+          "at": "2026-02-18T22:56:34.804421+00:00"
+        }
+      ]
+    },
+    {
+      "id": "US-017",
+      "title": "Extend NodeChannelClient with InvokeAsync<T> and InvokeStreamAsync for post-handshake authenticated requests",
+      "feature_area": "Backend - Channel Infrastructure",
+      "priority": "Must",
+      "role": "backend developer",
+      "want": "two new methods on INodeChannelClient — InvokeAsync<TResponse> for JSON requests through the encrypted channel and InvokeStreamAsync for binary file streaming — so the desktop backend can make arbitrary authenticated API calls to a remote node after the 4-phase handshake completes",
+      "benefit": "the SyncImportService and any future server-to-server features can reuse the existing channel infrastructure (channelStore, encryptionService, httpClientFactory) without duplicating HTTP and encryption logic",
+      "acceptance_criteria": [
+        {
+          "id": "AC-1",
+          "given": "INodeChannelClient is inspected",
+          "when": "the interface is updated",
+          "then": "it declares Task<TResponse> InvokeAsync<TResponse>(string channelId, string sessionToken, HttpMethod method, string path, object? body = null) as a new method"
+        },
+        {
+          "id": "AC-2",
+          "given": "NodeChannelClient.InvokeAsync<TResponse> is called with a valid channelId and sessionToken",
+          "when": "the method executes",
+          "then": "it retrieves the channel context from _channelStore, adds X-Channel-Id and X-Session-Id headers to the HTTP request, encrypts body using _encryptionService when body is not null, sends the request via _httpClientFactory, decrypts the response envelope, and returns the deserialized TResponse"
+        },
+        {
+          "id": "AC-3",
+          "given": "the channel is not found in _channelStore (expired or unknown channelId)",
+          "when": "InvokeAsync is called",
+          "then": "it throws InvalidOperationException with the message Channel {channelId} not found or expired"
+        },
+        {
+          "id": "AC-4",
+          "given": "the remote node returns a non-success HTTP status code",
+          "when": "InvokeAsync processes the response",
+          "then": "it reads the error body, extracts the message, and throws a typed exception including the status code and error detail"
+        },
+        {
+          "id": "AC-5",
+          "given": "INodeChannelClient is inspected",
+          "when": "the interface is updated",
+          "then": "it also declares Task<Stream> InvokeStreamAsync(string channelId, string sessionToken, string path) for binary file downloads"
+        },
+        {
+          "id": "AC-6",
+          "given": "InvokeStreamAsync is called for a recording file endpoint",
+          "when": "the response arrives",
+          "then": "it returns a raw Stream of the response content without JSON deserialization; the caller is responsible for reading and disposing the stream"
+        },
+        {
+          "id": "AC-7",
+          "given": "a recording file larger than 10 MB is requested via InvokeStreamAsync",
+          "when": "the download completes",
+          "then": "the full binary content is received correctly without truncation; a test using a synthetic 12 MB byte array validates this"
+        }
+      ],
+      "notes": "",
+      "dependencies": [],
+      "status": "Done",
+      "created_at": "2026-02-18T22:51:01.904430+00:00",
+      "updated_at": "2026-02-18T23:10:57.442563+00:00",
+      "created_by": "po",
+      "history": [
+        {
+          "action": "created",
+          "by": "po",
+          "at": "2026-02-18T22:51:01.904430+00:00"
+        },
+        {
+          "action": "edited",
+          "by": "po",
+          "changes": [
+            "dependencies"
+          ],
+          "at": "2026-02-18T22:51:40.172539+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "po",
+          "from": "Draft",
+          "to": "Ready",
+          "at": "2026-02-18T22:51:52.111155+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "dev",
+          "from": "Ready",
+          "to": "In Progress",
+          "at": "2026-02-18T23:10:12.260639+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "dev",
+          "from": "In Progress",
+          "to": "Done",
+          "at": "2026-02-18T23:10:57.442563+00:00"
+        }
+      ]
+    },
+    {
+      "id": "US-018",
+      "title": "Add PrismSyncEndpointAttribute and elevate rate limit to 600 req/min for sync endpoints",
+      "feature_area": "Backend - Security/Rate Limiting",
+      "priority": "Must",
+      "role": "backend developer",
+      "want": "a new PrismSyncEndpointAttribute marker attribute and a targeted modification to PrismAuthenticatedSessionAttribute so that sync endpoints use 600 requests/minute instead of the standard 60, without changing the rate limit for any other endpoint",
+      "benefit": "a paginated sync pulling 100 records per page across 5 entity categories can complete without hitting the standard rate limit, while all existing non-sync endpoints remain protected at 60 req/min with no regression",
+      "acceptance_criteria": [
+        {
+          "id": "AC-1",
+          "given": "Bioteca.Prism.InteroperableResearchNode/Middleware/PrismSyncEndpointAttribute.cs is created",
+          "when": "the file is inspected",
+          "then": "it defines [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class)] public class PrismSyncEndpointAttribute : Attribute { } with no additional members"
+        },
+        {
+          "id": "AC-2",
+          "given": "PrismAuthenticatedSessionAttribute.OnActionExecutionAsync is modified",
+          "when": "it runs for a sync endpoint",
+          "then": "it checks context.ActionDescriptor.EndpointMetadata for the presence of PrismSyncEndpointAttribute and uses rateLimit = 600 when found, rateLimit = 60 otherwise"
+        },
+        {
+          "id": "AC-3",
+          "given": "SyncController is decorated with [PrismSyncEndpoint]",
+          "when": "any sync endpoint is called",
+          "then": "the 600 req/min limit applies to that request"
+        },
+        {
+          "id": "AC-4",
+          "given": "any non-sync controller endpoint (e.g., /api/session/whoami, /api/research, /api/volunteer)",
+          "when": "it is called",
+          "then": "the standard 60 req/min limit still applies — no change in behavior"
+        },
+        {
+          "id": "AC-5",
+          "given": "the 73+ existing tests that exercise PrismAuthenticatedSessionAttribute",
+          "when": "tests run after this change",
+          "then": "all previously passing tests continue to pass with no regression"
+        }
+      ],
+      "notes": "",
+      "dependencies": [],
+      "status": "Done",
+      "created_at": "2026-02-18T22:51:16.437600+00:00",
+      "updated_at": "2026-02-18T23:11:52.561198+00:00",
+      "created_by": "po",
+      "history": [
+        {
+          "action": "created",
+          "by": "po",
+          "at": "2026-02-18T22:51:16.437600+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "po",
+          "from": "Draft",
+          "to": "Ready",
+          "at": "2026-02-18T22:51:52.234504+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "dev",
+          "from": "Ready",
+          "to": "In Progress",
+          "at": "2026-02-18T23:11:02.405551+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "dev",
+          "from": "In Progress",
+          "to": "Done",
+          "at": "2026-02-18T23:11:52.561198+00:00"
+        }
+      ]
+    },
+    {
+      "id": "US-1801",
+      "title": "Create ISyncPullService interface and SyncPullService implementation",
+      "feature_area": "Phase 18 - Sync Refactoring",
+      "priority": "Must",
+      "role": "backend developer",
+      "want": "a new ISyncPullService interface and SyncPullService class that orchestrates the full backend-to-backend sync lifecycle: resolves the remote node URL, performs the 4-phase handshake via INodeChannelClient, fetches all entity pages from the remote node in dependency order (SNOMED → Volunteers → Research → Sessions → Recordings), builds the SyncImportPayload, calls SyncImportService.ImportAsync directly, closes the channel, and returns a SyncResultDTO",
+      "benefit": "sync orchestration moves entirely to the backend, removing fragile UI-layer coordination and keeping sensitive biomedical data within the node trust boundary",
+      "acceptance_criteria": [
+        {
+          "id": "AC-1",
+          "given": "a valid remoteNodeId is provided",
+          "when": "SyncPullService.PullAsync() is called",
+          "then": "it resolves the remote node URL from the node registry, performs OpenChannelAsync + IdentifyNodeAsync + RequestChallengeAsync + AuthenticateAsync in sequence, and only proceeds to fetch entities after all 4 phases succeed"
+        },
+        {
+          "id": "AC-2",
+          "given": "the handshake succeeds",
+          "when": "entities are fetched",
+          "then": "all 9 SNOMED sub-types are fetched first, then Volunteers, then Research, then Sessions, with each entity type fetched using paginated GET calls (pageSize=100) that pass since if provided"
+        },
+        {
+          "id": "AC-3",
+          "given": "sessions contain RecordChannels with a FileUrl",
+          "when": "recordings are fetched",
+          "then": "SyncPullService calls InvokeStreamAsync for each recording channel ID and stores the binary content in the import payload"
+        },
+        {
+          "id": "AC-4",
+          "given": "all entities are collected",
+          "when": "the import step runs",
+          "then": "SyncImportService.ImportAsync() is called directly (no HTTP round-trip) with the full payload, and the channel is closed via CloseChannelAsync regardless of success or failure"
+        },
+        {
+          "id": "AC-5",
+          "given": "since is omitted in the request",
+          "when": "SyncPullService resolves the watermark",
+          "then": "it queries the sync_logs table for the most recent successful sync for the given remoteNodeId and uses its LastSyncedAt as the since value; if no prior sync exists, it performs a full sync"
+        },
+        {
+          "id": "AC-6",
+          "given": "the handshake fails, a remote endpoint returns an error, or ImportAsync throws",
+          "when": "the exception propagates",
+          "then": "CloseChannelAsync is still called (finally block), a SyncLog row with status=failed is written, and the error is re-thrown with the failure stage indicated"
+        },
+        {
+          "id": "AC-7",
+          "given": "SyncPullService is registered in DI",
+          "when": "the application starts",
+          "then": "it is registered as Scoped, and INodeChannelClient (singleton) is injected normally without captive dependency issues"
         }
       ],
       "notes": "",
       "dependencies": [],
       "status": "Ready",
-      "created_at": "2026-02-18T03:07:48.783259+00:00",
-      "updated_at": "2026-02-18T03:09:06.076501+00:00",
+      "created_at": "2026-02-22T20:49:13.868112+00:00",
+      "updated_at": "2026-02-22T20:50:58.183721+00:00",
       "created_by": "po",
       "history": [
         {
           "action": "created",
           "by": "po",
-          "at": "2026-02-18T03:07:48.783259+00:00"
+          "at": "2026-02-22T20:49:13.868112+00:00"
         },
         {
           "action": "status_change",
           "by": "po",
           "from": "Draft",
           "to": "Ready",
-          "at": "2026-02-18T03:08:42.143473+00:00"
-        },
-        {
-          "action": "edited",
-          "by": "po",
-          "changes": [
-            "acceptance_criteria"
-          ],
-          "at": "2026-02-18T03:09:06.076501+00:00"
+          "at": "2026-02-22T20:50:58.183721+00:00"
         }
       ]
     },
     {
-      "id": "US-002",
-      "title": "Add blobUrl field to Recording domain type",
-      "feature_area": "Domain Model",
+      "id": "US-1802",
+      "title": "Add POST /api/sync/pull endpoint to SyncController",
+      "feature_area": "Phase 18 - Sync Refactoring",
       "priority": "Must",
-      "role": "developer",
-      "want": "an optional blobUrl field added to the Recording interface and NewRecordingData interface in packages/domain/src/models/Recording.ts",
-      "benefit": "the TypeScript type system distinguishes between local filesystem paths and remote blob URLs throughout the entire codebase, preventing the kind of conflation that caused the original bug",
+      "role": "backend developer",
+      "want": "a new POST /api/sync/pull endpoint on SyncController that accepts a JSON body with remoteNodeId (Guid, required) and since (ISO-8601 string, optional), validates the caller via user JWT authentication, delegates to ISyncPullService.PullAsync(), and returns the SyncResultDTO",
+      "benefit": "the desktop UI can trigger a full backend-orchestrated sync with a single authenticated HTTP call instead of orchestrating the handshake and data fetching itself",
       "acceptance_criteria": [
         {
           "id": "AC-1",
-          "given": "the Recording interface in packages/domain/src/models/Recording.ts",
-          "when": "it is inspected",
-          "then": "it contains an optional blobUrl?: string field alongside the existing filePath field"
+          "given": "an authenticated researcher sends POST /api/sync/pull with a valid remoteNodeId",
+          "when": "the request is processed",
+          "then": "the endpoint calls ISyncPullService.PullAsync(remoteNodeId, since) and returns 200 OK with {status, startedAt, completedAt, entitiesReceived}"
         },
         {
           "id": "AC-2",
-          "given": "the NewRecordingData interface",
-          "when": "it is inspected",
-          "then": "it also contains an optional blobUrl?: string field"
+          "given": "the caller is not authenticated",
+          "when": "POST /api/sync/pull is called",
+          "then": "the endpoint returns 401 Unauthorized without invoking any sync logic"
         },
         {
           "id": "AC-3",
-          "given": "the domain package change is applied",
-          "when": "npm run type-check:all is executed",
-          "then": "TypeScript strict mode compilation succeeds with no type errors"
-        }
-      ],
-      "notes": "",
-      "dependencies": [
-        "US-001"
-      ],
-      "status": "Ready",
-      "created_at": "2026-02-18T03:07:57.348233+00:00",
-      "updated_at": "2026-02-18T03:09:12.274995+00:00",
-      "created_by": "po",
-      "history": [
-        {
-          "action": "created",
-          "by": "po",
-          "at": "2026-02-18T03:07:57.348233+00:00"
-        },
-        {
-          "action": "status_change",
-          "by": "po",
-          "from": "Draft",
-          "to": "Ready",
-          "at": "2026-02-18T03:08:42.275928+00:00"
-        },
-        {
-          "action": "edited",
-          "by": "po",
-          "changes": [
-            "acceptance_criteria"
-          ],
-          "at": "2026-02-18T03:09:12.274995+00:00"
-        }
-      ]
-    },
-    {
-      "id": "US-003",
-      "title": "Update RecordingRepository to map and persist blob_url column",
-      "feature_area": "Data Access",
-      "priority": "Must",
-      "role": "mobile app",
-      "want": "the RecordingRepository to read blob_url from the database into the blobUrl domain field, and to support writing blobUrl in both create() and update() operations",
-      "benefit": "all layers above the repository can store and retrieve the blob URL without direct SQL knowledge, and updates to blobUrl are persisted correctly alongside other recording fields",
-      "acceptance_criteria": [
-        {
-          "id": "AC-1",
-          "given": "the RecordingRow interface in RecordingRepository.ts",
-          "when": "it is inspected",
-          "then": "it includes a blob_url: string | null field"
-        },
-        {
-          "id": "AC-2",
-          "given": "a row is read from the database with blob_url = NULL",
-          "when": "mapRowToRecording() processes it",
-          "then": "the returned Recording has blobUrl as undefined"
-        },
-        {
-          "id": "AC-3",
-          "given": "a row is read from the database with a blob_url value",
-          "when": "mapRowToRecording() processes it",
-          "then": "the returned Recording has blobUrl set to that string value"
+          "given": "remoteNodeId is missing or not a valid Guid",
+          "when": "POST /api/sync/pull is called",
+          "then": "the endpoint returns 400 Bad Request with a descriptive validation error"
         },
         {
           "id": "AC-4",
-          "given": "recordingRepo.update() is called with { blobUrl: someUrl }",
-          "when": "the dynamic field builder runs",
-          "then": "the SQL includes blob_url = ? with the correct value"
+          "given": "the remote node is not found in the registry",
+          "when": "PullAsync is called internally",
+          "then": "the endpoint returns 404 Not Found with an error message indicating the node was not found"
         },
         {
           "id": "AC-5",
-          "given": "recordingRepo.create() is called with a NewRecordingData that includes blobUrl",
-          "when": "the INSERT is executed",
-          "then": "the blob_url column is populated correctly"
-        }
-      ],
-      "notes": "",
-      "dependencies": [
-        "US-001",
-        "US-002"
-      ],
-      "status": "Ready",
-      "created_at": "2026-02-18T03:08:06.938864+00:00",
-      "updated_at": "2026-02-18T03:09:20.258794+00:00",
-      "created_by": "po",
-      "history": [
-        {
-          "action": "created",
-          "by": "po",
-          "at": "2026-02-18T03:08:06.938864+00:00"
-        },
-        {
-          "action": "status_change",
-          "by": "po",
-          "from": "Draft",
-          "to": "Ready",
-          "at": "2026-02-18T03:08:42.408573+00:00"
-        },
-        {
-          "action": "edited",
-          "by": "po",
-          "changes": [
-            "acceptance_criteria"
-          ],
-          "at": "2026-02-18T03:09:20.258794+00:00"
-        }
-      ]
-    },
-    {
-      "id": "US-004",
-      "title": "Fix SyncService to store blob URL separately and clear local file path",
-      "feature_area": "Sync",
-      "priority": "Must",
-      "role": "researcher",
-      "want": "the sync service to store the uploaded blob URL in the new blobUrl field instead of overwriting filePath, delete the local CSV file after successful upload, and set filePath to null",
-      "benefit": "device storage is reclaimed after sync while the blob URL is preserved for future exports, and the two concerns of local storage and remote storage are no longer conflated in a single field",
-      "acceptance_criteria": [
-        {
-          "id": "AC-1",
-          "given": "SyncService.syncRecordings() completes a successful file upload",
-          "when": "it processes the uploadResponse.fileUrl",
-          "then": "it calls recordingRepo.update(recording.id, { blobUrl: uploadResponse.fileUrl }) to store the blob URL"
-        },
-        {
-          "id": "AC-2",
-          "given": "the blob URL has been stored",
-          "when": "the local file is processed",
-          "then": "the local CSV file is deleted from the device filesystem"
-        },
-        {
-          "id": "AC-3",
-          "given": "the local file has been deleted",
-          "when": "the filePath is updated",
-          "then": "recordingRepo.update(recording.id, { filePath: null }) is called, clearing the local path"
-        },
-        {
-          "id": "AC-4",
-          "given": "the old single update({ filePath: uploadResponse.fileUrl }) pattern",
-          "when": "SyncService.ts is inspected",
-          "then": "it no longer exists"
-        },
-        {
-          "id": "AC-5",
-          "given": "a file upload fails",
-          "when": "error handling runs",
-          "then": "neither blobUrl nor filePath is modified for that recording"
+          "given": "the handshake or fetch fails",
+          "when": "PullAsync throws",
+          "then": "the endpoint returns 502 Bad Gateway with a JSON error body that includes the failureStage field (e.g., handshake, fetch_snomed, import)"
         },
         {
           "id": "AC-6",
-          "given": "the sync cycle runs after this change",
-          "when": "sessions, annotations, and other entities are processed",
-          "then": "they continue to sync correctly with no change in behavior"
+          "given": "the request is valid but the sync takes up to 5 minutes",
+          "when": "the HttpClient timeout is inspected",
+          "then": "HttpClient.TimeoutSeconds is configured to 300 seconds for inter-node calls, matching NFR-1"
         }
       ],
       "notes": "",
       "dependencies": [
-        "US-003"
+        "US-1801"
       ],
       "status": "Ready",
-      "created_at": "2026-02-18T03:08:16.628551+00:00",
-      "updated_at": "2026-02-18T03:09:29.610283+00:00",
+      "created_at": "2026-02-22T20:49:26.776972+00:00",
+      "updated_at": "2026-02-22T20:50:58.326797+00:00",
       "created_by": "po",
       "history": [
         {
           "action": "created",
           "by": "po",
-          "at": "2026-02-18T03:08:16.628551+00:00"
+          "at": "2026-02-22T20:49:26.776972+00:00"
         },
         {
           "action": "status_change",
           "by": "po",
           "from": "Draft",
           "to": "Ready",
-          "at": "2026-02-18T03:08:42.544007+00:00"
-        },
-        {
-          "action": "edited",
-          "by": "po",
-          "changes": [
-            "acceptance_criteria"
-          ],
-          "at": "2026-02-18T03:09:29.610283+00:00"
+          "at": "2026-02-22T20:50:58.326797+00:00"
         }
       ]
     },
     {
-      "id": "US-005",
-      "title": "Fix HistoryScreen export to fetch CSV from blob URL for synced recordings",
-      "feature_area": "Export",
-      "priority": "Must",
-      "role": "researcher",
-      "want": "the ZIP export on HistoryScreen to download CSV content from the blob URL when the local file is absent, producing a valid ZIP with actual sEMG data for synced recordings",
-      "benefit": "exported ZIPs always contain real signal data regardless of whether the recording was synced, eliminating the silent corruption that makes exported data unusable for analysis",
+      "id": "US-1803",
+      "title": "Add POST /api/sync/preview endpoint for manifest-only UI confirmation",
+      "feature_area": "Phase 18 - Sync Refactoring",
+      "priority": "Should",
+      "role": "backend developer",
+      "want": "a POST /api/sync/preview endpoint on SyncController that accepts the same body as /api/sync/pull, performs the 4-phase handshake against the remote node, fetches only the sync manifest (POST /api/sync/manifest), closes the channel, and returns the manifest without importing any data",
+      "benefit": "the desktop UI can show a preview of what will be synced (entity counts, last update timestamps) before the user confirms, without triggering a full data transfer",
       "acceptance_criteria": [
         {
           "id": "AC-1",
-          "given": "a recording where rec.filePath is set and FileSystem.getInfoAsync() returns exists: true",
-          "when": "handleExportSession() runs",
-          "then": "the CSV content is read from local disk (unchanged behavior)"
+          "given": "an authenticated researcher sends POST /api/sync/preview with a valid remoteNodeId",
+          "when": "the request is processed",
+          "then": "the endpoint returns 200 OK with the SyncManifest JSON ({nodeId, nodeName, generatedAt, lastSyncedAt, snomed.count, volunteers.count, research.count, sessions.count, recordings.count, recordings.totalSizeBytes}) and no entities are imported"
         },
         {
           "id": "AC-2",
-          "given": "a recording where rec.blobUrl is set and the local file is absent",
-          "when": "handleExportSession() runs",
-          "then": "FileSystem.downloadAsync() downloads the CSV to a temp file, the content is read, and the temp file is deleted"
+          "given": "the preview endpoint is called",
+          "when": "the response is inspected",
+          "then": "no SyncLog row is created (preview is a read-only operation)"
         },
         {
           "id": "AC-3",
-          "given": "a recording where neither filePath nor blobUrl is set",
-          "when": "handleExportSession() runs",
-          "then": "the recording entry in the ZIP contains the text: # No recording data available"
+          "given": "the handshake fails during preview",
+          "when": "the error is returned",
+          "then": "the endpoint returns 502 Bad Gateway with failureStage=handshake and the channel is closed"
         },
         {
           "id": "AC-4",
-          "given": "a fully synced session (all recordings have blobUrl, no local files)",
-          "when": "the user taps Export ZIP",
-          "then": "the resulting ZIP contains actual CSV data rows, not placeholder text"
-        },
-        {
-          "id": "AC-5",
-          "given": "csvExport.ts",
-          "when": "it is inspected after this change",
-          "then": "exportSessionAsZip() is unchanged"
+          "given": "both POST /api/sync/preview and POST /api/sync/pull are called in sequence",
+          "when": "the second call triggers the full pull",
+          "then": "the preview result is consistent with the pull result (same manifest data)"
         }
       ],
       "notes": "",
       "dependencies": [
-        "US-003",
-        "US-004"
+        "US-1801"
       ],
       "status": "Ready",
-      "created_at": "2026-02-18T03:08:27.154414+00:00",
-      "updated_at": "2026-02-18T03:09:39.312256+00:00",
+      "created_at": "2026-02-22T20:49:36.503159+00:00",
+      "updated_at": "2026-02-22T20:50:58.442871+00:00",
       "created_by": "po",
       "history": [
         {
           "action": "created",
           "by": "po",
-          "at": "2026-02-18T03:08:27.154414+00:00"
+          "at": "2026-02-22T20:49:36.503159+00:00"
         },
         {
           "action": "status_change",
           "by": "po",
           "from": "Draft",
           "to": "Ready",
-          "at": "2026-02-18T03:08:42.670654+00:00"
-        },
-        {
-          "action": "edited",
-          "by": "po",
-          "changes": [
-            "acceptance_criteria"
-          ],
-          "at": "2026-02-18T03:09:39.312256+00:00"
+          "at": "2026-02-22T20:50:58.442871+00:00"
         }
       ]
     },
     {
-      "id": "US-006",
-      "title": "Handle offline export gracefully when blob URL is unreachable",
-      "feature_area": "Export",
+      "id": "US-1804",
+      "title": "Ensure remote node URL resolution from node registry",
+      "feature_area": "Phase 18 - Sync Refactoring",
       "priority": "Must",
-      "role": "researcher",
-      "want": "the ZIP export to produce an informative per-recording placeholder when a blob URL fetch fails due to network unavailability, instead of crashing or silently producing an empty entry",
-      "benefit": "researchers using the app offline understand that synced recordings require network access to export, rather than receiving a corrupt ZIP with no explanation",
+      "role": "backend developer",
+      "want": "the NodeRegistration entity and its corresponding EF Core mapping to store the remote node base URL, with a migration if the field does not already exist, plus a repository method that allows SyncPullService to look up the URL by registration Guid",
+      "benefit": "SyncPullService can resolve INodeChannelClient.OpenChannelAsync(remoteNodeUrl) without the URL being passed from the UI layer, completing the backend-ownership model",
       "acceptance_criteria": [
         {
           "id": "AC-1",
-          "given": "FileSystem.downloadAsync() throws or returns an error for a blob URL",
-          "when": "handleExportSession() handles the failure",
-          "then": "the recording entry in the ZIP contains: # Recording data is on server (offline)"
+          "given": "the NodeRegistration entity is inspected",
+          "when": "looking for a URL field",
+          "then": "it has a non-nullable BaseUrl (or NodeUrl) string property representing the remote node HTTP base URL (e.g., http://node-b:5001)"
         },
         {
           "id": "AC-2",
-          "given": "one or more blob URL fetches failed during export",
-          "when": "the ZIP is complete",
-          "then": "a user-facing alert is shown listing the failed recordings and explaining that network access is required"
+          "given": "a NodeRegistration row exists with a valid BaseUrl",
+          "when": "SyncPullService calls the URL-resolution method with the registration Guid",
+          "then": "it returns the correct BaseUrl string ready to pass to INodeChannelClient.OpenChannelAsync"
         },
         {
           "id": "AC-3",
-          "given": "a mix of local and blob URL recordings in the same session",
-          "when": "one blob fetch fails during export",
-          "then": "recordings with local files are still included in the ZIP successfully"
+          "given": "the BaseUrl field does not exist in the current schema",
+          "when": "the EF Core migration AddNodeBaseUrl is applied",
+          "then": "the research_nodes table gains a base_url TEXT NOT NULL column (or with a sensible default for existing rows), and existing tests continue to pass"
         },
         {
           "id": "AC-4",
-          "given": "blob URL returns an HTTP error status code (e.g. 404, 500)",
-          "when": "the export handler processes the response",
-          "then": "it is treated as a failure and the offline placeholder is used"
-        },
-        {
-          "id": "AC-5",
-          "given": "the export runs while the device is offline",
-          "when": "the network request times out",
-          "then": "the app does not crash and the user receives the informative alert"
+          "given": "the Guid does not correspond to any registered node",
+          "when": "URL resolution is attempted",
+          "then": "SyncPullService receives a null or throws a NodeNotFoundException, which the controller maps to 404 Not Found"
         }
       ],
       "notes": "",
       "dependencies": [
-        "US-005"
+        "US-1801"
       ],
       "status": "Ready",
-      "created_at": "2026-02-18T03:08:36.844448+00:00",
-      "updated_at": "2026-02-18T03:09:48.520070+00:00",
+      "created_at": "2026-02-22T20:49:48.596943+00:00",
+      "updated_at": "2026-02-22T20:50:58.564161+00:00",
       "created_by": "po",
       "history": [
         {
           "action": "created",
           "by": "po",
-          "at": "2026-02-18T03:08:36.844448+00:00"
+          "at": "2026-02-22T20:49:48.596943+00:00"
         },
         {
           "action": "status_change",
           "by": "po",
           "from": "Draft",
           "to": "Ready",
-          "at": "2026-02-18T03:08:42.844004+00:00"
+          "at": "2026-02-22T20:50:58.564161+00:00"
+        }
+      ]
+    },
+    {
+      "id": "US-1805",
+      "title": "Simplify NodeSyncServiceAdapter to call local backend endpoints only",
+      "feature_area": "Phase 18 - Sync Refactoring",
+      "priority": "Must",
+      "role": "frontend developer",
+      "want": "the NodeSyncServiceAdapter class refactored to remove all remote middleware instantiation (ResearchNodeMiddleware, ChannelManager, SessionManager, WebCryptoDriver, FetchHttpClient targeting the remote node) and replaced with a single call to POST /api/sync/pull on the local backend via the existing localMiddleware.invoke()",
+      "benefit": "the desktop app no longer performs 4-phase handshakes directly, eliminating duplicated crypto infrastructure in the UI layer and delegating sync orchestration to the backend",
+      "acceptance_criteria": [
+        {
+          "id": "AC-1",
+          "given": "NodeSyncServiceAdapter.pull() is called with a connection and optional since",
+          "when": "the method executes",
+          "then": "it calls localMiddleware.invoke({ path: /api/sync/pull, method: POST, payload: { remoteNodeId: connection.id, since } }) and returns the SyncResult from the response"
         },
         {
-          "action": "edited",
+          "id": "AC-2",
+          "given": "the refactored NodeSyncServiceAdapter is inspected",
+          "when": "looking for remote middleware imports",
+          "then": "there are no imports of ChannelManager, SessionManager, WebCryptoDriver, FetchHttpClient, or NodeSyncService from @iris/middleware"
+        },
+        {
+          "id": "AC-3",
+          "given": "the adapter is called",
+          "when": "the local backend returns an error (4xx/5xx)",
+          "then": "the error is propagated to the caller with the HTTP status code and error message preserved"
+        },
+        {
+          "id": "AC-4",
+          "given": "the adapter previously exposed a preview() method returning SyncPullPreview with a proceed() handle",
+          "when": "the refactoring is complete",
+          "then": "preview() now calls POST /api/sync/preview and returns the manifest; proceed() calls POST /api/sync/pull and returns SyncResult"
+        },
+        {
+          "id": "AC-5",
+          "given": "the refactored adapter is type-checked",
+          "when": "tsc --noEmit runs",
+          "then": "there are zero TypeScript errors in the adapter file"
+        }
+      ],
+      "notes": "",
+      "dependencies": [
+        "US-1802",
+        "US-1803"
+      ],
+      "status": "Ready",
+      "created_at": "2026-02-22T20:50:00.726533+00:00",
+      "updated_at": "2026-02-22T20:50:58.681609+00:00",
+      "created_by": "po",
+      "history": [
+        {
+          "action": "created",
           "by": "po",
-          "changes": [
-            "acceptance_criteria"
-          ],
-          "at": "2026-02-18T03:09:48.520070+00:00"
+          "at": "2026-02-22T20:50:00.726533+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "po",
+          "from": "Draft",
+          "to": "Ready",
+          "at": "2026-02-22T20:50:58.681609+00:00"
+        }
+      ]
+    },
+    {
+      "id": "US-1806",
+      "title": "Update SyncProgressModal to use new preview and pull endpoints",
+      "feature_area": "Phase 18 - Sync Refactoring",
+      "priority": "Must",
+      "role": "frontend developer",
+      "want": "the SyncProgressModal component updated to work with the simplified NodeSyncServiceAdapter: the confirmation step calls POST /api/sync/preview to show the manifest counts, and the proceed action calls POST /api/sync/pull on the local backend, displaying a spinner until the synchronous response arrives",
+      "benefit": "the modal reflects the new backend-orchestrated sync flow, maintaining the existing user-facing confirmation and progress experience without the UI layer managing handshake state",
+      "acceptance_criteria": [
+        {
+          "id": "AC-1",
+          "given": "the user opens SyncProgressModal",
+          "when": "the modal mounts",
+          "then": "it calls NodeSyncServiceAdapter.preview() which internally calls POST /api/sync/preview, and displays the returned manifest counts (volunteers, research, sessions, recordings)"
+        },
+        {
+          "id": "AC-2",
+          "given": "the manifest is displayed and the user clicks Sync Now",
+          "when": "the sync proceeds",
+          "then": "the modal calls NodeSyncServiceAdapter.pull() which internally calls POST /api/sync/pull, shows a spinner with Syncing... text, and waits for the synchronous response"
+        },
+        {
+          "id": "AC-3",
+          "given": "POST /api/sync/pull returns successfully",
+          "when": "the response is received",
+          "then": "the modal transitions to the success state showing entitiesReceived counts and a Close button"
+        },
+        {
+          "id": "AC-4",
+          "given": "POST /api/sync/pull returns an error",
+          "when": "the error is received",
+          "then": "the modal transitions to the error state showing the error message and a Retry button"
+        },
+        {
+          "id": "AC-5",
+          "given": "the modal is inspected after the refactoring",
+          "when": "looking for direct middleware or handshake state",
+          "then": "the modal holds no ChannelManager, SessionManager, or ResearchNodeMiddleware references — all sync state flows through the adapter"
+        }
+      ],
+      "notes": "",
+      "dependencies": [
+        "US-1805"
+      ],
+      "status": "Ready",
+      "created_at": "2026-02-22T20:50:11.561248+00:00",
+      "updated_at": "2026-02-22T20:50:58.813369+00:00",
+      "created_by": "po",
+      "history": [
+        {
+          "action": "created",
+          "by": "po",
+          "at": "2026-02-22T20:50:11.561248+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "po",
+          "from": "Draft",
+          "to": "Ready",
+          "at": "2026-02-22T20:50:58.813369+00:00"
+        }
+      ]
+    },
+    {
+      "id": "US-1807",
+      "title": "Remove or deprecate middleware NodeSyncService",
+      "feature_area": "Phase 18 - Sync Refactoring",
+      "priority": "Should",
+      "role": "frontend developer",
+      "want": "the NodeSyncService class in @iris/middleware/src/sync/ to be removed if it has no consumers other than NodeSyncServiceAdapter, or deprecated with a JSDoc warning if other consumers exist; its exports removed from the middleware package index",
+      "benefit": "eliminates dead orchestration code in the middleware layer and prevents future developers from accidentally using the UI-orchestrated sync path",
+      "acceptance_criteria": [
+        {
+          "id": "AC-1",
+          "given": "the codebase is searched for imports of NodeSyncService",
+          "when": "the search is complete",
+          "then": "only NodeSyncServiceAdapter.ts was the consumer; no other files import NodeSyncService"
+        },
+        {
+          "id": "AC-2",
+          "given": "NodeSyncService has no other consumers",
+          "when": "the refactoring is applied",
+          "then": "NodeSyncService.ts is deleted and its export is removed from the @iris/middleware package index"
+        },
+        {
+          "id": "AC-3",
+          "given": "NodeSyncService is removed",
+          "when": "tsc --noEmit runs across the monorepo",
+          "then": "there are zero TypeScript errors caused by the removal"
+        },
+        {
+          "id": "AC-4",
+          "given": "the @iris/middleware package is rebuilt after removal",
+          "when": "npm run build runs in the middleware package",
+          "then": "the build succeeds with no errors"
+        }
+      ],
+      "notes": "",
+      "dependencies": [
+        "US-1805"
+      ],
+      "status": "Ready",
+      "created_at": "2026-02-22T20:50:20.261035+00:00",
+      "updated_at": "2026-02-22T20:50:58.933956+00:00",
+      "created_by": "po",
+      "history": [
+        {
+          "action": "created",
+          "by": "po",
+          "at": "2026-02-22T20:50:20.261035+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "po",
+          "from": "Draft",
+          "to": "Ready",
+          "at": "2026-02-22T20:50:58.933956+00:00"
+        }
+      ]
+    },
+    {
+      "id": "US-1808",
+      "title": "Integration tests for SyncPullService with mocked INodeChannelClient",
+      "feature_area": "Phase 18 - Sync Refactoring",
+      "priority": "Must",
+      "role": "QA / backend developer",
+      "want": "integration tests that verify SyncPullService.PullAsync() through the full flow using a mock INodeChannelClient: handshake phases, paginated entity fetching, recording stream download, import delegation, SyncLog creation, channel cleanup on success and failure, and incremental sync via since parameter",
+      "benefit": "the SyncPullService core logic is validated independently of network conditions, ensuring correctness of handshake sequencing, error propagation, and idempotency before Docker end-to-end tests run",
+      "acceptance_criteria": [
+        {
+          "id": "AC-1",
+          "given": "a mock INodeChannelClient is configured to succeed for all 4 handshake phases and return paginated SNOMED+Volunteer+Research+Session+Recording data",
+          "when": "SyncPullService.PullAsync() is called",
+          "then": "it returns a SyncResultDTO with status=completed and entitiesReceived counts matching the mock data"
+        },
+        {
+          "id": "AC-2",
+          "given": "the mock returns 3 pages of 100 volunteers each",
+          "when": "PullAsync runs the volunteer fetch",
+          "then": "all 300 volunteer records are included in the import payload"
+        },
+        {
+          "id": "AC-3",
+          "given": "since=2026-01-01T00:00:00Z is passed",
+          "when": "each entity endpoint is called on the mock",
+          "then": "the since query parameter is forwarded to every paginated fetch call"
+        },
+        {
+          "id": "AC-4",
+          "given": "OpenChannelAsync throws a network exception",
+          "when": "PullAsync catches it",
+          "then": "CloseChannelAsync is NOT called (no channel was opened), a SyncLog row with status=failed and failureStage=handshake is written, and the exception message is preserved"
+        },
+        {
+          "id": "AC-5",
+          "given": "ImportAsync throws during the import step",
+          "when": "PullAsync catches it",
+          "then": "CloseChannelAsync is called, a SyncLog row with status=failed and failureStage=import is written"
+        },
+        {
+          "id": "AC-6",
+          "given": "PullAsync is called twice with the same parameters",
+          "when": "both calls complete successfully",
+          "then": "the database contains deduplicated records (idempotent upsert) and two SyncLog rows each with status=completed"
+        },
+        {
+          "id": "AC-7",
+          "given": "since is omitted and a prior successful SyncLog exists for the remoteNodeId",
+          "when": "PullAsync resolves the watermark",
+          "then": "it uses the LastSyncedAt from the most recent completed SyncLog as the since value"
+        }
+      ],
+      "notes": "",
+      "dependencies": [
+        "US-1801"
+      ],
+      "status": "Ready",
+      "created_at": "2026-02-22T20:50:36.446991+00:00",
+      "updated_at": "2026-02-22T20:50:59.064490+00:00",
+      "created_by": "po",
+      "history": [
+        {
+          "action": "created",
+          "by": "po",
+          "at": "2026-02-22T20:50:36.446991+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "po",
+          "from": "Draft",
+          "to": "Ready",
+          "at": "2026-02-22T20:50:59.064490+00:00"
+        }
+      ]
+    },
+    {
+      "id": "US-1809",
+      "title": "End-to-end Docker test for backend-to-backend sync",
+      "feature_area": "Phase 18 - Sync Refactoring",
+      "priority": "Must",
+      "role": "QA / backend developer",
+      "want": "a test script (test-sync-pull.sh or extension of test-phase4.sh) that spins up NodeA and NodeB in Docker, seeds test data on NodeB, calls POST /api/sync/pull on NodeA targeting NodeB, and asserts that all seeded entities appear in NodeA's database",
+      "benefit": "proves the complete Phase 18 refactoring works in a realistic multi-node environment, verifying handshake, entity fetching, and transactional import across real HTTP connections",
+      "acceptance_criteria": [
+        {
+          "id": "AC-1",
+          "given": "NodeA and NodeB are running in Docker with their respective databases and the Phase 2 authorization for NodeA on NodeB is pre-approved",
+          "when": "POST /api/sync/pull { remoteNodeId: <nodeB-registration-id> } is called on NodeA",
+          "then": "the response is 200 OK with status=completed and entitiesReceived counts matching the seeded data on NodeB"
+        },
+        {
+          "id": "AC-2",
+          "given": "NodeA had no data before the sync",
+          "when": "the sync completes",
+          "then": "NodeAs PostgreSQL database contains the seeded volunteers, research projects, and sessions from NodeB"
+        },
+        {
+          "id": "AC-3",
+          "given": "a second sync is triggered immediately after the first",
+          "when": "the response arrives",
+          "then": "entitiesReceived shows zero new entities (incremental sync using LastSyncedAt watermark) and no duplicate rows exist in NodeAs database"
+        },
+        {
+          "id": "AC-4",
+          "given": "the test script runs",
+          "when": "it completes",
+          "then": "all 73+ existing tests still pass (no regression)"
+        },
+        {
+          "id": "AC-5",
+          "given": "the Docker test environment",
+          "when": "the test script checks the desktop app",
+          "then": "NodeSyncServiceAdapter no longer creates remote ResearchNodeMiddleware instances; the desktop calls only POST /api/sync/pull on the local backend"
+        }
+      ],
+      "notes": "",
+      "dependencies": [
+        "US-1802",
+        "US-1808"
+      ],
+      "status": "Ready",
+      "created_at": "2026-02-22T20:50:49.664499+00:00",
+      "updated_at": "2026-02-22T20:50:59.186765+00:00",
+      "created_by": "po",
+      "history": [
+        {
+          "action": "created",
+          "by": "po",
+          "at": "2026-02-22T20:50:49.664499+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "po",
+          "from": "Draft",
+          "to": "Ready",
+          "at": "2026-02-22T20:50:59.186765+00:00"
         }
       ]
     }
