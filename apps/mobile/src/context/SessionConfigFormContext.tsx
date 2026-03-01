@@ -3,7 +3,7 @@
  *
  * Lifts SessionConfigScreen form state above the navigation stack so that
  * user selections survive screen unmount/remount during sub-screen navigation
- * (TopographySelect, ResearchList, FavoritesManage).
+ * (TopographySelect, SensorSelect, FavoritesManage).
  *
  * Auto-resets all fields when the active clinical session ends (US-SP-017).
  */
@@ -26,18 +26,20 @@ interface SessionConfigFormState {
   selectedVolunteer: Volunteer | null;
   selectedBodyStructure: string;
   selectedTopographies: SnomedTopographicalModifier[];
-  selectedResearchId: string;
-  selectedResearchTitle: string;
   selectedDeviceId: string;
+  selectedSensorIds: string[];
+  selectedSensorNames: string[];
+  deviceHasSensors: boolean;
 }
 
 interface SessionConfigFormActions {
   setSelectedVolunteer: (volunteer: Volunteer | null) => void;
   setSelectedBodyStructure: (code: string) => void;
   setSelectedTopographies: (topographies: SnomedTopographicalModifier[]) => void;
-  setSelectedResearchId: (id: string) => void;
-  setSelectedResearchTitle: (title: string) => void;
   setSelectedDeviceId: (deviceId: string) => void;
+  setSelectedSensorIds: (ids: string[]) => void;
+  setSelectedSensorNames: (names: string[]) => void;
+  setDeviceHasSensors: (hasSensors: boolean) => void;
   resetForm: () => void;
 }
 
@@ -47,9 +49,10 @@ const INITIAL_FORM_STATE: SessionConfigFormState = {
   selectedVolunteer: null,
   selectedBodyStructure: '',
   selectedTopographies: [],
-  selectedResearchId: '',
-  selectedResearchTitle: '',
   selectedDeviceId: '',
+  selectedSensorIds: [],
+  selectedSensorNames: [],
+  deviceHasSensors: false,
 };
 
 const SessionConfigFormContext = createContext<SessionConfigFormContextValue | null>(null);
@@ -64,17 +67,19 @@ export const SessionConfigFormProvider: FC<SessionConfigFormProviderProps> = ({ 
   const [selectedVolunteer, setSelectedVolunteer] = useState<Volunteer | null>(INITIAL_FORM_STATE.selectedVolunteer);
   const [selectedBodyStructure, setSelectedBodyStructure] = useState<string>(INITIAL_FORM_STATE.selectedBodyStructure);
   const [selectedTopographies, setSelectedTopographies] = useState<SnomedTopographicalModifier[]>(INITIAL_FORM_STATE.selectedTopographies);
-  const [selectedResearchId, setSelectedResearchId] = useState<string>(INITIAL_FORM_STATE.selectedResearchId);
-  const [selectedResearchTitle, setSelectedResearchTitle] = useState<string>(INITIAL_FORM_STATE.selectedResearchTitle);
   const [selectedDeviceId, setSelectedDeviceId] = useState<string>(INITIAL_FORM_STATE.selectedDeviceId);
+  const [selectedSensorIds, setSelectedSensorIds] = useState<string[]>(INITIAL_FORM_STATE.selectedSensorIds);
+  const [selectedSensorNames, setSelectedSensorNames] = useState<string[]>(INITIAL_FORM_STATE.selectedSensorNames);
+  const [deviceHasSensors, setDeviceHasSensors] = useState<boolean>(INITIAL_FORM_STATE.deviceHasSensors);
 
   const resetForm = useCallback(() => {
     setSelectedVolunteer(INITIAL_FORM_STATE.selectedVolunteer);
     setSelectedBodyStructure(INITIAL_FORM_STATE.selectedBodyStructure);
     setSelectedTopographies(INITIAL_FORM_STATE.selectedTopographies);
-    setSelectedResearchId(INITIAL_FORM_STATE.selectedResearchId);
-    setSelectedResearchTitle(INITIAL_FORM_STATE.selectedResearchTitle);
     setSelectedDeviceId(INITIAL_FORM_STATE.selectedDeviceId);
+    setSelectedSensorIds(INITIAL_FORM_STATE.selectedSensorIds);
+    setSelectedSensorNames(INITIAL_FORM_STATE.selectedSensorNames);
+    setDeviceHasSensors(INITIAL_FORM_STATE.deviceHasSensors);
   }, []);
 
   // Auto-reset form when active session ends (S1: placed inside provider for reliability)
@@ -94,21 +99,24 @@ export const SessionConfigFormProvider: FC<SessionConfigFormProviderProps> = ({ 
       setSelectedBodyStructure,
       selectedTopographies,
       setSelectedTopographies,
-      selectedResearchId,
-      setSelectedResearchId,
-      selectedResearchTitle,
-      setSelectedResearchTitle,
       selectedDeviceId,
       setSelectedDeviceId,
+      selectedSensorIds,
+      setSelectedSensorIds,
+      selectedSensorNames,
+      setSelectedSensorNames,
+      deviceHasSensors,
+      setDeviceHasSensors,
       resetForm,
     }),
     [
       selectedVolunteer,
       selectedBodyStructure,
       selectedTopographies,
-      selectedResearchId,
-      selectedResearchTitle,
       selectedDeviceId,
+      selectedSensorIds,
+      selectedSensorNames,
+      deviceHasSensors,
       resetForm,
     ]
   );

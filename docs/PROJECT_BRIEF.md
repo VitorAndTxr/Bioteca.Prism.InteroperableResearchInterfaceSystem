@@ -1,184 +1,134 @@
-# Project Brief - Volunteer Module Sprint
+# Project Brief — NewSession Screen Redesign
 
 > Phase 1 output — Product Manager leads, all roles assist.
-
-**Project**: IRIS (Interoperable Research Interface System)
-**Sprint**: Volunteer Module - Full Stack Implementation
-**Date**: 2026-02-06
-**Duration**: 2 weeks (deadline: 2026-02-20)
-**Context**: Academic project (university deliverable)
 
 ## Business Objectives
 
 | # | Objective | Success Criteria | Priority |
 |---|-----------|-----------------|----------|
-| 1 | Deliver a fully functional Volunteer CRUD module on the desktop app | User can create, list (paginated), view, edit, and delete volunteers through the IRIS desktop UI | Must |
-| 2 | Expose Volunteer REST endpoints on the InteroperableResearchNode backend | All CRUD endpoints respond correctly through the PRISM 4-phase encrypted channel (Phase 1 + Phase 4 session) | Must |
-| 3 | Replace mock data with real backend integration | Desktop app communicates with the running backend via middleware; `USE_MOCK = false` works end-to-end | Must |
-| 4 | Demonstrate PRISM protocol compliance | Volunteer operations flow through ECDH channel establishment, session authentication, and encrypted request/response | Must |
+| 1 | Remove research project selection from session config | ResearchId is resolved from `EXPO_PUBLIC_RESEARCH_ID` env var at build time; no research UI in SessionConfigScreen | Must |
+| 2 | Add sensor selection step to session creation | New SensorSelectScreen allows multi-select of sensors from the chosen Bluetooth device; selected sensors are stored in session config | Must |
+| 3 | Update data model to carry sensor selections | `SessionConfig`, `SessionConfigFormContext`, and `SessionFavorite` include sensor IDs/names | Must |
+| 4 | Maintain favorites parity | Favorites save and restore sensor selections alongside existing fields (body structure, topographies, device) | Must |
 
 ## Scope
 
 ### In Scope
 
-- **Backend (InteroperableResearchNode)**:
-  - Create `VolunteerController` with CRUD endpoints (GET paginated, GET by ID, POST create, PUT update, DELETE)
-  - Create `AddVolunteerPayload` and `UpdateVolunteerPayload` DTOs
-  - Create `VolunteerDTO` for response serialization
-  - Extend `IVolunteerService` and `VolunteerService` with Add, Update, Delete operations accepting payloads
-  - All endpoints secured with `[PrismEncryptedChannelConnection]` + `[PrismAuthenticatedSession]` + `[Authorize("sub")]`
-
-- **Frontend (Desktop App)**:
-  - Wire `VolunteerService` to real backend (disable mock mode)
-  - Implement Edit Volunteer form (`EditVolunteerForm.tsx`) — reuse `CreateVolunteerForm` pattern
-  - Implement View Volunteer screen (read-only detail view)
-  - Add Delete volunteer with confirmation modal
-  - Connect existing list actions (View/Edit buttons) to proper navigation routes
-  - Add routes for `/volunteers/view/:id` and `/volunteers/edit/:id`
-
-- **Domain Package**:
-  - Align `@iris/domain` Volunteer model with backend entity fields (volunteerCode, bloodType, height, weight, medicalHistory, consentStatus)
-
-- **Integration Testing**:
-  - Manual end-to-end test: desktop app creates a volunteer via encrypted channel to running backend, retrieves it in paginated list
+- Remove the "Research Projects" navigation card from SessionConfigScreen
+- Remove the "Link to Research" dropdown selector from SessionConfigScreen
+- Remove `researchProjects` fetch, `selectedResearchId`, and `selectedResearchTitle` from SessionConfigScreen local state and SessionConfigFormContext
+- Introduce `EXPO_PUBLIC_RESEARCH_ID` environment variable; resolve researchId from it at session start (no user interaction)
+- Create a new `SensorSelectScreen` (navigation screen within HomeStack) for multi-selecting sensors from the selected Bluetooth device's backend sensor list
+- Add `selectedSensorIds` and `selectedSensorNames` to `SessionConfigFormContext`
+- Add `sensorIds` (and display names) to `SessionConfig` domain type
+- Update `SessionFavorite` schema and SQLite migration to persist sensor selections
+- Update `favoriteRepository.create()` and `applyFavorite()` to include sensors
+- Update form validation: sensors required before session start
+- Wire sensor data through `startSession()` into the session record
 
 ### Out of Scope
 
-- Volunteer association with Research projects (ResearchVolunteer join table)
-- Volunteer clinical sub-entities (medications, conditions, events, allergies, vital signs)
-- Mobile app volunteer features
-- Automated test suite
-- Production deployment or certificate management
-- Volunteer data export/import
-- Batch operations on volunteers
+- Research management screens (ResearchList, ResearchDetail, etc.) — they remain in the app, just not linked from session config
+- Backend changes to the sensor or session endpoints
+- Changes to the ActiveSessionScreen, CaptureScreen, or StreamingScreen
+- Device firmware changes
+- Desktop app changes
+- Sensor CRUD (create/edit/delete) — sensors are read-only from the backend
+- Changes to the Bluetooth protocol or streaming configuration
 
 ## Constraints
 
 | Type | Constraint | Impact |
 |------|-----------|--------|
-| Timeline | 2-week academic deadline (2026-02-20) | Must prioritize demonstrable CRUD + integration over polish |
-| Technical | Backend already has Entity, Repository, Service, DI registration for Volunteer | Reduces backend effort; only Controller + Payloads + DTOs + service method extensions needed |
-| Technical | Frontend mock data pattern already established with 20 volunteers | Frontend screens and service scaffold exist; extend, don't rewrite |
-| Technical | 4-phase PRISM protocol required for all backend calls | All endpoints must use encrypted channel + session authentication attributes |
-| Technical | TypeScript strict mode, no `any` types | Frontend code must pass strict TypeScript compilation |
-| Academic | Must be demonstrable for university presentation | Focus on working flows over edge-case coverage |
+| Technical | Sensors must be fetched from backend via `researchService.getDeviceSensors(researchId, deviceId)` using the env-var researchId and the user-selected deviceId | SensorSelectScreen depends on both env var and device selection being available |
+| Technical | SQLite schema change required for favorites (new migration v6 or similar) | Must handle migration from existing v5 schema |
+| Technical | TypeScript strict mode — no `any` types | All new types must be fully typed |
+| Technical | Lucide icons only for mobile app | SensorSelectScreen must use lucide-react-native |
+| UX | Sensor selection is a separate screen (not inline) following the TopographySelectScreen pattern | Consistent navigation pattern with chip display on return |
 
 ## Stakeholders
 
 | Stakeholder | Role | Concerns |
 |------------|------|----------|
-| University Advisor | Academic evaluator | Demonstrable system integration, PRISM protocol compliance, code quality |
-| Developer (Vitor) | Project owner & developer | Feature completeness within deadline, maintainable architecture |
+| Researcher (end user) | Uses mobile app to configure and run clinical sessions | Simplified flow (no research picker), clear sensor selection |
+| Institution Admin | Deploys the app with a specific EXPO_PUBLIC_RESEARCH_ID | Env var must be documented; build-time binding |
+| Device Operator | Pairs Bluetooth device and selects sensors | Sensor list must reflect actual device capabilities from backend |
 
 ## Business Risks
 
 | # | Risk | Likelihood | Impact | Mitigation |
 |---|------|-----------|--------|-----------|
-| 1 | Backend integration fails due to PRISM channel/session issues | Medium | High | Test channel establishment first; keep mock mode as fallback for demo |
-| 2 | Scope creep into clinical sub-entities delays core CRUD | Medium | Medium | Strictly enforce out-of-scope list; clinical features are a separate sprint |
-| 3 | Database migration issues with existing schema | Low | Medium | Volunteer table already exists in schema; no migration needed for core entity |
+| 1 | Missing EXPO_PUBLIC_RESEARCH_ID env var causes runtime failure | Med | High | Validate env var at app startup; show clear error if missing |
+| 2 | Backend returns empty sensor list for a device | Med | Med | Show empty state with guidance; do not block session if sensors are genuinely empty |
+| 3 | Existing favorites lose research linkage data silently | Low | Med | Migration preserves existing data; research fields become unused but are not deleted |
+| 4 | Users accustomed to research selection are confused by removal | Low | Low | The env-var approach is institution-level; individual users do not need to pick research |
 
 ## Technical Risk Assessment
 
-> To be completed by Tech Lead (`/tl plan`).
+> Added by Tech Lead (`/tl plan`).
 
 | # | Risk | Likelihood | Impact | Mitigation | Effort |
 |---|------|-----------|--------|-----------|--------|
-| 1 | *Pending TL assessment* | | | | |
+| 1 | *Technical risk* | Low/Med/High | Low/Med/High | *Strategy* | S/M/L/XL |
 
 ## Specialist Notes
 
-> To be completed by Dev Specialist (`/dev plan`) and QA Specialist (`/qa plan`).
+> Added by Dev Specialist (`/dev plan`) and QA Specialist (`/qa plan`).
 
 ### Developer Specialist
 
-- Backend: Repository, Service, DI already registered. Missing: Controller, Payloads, DTOs, service method implementations for Add/Update/Delete with payload handling.
-- Frontend: BaseService pattern established. VolunteerService exists with mock data. Need to implement real API calls, add Edit/View/Delete flows.
-- Domain alignment: Frontend `Volunteer` model has `name` field; backend entity uses `VolunteerCode` (anonymous identifier) + no `name` field. This mismatch must be resolved — either add name to backend entity or adapt frontend to anonymized model.
+- *Domain-specific requirements or implementation risks*
 
 ### QA Specialist
 
-- *Pending QA assessment*
+- *Testability risks or ambiguous acceptance criteria*
 
 ---
 
-## Architecture Context
+## Appendix: Current vs. Target Flow
 
-### Backend Volunteer Infrastructure (Already Exists)
-
-| Component | Status | Action Needed |
-|-----------|--------|---------------|
-| `Volunteer` Entity | Exists | None (fields: VolunteerCode, BirthDate, Gender, BloodType, Height, Weight, MedicalHistory, ConsentStatus) |
-| `VolunteerConfiguration` (EF) | Exists | None |
-| `IVolunteerRepository` | Exists | None |
-| `VolunteerRepository` | Exists | None |
-| `IVolunteerService` | Exists | Extend with Add/Update/Delete accepting payloads |
-| `VolunteerService` | Exists | Implement payload-based operations |
-| DI Registration | Exists | None |
-| DbSet in PrismDbContext | Exists | None |
-| **VolunteerController** | **Missing** | **Create with CRUD endpoints** |
-| **AddVolunteerPayload** | **Missing** | **Create** |
-| **UpdateVolunteerPayload** | **Missing** | **Create** |
-| **VolunteerDTO** | **Missing** | **Create** |
-
-### Frontend Volunteer Infrastructure (Already Exists)
-
-| Component | Status | Action Needed |
-|-----------|--------|---------------|
-| `Volunteer` domain model | Exists | Align fields with backend entity |
-| `VolunteerService` | Exists (mock mode) | Wire to real backend, add getById/update/delete |
-| `VolunteersList` | Exists | Connect action buttons to routes |
-| `CreateVolunteerForm` | Exists | Align fields with backend payload |
-| `VolunteersScreen` | Exists | None |
-| Routes (`/volunteers`, `/volunteers/add`) | Exist | Add `/volunteers/view/:id`, `/volunteers/edit/:id` |
-| **EditVolunteerForm** | **Missing** | **Create (reuse CreateVolunteerForm pattern)** |
-| **ViewVolunteerScreen** | **Missing** | **Create (read-only detail view)** |
-| **Delete confirmation** | **Missing** | **Add to list actions with Modal** |
-
-### Integration Flow
+### Current SessionConfigScreen Flow
 
 ```
-Desktop App (Electron)
-    ↓ VolunteerService.createVolunteer()
-    ↓ middleware.invoke() → ECDH Channel (Phase 1)
-    ↓ Session Authentication (Phase 4)
-    ↓ Encrypted HTTP POST
-Backend (ASP.NET Core)
-    ↓ [PrismEncryptedChannelConnection<AddVolunteerPayload>]
-    ↓ [PrismAuthenticatedSession]
-    ↓ VolunteerController.New()
-    ↓ VolunteerService.AddAsync()
-    ↓ VolunteerRepository → PostgreSQL
-    ↓ Encrypted Response
-Desktop App
-    ↓ Decrypt → Convert DTO → Display
+SessionConfigScreen
+├── [Research Projects] nav card → ResearchList
+├── [Link to Research] dropdown (optional)
+├── [Favorites] chip strip
+├── [Volunteer] search + select
+├── [Clinical Data] body structure + topography
+├── [Hardware] device select
+└── [Start Session] button
 ```
 
-## Multi-Agent Team Structure
+### Target SessionConfigScreen Flow
 
-This sprint should be executed with a multi-agent team for parallel work:
+```
+SessionConfigScreen
+├── [Favorites] chip strip (now includes sensors)
+├── [Volunteer] search + select
+├── [Clinical Data] body structure + topography
+├── [Hardware] device select
+├── [Sensors] chip strip + [Add] → SensorSelectScreen (NEW)
+└── [Start Session] button (requires sensors)
+```
 
-| Agent | Role | Responsibilities |
-|-------|------|-----------------|
-| PM (Lead) | Product Manager | Orchestration, progress tracking, scope control |
-| Backend Dev | .NET Specialist | VolunteerController, Payloads, DTOs, service extensions |
-| Frontend Dev | TypeScript/React Dev | Edit/View/Delete screens, service integration, routing |
-| TL | Tech Lead | Architecture review, domain model alignment decision |
+### New Navigation Route
 
-### Parallelization Strategy
+```
+HomeStack
+├── SessionConfig (updated)
+├── SensorSelect (NEW) ← multi-select sensors from device
+├── TopographySelect (unchanged)
+├── ActiveSession (unchanged)
+├── ...
+```
 
-**Phase 1 (Days 1-3) — Can run in parallel:**
-- TL: Resolve domain model mismatch (Volunteer name vs VolunteerCode)
-- Backend Dev: Create Controller + Payloads + DTOs
-- Frontend Dev: Create Edit/View screens and routes (against mock data)
+### Environment Variable
 
-**Phase 2 (Days 4-7) — Sequential after Phase 1:**
-- Backend Dev: Test endpoints with Swagger
-- Frontend Dev: Wire service to real backend, disable mock mode
+```
+# .env or app.config.ts
+EXPO_PUBLIC_RESEARCH_ID=<uuid>
+```
 
-**Phase 3 (Days 8-10) — Integration:**
-- Full end-to-end testing through PRISM protocol
-- Bug fixes and polish
-
-**Phase 4 (Days 11-14) — Buffer:**
-- Demo preparation, documentation, contingency
+Resolved once at app init. Passed to `startSession()` and `researchService.getDeviceSensors()` without user interaction.

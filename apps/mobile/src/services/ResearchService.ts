@@ -422,13 +422,22 @@ class ResearchService {
 
   // ── Group 6: Device Sensors (Read-Only) ──────────────────
 
+  async getAllResearchSensors(researchId: string): Promise<Sensor[]> {
+    const response = await middleware.invoke<Record<string, unknown>, PaginatedResponse<SensorDTO>>({
+      path: `/api/research/${researchId}/sensors`,
+      method: 'GET',
+      payload: {},
+    });
+    return (response.data ?? []).map(mapSensor);
+  }
+
   async getDeviceSensors(researchId: string, deviceId: string): Promise<Sensor[]> {
-    const dtos = await middleware.invoke<Record<string, unknown>, SensorDTO[]>({
+    const response = await middleware.invoke<Record<string, unknown>, PaginatedResponse<SensorDTO>>({
       path: `/api/research/${researchId}/devices/${deviceId}/sensors`,
       method: 'GET',
       payload: {},
     });
-    return dtos.map(mapSensor);
+    return (response.data ?? []).map(mapSensor);
   }
 }
 

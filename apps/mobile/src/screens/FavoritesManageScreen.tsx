@@ -105,7 +105,9 @@ export const FavoritesManageScreen: FC<Props> = () => {
                         {item.bodyStructureName}  ·  {topographyCount} topograph{topographyCount === 1 ? 'y' : 'ies'}
                     </Text>
                     <Text style={styles.itemResearch}>
-                        {item.researchTitle ? `Research: ${item.researchTitle}` : 'No research linked'}
+                        {item.sensorNames && item.sensorNames.length > 0
+                            ? `Sensors: ${item.sensorNames.join(', ')}`
+                            : 'No sensors saved'}
                     </Text>
                 </View>
             </TouchableOpacity>

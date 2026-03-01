@@ -12,18 +12,24 @@ import type { ClinicalSession, ClinicalData, Recording, Annotation } from '@iris
 
 // ── Outbound payloads (mobile -> backend, PascalCase) ─────────────────
 
+export interface TargetAreaPayload {
+    BodyStructureCode: string;
+    LateralityCode: string | null;
+    TopographicalModifierCodes: string[];
+}
+
 export interface CreateClinicalSessionPayload {
     Id: string;
     ResearchId: string | null;
     VolunteerId: string;
-    ClinicalContext: string;
+    TargetArea: TargetAreaPayload | null;
     StartAt: string;
     FinishedAt: string | null;
 }
 
 export interface UpdateClinicalSessionPayload {
     FinishedAt: string | null;
-    ClinicalContext?: string;
+    TargetArea?: TargetAreaPayload;
 }
 
 export interface CreateRecordingPayload {
@@ -57,7 +63,7 @@ export interface ClinicalSessionResponseDTO {
     id: string;
     researchId: string | null;
     volunteerId: string;
-    clinicalContext: string;
+    targetAreaId: string | null;
     startAt: string;
     finishedAt: string | null;
     createdAt: string;
@@ -74,13 +80,11 @@ export function mapToCreateSessionPayload(
         Id: session.id,
         ResearchId: session.researchId ?? null,
         VolunteerId: session.volunteerId,
-        ClinicalContext: JSON.stringify({
-            bodyStructureSnomedCode: clinicalData.bodyStructureSnomedCode,
-            bodyStructureName: clinicalData.bodyStructureName,
-            laterality: clinicalData.laterality,
-            topographyCodes: clinicalData.topographyCodes,
-            topographyNames: clinicalData.topographyNames,
-        }),
+        TargetArea: clinicalData.bodyStructureSnomedCode ? {
+            BodyStructureCode: clinicalData.bodyStructureSnomedCode,
+            LateralityCode: clinicalData.laterality ?? null,
+            TopographicalModifierCodes: clinicalData.topographyCodes ?? [],
+        } : null,
         StartAt: session.startedAt,
         FinishedAt: session.endedAt ?? null,
     };
@@ -95,7 +99,8 @@ export function mapToUpdateSessionPayload(
 }
 
 export function mapToCreateRecordingPayload(
-    recording: Recording
+    recording: Recording,
+    sensorId?: string | null
 ): CreateRecordingPayload {
     return {
         Id: recording.id,
@@ -104,7 +109,7 @@ export function mapToCreateRecordingPayload(
         SamplesCount: recording.sampleCount,
         FileUrl: '',
         CollectionDate: recording.recordedAt,
-        SensorId: null,
+        SensorId: sensorId ?? null,
     };
 }
 

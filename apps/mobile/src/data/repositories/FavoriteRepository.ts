@@ -3,6 +3,8 @@
  *
  * Manages persistence of session configuration favorites in local SQLite.
  * Favorites are local-only researcher preferences -- no sync, no backend.
+ *
+ * Schema v6 adds sensor_ids and sensor_names columns.
  */
 
 import { SessionFavorite, CreateFavoritePayload, Laterality } from '@iris/domain';
@@ -21,6 +23,8 @@ interface FavoriteRow {
     laterality: string | null;
     research_id: string | null;
     research_title: string | null;
+    sensor_ids: string;
+    sensor_names: string;
     created_at: string;
     updated_at: string;
 }
@@ -63,8 +67,10 @@ export class FavoriteRepository {
              (id, name, body_structure_snomed_code, body_structure_name,
               topography_codes, topography_names, topography_categories,
               device_id, laterality,
-              research_id, research_title, created_at, updated_at)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+              research_id, research_title,
+              sensor_ids, sensor_names,
+              created_at, updated_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             id,
             payload.name,
             payload.bodyStructureSnomedCode,
@@ -76,6 +82,8 @@ export class FavoriteRepository {
             payload.laterality ?? null,
             payload.researchId ?? null,
             payload.researchTitle ?? null,
+            JSON.stringify(payload.sensorIds ?? []),
+            JSON.stringify(payload.sensorNames ?? []),
             now,
             now
         );
@@ -92,6 +100,8 @@ export class FavoriteRepository {
             laterality: payload.laterality,
             researchId: payload.researchId,
             researchTitle: payload.researchTitle,
+            sensorIds: payload.sensorIds ?? [],
+            sensorNames: payload.sensorNames ?? [],
             createdAt: now,
             updatedAt: now,
         };
@@ -146,6 +156,14 @@ export class FavoriteRepository {
             fields.push('research_title = ?');
             values.push(data.researchTitle ?? null);
         }
+        if (data.sensorIds !== undefined) {
+            fields.push('sensor_ids = ?');
+            values.push(JSON.stringify(data.sensorIds));
+        }
+        if (data.sensorNames !== undefined) {
+            fields.push('sensor_names = ?');
+            values.push(JSON.stringify(data.sensorNames));
+        }
 
         // Always bump updated_at
         fields.push('updated_at = ?');
@@ -183,6 +201,8 @@ export class FavoriteRepository {
             laterality: (row.laterality as Laterality) ?? undefined,
             researchId: row.research_id ?? undefined,
             researchTitle: row.research_title ?? undefined,
+            sensorIds: this.parseJsonArray(row.sensor_ids),
+            sensorNames: this.parseJsonArray(row.sensor_names),
             createdAt: row.created_at,
             updatedAt: row.updated_at,
         };

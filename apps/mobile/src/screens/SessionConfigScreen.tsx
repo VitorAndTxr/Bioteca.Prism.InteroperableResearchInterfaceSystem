@@ -4,13 +4,16 @@
  * Allows researchers to configure a new clinical session.
  * Entry point for the Home tab stack.
  *
- * Features (US-004, US-005, US-006, US-007):
+ * Features:
  * - Volunteer search with debounced input
  * - Body structure selection (SNOMED CT)
- * - Laterality selection (left/right/bilateral)
  * - Topography multi-select with tag chips
  * - Device selection from paired Bluetooth devices
+ * - Sensor selection via inline Select dropdown (required when sensors exist)
  * - Form validation before session start
+ *
+ * Research project is resolved from EXPO_PUBLIC_RESEARCH_ID env var —
+ * no user-facing research picker.
  */
 
 import React, { FC, useState, useEffect, useCallback } from 'react';
@@ -23,7 +26,6 @@ import {
   TouchableOpacity,
   FlatList,
   ActivityIndicator,
-  Pressable,
   Alert,
 } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -35,17 +37,19 @@ import { useDebounce } from '@/hooks/useDebounce';
 import { volunteerService } from '@/services/VolunteerService';
 import { snomedService } from '@/services/SnomedService';
 import { researchService } from '@/services/ResearchService';
-import type { Research, SessionFavorite } from '@iris/domain';
+import type { SessionFavorite, Sensor } from '@iris/domain';
 import { useBluetoothContext } from '@/context/BluetoothContext';
 import { useSession } from '@/context/SessionContext';
 import { useAuth } from '@/context/AuthContext';
 import { Volunteer, SnomedBodyStructure, SnomedTopographicalModifier } from '@iris/domain';
-import { Search, Plus, ClipboardList, ChevronRight, Star, Settings, RotateCcw } from 'lucide-react-native';
+import { Search, Plus, Star, Settings, RotateCcw } from 'lucide-react-native';
 import { favoriteRepository } from '@/data/repositories/FavoriteRepository';
 import { NamePromptModal } from '@/components/NamePromptModal';
 import { useSessionConfigForm } from '@/context/SessionConfigFormContext';
 
 type Props = NativeStackScreenProps<HomeStackParamList, 'SessionConfig'>;
+
+const RESEARCH_ID = process.env.EXPO_PUBLIC_RESEARCH_ID ?? '';
 
 export const SessionConfigScreen: FC<Props> = ({ navigation, route }) => {
   const { user } = useAuth();
@@ -55,9 +59,10 @@ export const SessionConfigScreen: FC<Props> = ({ navigation, route }) => {
     selectedVolunteer, setSelectedVolunteer,
     selectedBodyStructure, setSelectedBodyStructure,
     selectedTopographies, setSelectedTopographies,
-    selectedResearchId, setSelectedResearchId,
-    selectedResearchTitle, setSelectedResearchTitle,
     selectedDeviceId, setSelectedDeviceId,
+    selectedSensorIds, setSelectedSensorIds,
+    selectedSensorNames, setSelectedSensorNames,
+    deviceHasSensors, setDeviceHasSensors,
     resetForm,
   } = useSessionConfigForm();
 
@@ -69,7 +74,6 @@ export const SessionConfigScreen: FC<Props> = ({ navigation, route }) => {
 
   // Reference data (fetched, not user selections — local)
   const [bodyStructures, setBodyStructures] = useState<SnomedBodyStructure[]>([]);
-  const [researchProjects, setResearchProjects] = useState<Research[]>([]);
 
   // Favorites state
   const [favorites, setFavorites] = useState<SessionFavorite[]>([]);
@@ -79,6 +83,10 @@ export const SessionConfigScreen: FC<Props> = ({ navigation, route }) => {
   // Loading states
   const [isLoadingSnomedData, setIsLoadingSnomedData] = useState(true);
   const [isStartingSession, setIsStartingSession] = useState(false);
+
+  // Sensor data (fetched when device changes — local)
+  const [sensors, setSensors] = useState<Sensor[]>([]);
+  const [isSensorsLoading, setIsSensorsLoading] = useState(false);
 
   // Debounce volunteer search
   const debouncedSearchQuery = useDebounce(volunteerSearchQuery, 500);
@@ -98,7 +106,7 @@ export const SessionConfigScreen: FC<Props> = ({ navigation, route }) => {
     }, [])
   );
 
-  // Load SNOMED data and research projects on mount
+  // Load SNOMED data on mount
   useEffect(() => {
     const loadInitialData = async () => {
       try {
@@ -112,14 +120,6 @@ export const SessionConfigScreen: FC<Props> = ({ navigation, route }) => {
         console.error('[SessionConfigScreen] Failed to load SNOMED data:', error);
       } finally {
         setIsLoadingSnomedData(false);
-      }
-
-      // Load research projects (non-blocking -- failure is silent)
-      try {
-        const response = await researchService.getActive();
-        setResearchProjects(response.data ?? []);
-      } catch (error) {
-        console.warn('[SessionConfigScreen] Failed to load research projects:', error);
       }
     };
 
@@ -169,19 +169,40 @@ export const SessionConfigScreen: FC<Props> = ({ navigation, route }) => {
     navigation.setParams({ updatedTopographies: undefined });
   }, [route.params?.updatedTopographies, navigation]);
 
+  // Clear sensor selection and fetch sensors for the selected device
+  useEffect(() => {
+    setSelectedSensorIds([]);
+    setSelectedSensorNames([]);
+    setDeviceHasSensors(false);
+    setSensors([]);
+
+    if (!selectedDeviceId) return;
+
+    let cancelled = false;
+    setIsSensorsLoading(true);
+
+    researchService.getAllResearchSensors(RESEARCH_ID)
+      .then((result) => {
+        if (!cancelled) {
+          setSensors(result);
+          setDeviceHasSensors(result.length > 0);
+        }
+      })
+      .catch((err) => {
+        console.error('[SessionConfigScreen] Failed to load sensors:', err);
+      })
+      .finally(() => {
+        if (!cancelled) setIsSensorsLoading(false);
+      });
+
+    return () => { cancelled = true; };
+  }, [selectedDeviceId]);
+
   // Handle volunteer selection
   const handleSelectVolunteer = (volunteer: Volunteer) => {
     setSelectedVolunteer(volunteer);
     setVolunteerSearchQuery('');
     setShowVolunteerDropdown(false);
-  };
-
-  // Handle research selection
-  const handleResearchChange = (value: string | number) => {
-    const id = String(value);
-    setSelectedResearchId(id);
-    const project = researchProjects.find((r) => r.id === id);
-    setSelectedResearchTitle(project?.title ?? '');
   };
 
   // Handle topography removal with confirmation
@@ -209,7 +230,7 @@ export const SessionConfigScreen: FC<Props> = ({ navigation, route }) => {
     // Body structure
     setSelectedBodyStructure(favorite.bodyStructureSnomedCode);
 
-    // Topographies -- reconstruct from parallel arrays including category (M1 fix)
+    // Topographies -- reconstruct from parallel arrays including category
     const topographies: SnomedTopographicalModifier[] = favorite.topographyCodes.map(
       (code, index) => ({
         snomedCode: code,
@@ -220,25 +241,9 @@ export const SessionConfigScreen: FC<Props> = ({ navigation, route }) => {
     );
     setSelectedTopographies(topographies);
 
-    // Research linkage with stale-data validation (US-SF-017)
-    if (favorite.researchId) {
-      const projectExists = researchProjects.find(r => r.id === favorite.researchId);
-      if (projectExists) {
-        setSelectedResearchId(favorite.researchId);
-        setSelectedResearchTitle(favorite.researchTitle ?? '');
-      } else {
-        setSelectedResearchId('');
-        setSelectedResearchTitle('');
-        Alert.alert(
-          'Research Unavailable',
-          `Research project "${favorite.researchTitle}" is no longer available. ` +
-          'Favorite applied without research linkage.'
-        );
-      }
-    } else {
-      setSelectedResearchId('');
-      setSelectedResearchTitle('');
-    }
+    // Sensors
+    setSelectedSensorIds(favorite.sensorIds ?? []);
+    setSelectedSensorNames(favorite.sensorNames ?? []);
 
     // Device with stale-device validation
     if (favorite.deviceId) {
@@ -256,7 +261,7 @@ export const SessionConfigScreen: FC<Props> = ({ navigation, route }) => {
       setSelectedDeviceId('');
     }
 
-    // Body structure stale-data warning (US-SF-018)
+    // Body structure stale-data warning
     const structureExists = bodyStructures.find(
       bs => bs.snomedCode === favorite.bodyStructureSnomedCode
     );
@@ -298,8 +303,8 @@ export const SessionConfigScreen: FC<Props> = ({ navigation, route }) => {
         topographyCategories: selectedTopographies.map(t => t.category),
         deviceId: selectedDeviceId || undefined,
         laterality: null,
-        researchId: selectedResearchId || undefined,
-        researchTitle: selectedResearchTitle || undefined,
+        sensorIds: selectedSensorIds,
+        sensorNames: selectedSensorNames,
       });
 
       const updated = await favoriteRepository.getAll();
@@ -309,13 +314,14 @@ export const SessionConfigScreen: FC<Props> = ({ navigation, route }) => {
     }
   };
 
-  // Validation
+  // Validation — sensors required only when the device has sensors registered
   const isFormValid = (): boolean => {
     return !!(
       selectedVolunteer &&
       selectedBodyStructure &&
       selectedTopographies.length > 0 &&
-      selectedDeviceId
+      selectedDeviceId &&
+      (selectedSensorIds.length > 0 || !deviceHasSensors)
     );
   };
 
@@ -338,14 +344,15 @@ export const SessionConfigScreen: FC<Props> = ({ navigation, route }) => {
         volunteerName: selectedVolunteer.name,
         researcherId: user.id,
         deviceId: selectedDeviceId,
-        researchId: selectedResearchId || undefined,
-        researchTitle: selectedResearchTitle || undefined,
+        researchId: RESEARCH_ID || undefined,
         clinicalData: {
           bodyStructureSnomedCode: bodyStructure.snomedCode,
           bodyStructureName: bodyStructure.displayName,
           laterality: null,
           topographyCodes: selectedTopographies.map((t) => t.snomedCode),
           topographyNames: selectedTopographies.map((t) => t.displayName),
+          sensorIds: selectedSensorIds,
+          sensorNames: selectedSensorNames,
         },
       });
 
@@ -372,33 +379,6 @@ export const SessionConfigScreen: FC<Props> = ({ navigation, route }) => {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
-        {/* Research Projects Entry Point */}
-        <Pressable
-          style={({ pressed }) => [styles.researchCard, pressed && { opacity: 0.7 }]}
-          onPress={() => navigation.navigate('ResearchList')}
-        >
-          <ClipboardList size={20} color={theme.colors.primary} />
-          <Text style={styles.researchCardTitle}>Research Projects</Text>
-          <ChevronRight size={16} color={theme.colors.textMuted} />
-        </Pressable>
-
-        {/* Research Project Selector (optional linkage) */}
-        {researchProjects.length > 0 && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Link to Research (Optional)</Text>
-            <Select
-              label="Research Project"
-              placeholder="No research linked"
-              value={selectedResearchId}
-              onValueChange={handleResearchChange}
-              options={researchProjects.map((r) => ({
-                label: r.title,
-                value: r.id,
-              }))}
-            />
-          </View>
-        )}
-
         {/* Favorites Chip Strip */}
         {favorites.length > 0 && (
           <View style={styles.favoritesSection}>
@@ -561,6 +541,43 @@ export const SessionConfigScreen: FC<Props> = ({ navigation, route }) => {
                   : 'Not Connected'}
               </Text>
             </View>
+          )}
+        </View>
+
+        {/* Sensors Section */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Sensors</Text>
+
+          {!selectedDeviceId ? (
+            <Text style={styles.sensorHint}>Select a device first to choose a sensor.</Text>
+          ) : isSensorsLoading ? (
+            <ActivityIndicator size="small" color={theme.colors.primary} />
+          ) : sensors.length === 0 ? (
+            <Text style={styles.sensorHint}>No sensors registered for this research.</Text>
+          ) : (
+            <>
+              <Select
+                label="Sensor"
+                placeholder="Select sensor..."
+                value={selectedSensorIds[0] ?? ''}
+                onValueChange={(value) => {
+                  const sensor = sensors.find((s) => s.id === value);
+                  if (sensor) {
+                    setSelectedSensorIds([sensor.id]);
+                    setSelectedSensorNames([sensor.name]);
+                  } else {
+                    setSelectedSensorIds([]);
+                    setSelectedSensorNames([]);
+                  }
+                }}
+                options={sensors.map((s) => ({ label: s.name, value: s.id }))}
+              />
+              {selectedSensorIds.length === 0 && deviceHasSensors && (
+                <Text style={styles.sensorValidationHint}>
+                  A sensor is required to start a session.
+                </Text>
+              )}
+            </>
           )}
         </View>
 
@@ -750,23 +767,15 @@ const styles = StyleSheet.create({
     ...theme.typography.bodySmall,
     color: theme.colors.textBody,
   },
-  researchCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: theme.colors.surface,
-    borderRadius: theme.borderRadius.lg,
-    padding: theme.spacing.lg,
-    marginBottom: theme.spacing.xl,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    gap: theme.spacing.md,
-    ...theme.shadow.sm,
+  sensorHint: {
+    ...theme.typography.bodySmall,
+    color: theme.colors.textMuted,
+    fontStyle: 'italic',
   },
-  researchCardTitle: {
-    ...theme.typography.bodyBase,
-    color: theme.colors.textTitle,
-    fontWeight: '600',
-    flex: 1,
+  sensorValidationHint: {
+    ...theme.typography.bodySmall,
+    color: theme.colors.warning,
+    marginTop: theme.spacing.xs,
   },
   // Favorites strip
   favoritesSection: {

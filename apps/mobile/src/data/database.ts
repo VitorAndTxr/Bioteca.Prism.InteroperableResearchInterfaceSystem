@@ -11,6 +11,8 @@ import { v2_add_research_columns } from './migrations/v2_add_research_columns';
 import { v3_relax_laterality_constraint } from './migrations/v3_relax_laterality_constraint';
 import { v4_add_session_favorites } from './migrations/v4_add_session_favorites';
 import { v5_add_blob_url } from './migrations/v5_add_blob_url';
+import { v6_add_sensor_columns } from './migrations/v6_add_sensor_columns';
+import { v7_add_sensor_columns_to_clinical_data } from './migrations/v7_add_sensor_columns_to_clinical_data';
 
 interface Migration {
     version: number;
@@ -24,6 +26,8 @@ const MIGRATIONS: Migration[] = [
     { version: 3, name: 'v3_relax_laterality_constraint', sql: v3_relax_laterality_constraint },
     { version: 4, name: 'v4_add_session_favorites', sql: v4_add_session_favorites },
     { version: 5, name: 'v5_add_blob_url', sql: v5_add_blob_url },
+    { version: 6, name: 'v6_add_sensor_columns', sql: v6_add_sensor_columns },
+    { version: 7, name: 'v7_add_sensor_columns_to_clinical_data', sql: v7_add_sensor_columns_to_clinical_data },
 ];
 
 class DatabaseManager {

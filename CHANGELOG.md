@@ -4,6 +4,56 @@ All notable changes to the IRIS project are documented in this file.
 
 ---
 
+## [Phase 20] — 2026-03-01
+
+### NewSession Screen Redesign
+
+Phase 20 removes research project selection from the session configuration flow and replaces it with a build-time environment variable (`EXPO_PUBLIC_RESEARCH_ID`). A new `SensorSelectScreen` lets researchers multi-select sensors from the paired Bluetooth device's backend sensor list. Sensor selections are persisted to session favorites (SQLite migration v6) and flow through `SessionConfigFormContext` into `startSession()`.
+
+---
+
+### Added
+
+#### Mobile App — Sensor Selection (`apps/mobile`)
+
+- **`SensorSelectScreen`** — New full-screen multi-select screen (following the `TopographySelectScreen` pattern) that fetches available sensors via `researchService.getDeviceSensors(researchId, deviceId)` using the env-var research ID and the user-selected device ID. Sensors are displayed in a searchable list; selected sensors appear as chips on `SessionConfigScreen`.
+
+- **`EXPO_PUBLIC_RESEARCH_ID` environment variable** — Research project is now resolved once at build time from this Expo public env var instead of from user interaction. Validated at app startup; missing or malformed values surface a clear error modal before the user can proceed.
+
+- **`deviceHasSensors` flag in `SessionConfigFormContext`** — Tracks whether the currently selected device has any sensors available from the backend, enabling `SessionConfigScreen` to conditionally render the sensor selection entry point and adjust form validation accordingly.
+
+- **`selectedSensorIds: string[]` and `selectedSensorNames: string[]` in `SessionConfigFormContext`** — New state fields (and corresponding setters) for the sensor multi-selection. Added to `INITIAL_FORM_STATE`, `resetForm()`, and all `useMemo` dependency arrays. State persists across navigation unmount/remount; clears automatically on session end.
+
+- **SQLite migration v6 (`v6_add_sensor_fields.ts`)** — Adds `sensor_ids TEXT DEFAULT '[]'` and `sensor_names TEXT DEFAULT '[]'` to the `session_favorites` table, matching the existing JSON-array pattern of `topography_codes`/`topography_names`. Existing v5 rows are preserved with empty-array defaults; no data loss.
+
+- **Sensor parity in `FavoriteRepository`** — `create()`, `update()`, and `mapRow()` extended with `sensorIds` and `sensorNames` JSON-serialized fields. `applyFavorite()` restores sensor selections alongside body structure, topographies, and device.
+
+#### Domain — Shared Types (`@iris/domain`)
+
+- No new domain types required; existing `Sensor` type (`packages/domain/src/models/Sensor.ts`) with `id`, `deviceId`, `name`, and metadata fields was sufficient.
+
+---
+
+### Changed
+
+- **`SessionConfigScreen`** — Research project navigation card and "Link to Research" dropdown removed. `selectedResearchId`, `selectedResearchTitle`, and `researchProjects` local state removed. New sensor chip strip and `[Add Sensors]` entry point added. Form validation updated: `[Start Session]` button requires at least one sensor unless the backend returned an empty sensor list for the device (in which case the session may proceed with a warning). Research ID is read from the env var at session start with no user interaction.
+
+- **`SessionConfigFormContext`** — Research-selection state (`researchProjects`, `selectedResearchId`, `selectedResearchTitle`) removed. Sensor state added (see above). Context surface area reduced; remaining fields unchanged.
+
+- **`SessionFavorite` schema** — `sensor_ids` and `sensor_names` columns added via migration v6. Research fields (`research_id`, `research_title`) retained in schema for backward compatibility but are no longer written by the UI.
+
+- **`startSession()`** — Now accepts `sensorIds: string[]` parameter and includes selected sensor IDs in the local `ClinicalSession` record. No backend endpoint changes were required.
+
+---
+
+### Stories Delivered
+
+7 user stories (US-033–039) covering: env var resolution, sensor screen creation, context sensor state, `deviceHasSensors` flag, SQLite v6 migration, `SessionConfigScreen` research UI removal, and favorites sensor parity.
+
+**Test Results**: 103 tests passing. TypeScript strict mode: no errors in Phase 20 files.
+
+---
+
 ## [Phase 17] — 2026-02-18
 
 ### Node-to-Node Data Synchronization

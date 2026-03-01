@@ -537,6 +537,29 @@ This application is part of the larger PRISM federated research framework:
 
 ---
 
+## Phase 20 Summary — NewSession Screen Redesign (2026-03-01)
+
+Phase 20 redesigned the `SessionConfigScreen` flow in the mobile app across 7 user stories, delivering two primary capabilities: removing the research project dropdown in favor of a build-time env var, and introducing a new `SensorSelectScreen` step.
+
+### Architecture Decision Records
+
+**ADR-1 — Build-Time Research ID via `EXPO_PUBLIC_RESEARCH_ID`**: The interactive research project dropdown was replaced by an Expo public environment variable. Each institutional deployment targets a single research project; binding the research ID at build time removes session-configuration friction and eliminates a common source of misconfiguration. Research management screens (list, detail) remain for browsing but are no longer coupled to session creation.
+
+**ADR-2 — `SensorSelectScreen` as a Separate Navigation Screen**: Sensor selection is a dedicated full-screen route within `HomeStack`, following the established `TopographySelectScreen` pattern. A separate screen prevents `SessionConfigScreen` from absorbing sensor loading states, error handling, and search UI. Context state is preserved across navigation via `SessionConfigFormContext`.
+
+**ADR-3 — Sensor State in `SessionConfigFormContext`**: Selected sensors are stored as `selectedSensorIds: string[]` and `selectedSensorNames: string[]` in context, not passed as route params. Context provides the lifecycle guarantees needed (survive remount, reset on session end) that route params cannot.
+
+**ADR-4 — SQLite Migration v6 for Sensor Persistence in Favorites**: Two new TEXT columns (`sensor_ids`, `sensor_names`, default `'[]'`) were added to `session_favorites` via a v6 migration, following the identical pattern used for `topography_codes`/`topography_names` in v4. Existing v5 data is preserved without schema rebuild.
+
+**ADR-5 — Conditional Sensor Validation (Non-Blocking on Empty Backend)**: Sensor selection is required to start a session only when the backend returns a non-empty sensor list for the selected device. If zero sensors are registered (data-entry lag), the Start button is not blocked — the absence is treated as informational rather than a hard validation failure.
+
+### Key Technical Decisions
+- Scope is strictly limited to `IRIS/apps/mobile` and `@iris/domain`; backend, desktop, middleware, and device layers are untouched.
+- `SensorSelectScreen` mirrors `TopographySelectScreen` structure (searchable list, multi-select, confirm callback into context).
+- Environment variable pattern uses Expo's native `EXPO_PUBLIC_*` support with a typed accessor in `@iris/domain`.
+
+---
+
 ## Current Development Status (November 2025)
 
 **✅ Production-Ready**:

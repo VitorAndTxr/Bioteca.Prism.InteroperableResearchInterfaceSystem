@@ -15,7 +15,7 @@
  */
 
 import React, { useCallback, useEffect, useState } from 'react';
-import { View } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
@@ -41,7 +41,40 @@ import { databaseManager } from './src/data/database';
 
 SplashScreen.preventAutoHideAsync();
 
+const envErrorStyles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#FFF5F5',
+    padding: 32,
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#C0392B',
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  message: {
+    fontSize: 14,
+    color: '#333',
+    textAlign: 'center',
+    lineHeight: 22,
+  },
+});
+
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function isValidResearchId(value: string | undefined): boolean {
+  if (!value || value.trim() === '') return false;
+  return UUID_REGEX.test(value.trim());
+}
+
 export default function App() {
+  const researchId = process.env.EXPO_PUBLIC_RESEARCH_ID;
+  const researchIdValid = isValidResearchId(researchId);
+
   const [fontsLoaded] = useFonts({
     'Overpass-ExtraBold': Overpass_800ExtraBold,
     'Overpass-Bold': Overpass_700Bold,
@@ -67,6 +100,17 @@ export default function App() {
 
   if (!fontsLoaded || !dbReady) {
     return null;
+  }
+
+  if (!researchIdValid) {
+    return (
+      <View style={envErrorStyles.container} onLayout={onLayoutRootView}>
+        <Text style={envErrorStyles.title}>Configuration Error</Text>
+        <Text style={envErrorStyles.message}>
+          {`EXPO_PUBLIC_RESEARCH_ID is missing or invalid.\n\nSet it to a valid UUID in your .env file and rebuild the app.\n\nCurrent value: "${researchId ?? '(not set)'}"`}
+        </Text>
+      </View>
+    );
   }
 
   return (

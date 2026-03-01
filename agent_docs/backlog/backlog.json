@@ -2,7 +2,7 @@
   "metadata": {
     "version": "1.0",
     "created_at": "2026-02-17T20:20:25.131644+00:00",
-    "updated_at": "2026-02-17T22:29:21.580115+00:00"
+    "updated_at": "2026-03-01T19:30:09.782086+00:00"
   },
   "stories": [
     {
@@ -2195,6 +2195,526 @@
           "from": "Ready",
           "to": "Done",
           "at": "2026-02-18T01:10:54.248857+00:00"
+        }
+      ]
+    },
+    {
+      "id": "US-033",
+      "title": "Add EXPO_PUBLIC_RESEARCH_ID env var and startup validation",
+      "feature_area": "Session Redesign: Env Var",
+      "priority": "Must",
+      "role": "Institution Admin",
+      "want": "the app to read ResearchId from EXPO_PUBLIC_RESEARCH_ID at startup without user interaction",
+      "benefit": "the research context is baked at build time per institution, removing manual selection from the session flow",
+      "acceptance_criteria": [
+        "EXPO_PUBLIC_RESEARCH_ID is declared in .env.example with a placeholder UUID",
+        "App reads and validates EXPO_PUBLIC_RESEARCH_ID at startup (non-empty, valid UUID format)",
+        "If env var is missing or invalid, a clear error modal/screen is shown and the user cannot proceed",
+        "No user interaction is required to supply a researchId during session creation",
+        "EXPO_PUBLIC_RESEARCH_ID is documented in CLAUDE.md and QUICK_START.md build instructions"
+      ],
+      "notes": "",
+      "dependencies": [],
+      "status": "Done",
+      "created_at": "2026-03-01T18:53:08.881143+00:00",
+      "updated_at": "2026-03-01T19:30:09.058435+00:00",
+      "created_by": "po",
+      "history": [
+        {
+          "action": "created",
+          "by": "po",
+          "at": "2026-03-01T18:53:08.881143+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "po",
+          "from": "Draft",
+          "to": "Ready",
+          "at": "2026-03-01T18:54:04.836740+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "po",
+          "from": "Ready",
+          "to": "Validated",
+          "at": "2026-03-01T19:07:49.689610+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "dev",
+          "from": "Validated",
+          "to": "In Progress",
+          "at": "2026-03-01T19:10:10.710327+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "dev",
+          "from": "In Progress",
+          "to": "Done",
+          "at": "2026-03-01T19:10:49.659124+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "qa",
+          "from": "Done",
+          "to": "In Testing",
+          "at": "2026-03-01T19:26:33.132224+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "qa",
+          "from": "In Testing",
+          "to": "Done",
+          "at": "2026-03-01T19:30:09.058435+00:00"
+        }
+      ]
+    },
+    {
+      "id": "US-034",
+      "title": "Expand SessionConfigFormContext with sensor selection state",
+      "feature_area": "Session Redesign: Context",
+      "priority": "Must",
+      "role": "Developer",
+      "want": "SessionConfigFormContext to carry selectedSensorIds and selectedSensorNames arrays",
+      "benefit": "sensor state persists across screen transitions without prop drilling, following the established topographies pattern",
+      "acceptance_criteria": [
+        "SessionConfigFormContext.state includes selectedSensorIds: string[] and selectedSensorNames: string[]",
+        "INITIAL_FORM_STATE initialises both arrays to []",
+        "setSelectedSensorIds() and setSelectedSensorNames() actions are exported from the context",
+        "resetForm() clears sensor arrays alongside all other fields",
+        "Remove selectedResearchId, selectedResearchTitle, and researchProjects fetch from the context",
+        "TypeScript strict mode: no implicit any; all new fields are fully typed"
+      ],
+      "notes": "",
+      "dependencies": [
+        "US-033"
+      ],
+      "status": "Done",
+      "created_at": "2026-03-01T18:53:15.999694+00:00",
+      "updated_at": "2026-03-01T19:30:09.174703+00:00",
+      "created_by": "po",
+      "history": [
+        {
+          "action": "created",
+          "by": "po",
+          "at": "2026-03-01T18:53:15.999694+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "po",
+          "from": "Draft",
+          "to": "Ready",
+          "at": "2026-03-01T18:54:04.991318+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "po",
+          "from": "Ready",
+          "to": "Validated",
+          "at": "2026-03-01T19:07:49.821445+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "dev",
+          "from": "Validated",
+          "to": "In Progress",
+          "at": "2026-03-01T19:10:55.014845+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "dev",
+          "from": "In Progress",
+          "to": "Done",
+          "at": "2026-03-01T19:11:15.615860+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "qa",
+          "from": "Done",
+          "to": "In Testing",
+          "at": "2026-03-01T19:26:33.243419+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "qa",
+          "from": "In Testing",
+          "to": "Done",
+          "at": "2026-03-01T19:30:09.174703+00:00"
+        }
+      ]
+    },
+    {
+      "id": "US-035",
+      "title": "Add sensor fields to SessionConfig domain type and startSession()",
+      "feature_area": "Session Redesign: Domain Types",
+      "priority": "Must",
+      "role": "Developer",
+      "want": "SessionConfig to include sensorIds and sensorNames and startSession() to accept and forward them",
+      "benefit": "sensor selections are part of the clinical session record from creation onwards, enabling future backend submission",
+      "acceptance_criteria": [
+        "@iris/domain SessionConfig type includes optional sensorIds: string[] and sensorNames: string[]",
+        "SessionContext.startSession() signature includes sensorIds: string[] parameter",
+        "researchId is sourced from EXPO_PUBLIC_RESEARCH_ID env var inside startSession(), not from a caller-supplied parameter",
+        "All call sites of startSession() are updated to omit the deprecated researchId argument and pass sensorIds instead",
+        "TypeScript strict mode compilation passes with zero errors"
+      ],
+      "notes": "",
+      "dependencies": [
+        "US-034"
+      ],
+      "status": "Done",
+      "created_at": "2026-03-01T18:53:22.349565+00:00",
+      "updated_at": "2026-03-01T19:30:09.283575+00:00",
+      "created_by": "po",
+      "history": [
+        {
+          "action": "created",
+          "by": "po",
+          "at": "2026-03-01T18:53:22.349565+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "po",
+          "from": "Draft",
+          "to": "Ready",
+          "at": "2026-03-01T18:54:05.253441+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "po",
+          "from": "Ready",
+          "to": "Validated",
+          "at": "2026-03-01T19:07:49.932017+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "dev",
+          "from": "Validated",
+          "to": "In Progress",
+          "at": "2026-03-01T19:11:20.337678+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "dev",
+          "from": "In Progress",
+          "to": "Done",
+          "at": "2026-03-01T19:12:02.162360+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "qa",
+          "from": "Done",
+          "to": "In Testing",
+          "at": "2026-03-01T19:26:33.354229+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "qa",
+          "from": "In Testing",
+          "to": "Done",
+          "at": "2026-03-01T19:30:09.283575+00:00"
+        }
+      ]
+    },
+    {
+      "id": "US-036",
+      "title": "SQLite migration v6: add sensor columns to session_favorites",
+      "feature_area": "Session Redesign: SQLite Migration",
+      "priority": "Must",
+      "role": "Developer",
+      "want": "the session_favorites table to store sensor_ids and sensor_names as JSON text columns",
+      "benefit": "favorites can persist sensor selections alongside existing fields without data loss on upgrade",
+      "acceptance_criteria": [
+        "Migration v6 adds sensor_ids TEXT DEFAULT \"[]\" and sensor_names TEXT DEFAULT \"[]\" to session_favorites",
+        "Existing v5 rows are preserved after migration (no data loss)",
+        "FavoriteRepository.create() serialises sensorIds and sensorNames as JSON strings",
+        "FavoriteRepository.mapRow() deserialises sensor columns back to string[] on read",
+        "SessionFavorite type and CreateFavoritePayload include optional sensorIds: string[] and sensorNames: string[]",
+        "Migration is idempotent: running it twice does not raise an error"
+      ],
+      "notes": "",
+      "dependencies": [
+        "US-034"
+      ],
+      "status": "Done",
+      "created_at": "2026-03-01T18:53:29.539840+00:00",
+      "updated_at": "2026-03-01T19:30:09.402098+00:00",
+      "created_by": "po",
+      "history": [
+        {
+          "action": "created",
+          "by": "po",
+          "at": "2026-03-01T18:53:29.539840+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "po",
+          "from": "Draft",
+          "to": "Ready",
+          "at": "2026-03-01T18:54:05.397974+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "po",
+          "from": "Ready",
+          "to": "Validated",
+          "at": "2026-03-01T19:07:50.039376+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "dev",
+          "from": "Validated",
+          "to": "In Progress",
+          "at": "2026-03-01T19:11:20.452543+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "dev",
+          "from": "In Progress",
+          "to": "Done",
+          "at": "2026-03-01T19:12:02.278008+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "qa",
+          "from": "Done",
+          "to": "In Testing",
+          "at": "2026-03-01T19:26:33.467600+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "qa",
+          "from": "In Testing",
+          "to": "Done",
+          "at": "2026-03-01T19:30:09.402098+00:00"
+        }
+      ]
+    },
+    {
+      "id": "US-037",
+      "title": "Create SensorSelectScreen for multi-select sensor selection",
+      "feature_area": "Session Redesign: SensorSelectScreen",
+      "priority": "Must",
+      "role": "Researcher",
+      "want": "a dedicated screen to multi-select sensors from the paired Bluetooth device",
+      "benefit": "I can specify which sensors to use in a session without cluttering the main configuration screen",
+      "acceptance_criteria": [
+        "SensorSelectScreen is added to HomeStack navigator as a new route",
+        "Screen fetches sensor list via researchService.getDeviceSensors(researchId, deviceId) where researchId comes from env var",
+        "If device is not yet selected, a guidance message is shown and the fetch is skipped",
+        "If backend returns zero sensors, an empty-state message is shown; the user can navigate back without selecting",
+        "If fetch fails, a clear error message with retry option is displayed",
+        "Sensors are displayed in a searchable list with multi-select checkboxes (lucide-react-native icons only)",
+        "Selecting/deselecting a sensor toggles it in the local state",
+        "A Confirm/Done action saves selections to SessionConfigFormContext (selectedSensorIds and selectedSensorNames)",
+        "Navigating back without confirming discards the in-progress selection",
+        "TypeScript strict mode: all props and state are fully typed"
+      ],
+      "notes": "",
+      "dependencies": [
+        "US-034"
+      ],
+      "status": "Done",
+      "created_at": "2026-03-01T18:53:39.040606+00:00",
+      "updated_at": "2026-03-01T19:30:09.526776+00:00",
+      "created_by": "po",
+      "history": [
+        {
+          "action": "created",
+          "by": "po",
+          "at": "2026-03-01T18:53:39.040606+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "po",
+          "from": "Draft",
+          "to": "Ready",
+          "at": "2026-03-01T18:54:05.541050+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "po",
+          "from": "Ready",
+          "to": "Validated",
+          "at": "2026-03-01T19:07:50.195824+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "dev",
+          "from": "Validated",
+          "to": "In Progress",
+          "at": "2026-03-01T19:12:06.726560+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "dev",
+          "from": "In Progress",
+          "to": "Done",
+          "at": "2026-03-01T19:12:56.474239+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "qa",
+          "from": "Done",
+          "to": "In Testing",
+          "at": "2026-03-01T19:26:33.575328+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "qa",
+          "from": "In Testing",
+          "to": "Done",
+          "at": "2026-03-01T19:30:09.526776+00:00"
+        }
+      ]
+    },
+    {
+      "id": "US-038",
+      "title": "Update SessionConfigScreen: remove research fields, add sensor chip strip",
+      "feature_area": "Session Redesign: SessionConfigScreen",
+      "priority": "Must",
+      "role": "Researcher",
+      "want": "SessionConfigScreen to no longer show research project selection and instead show my selected sensors as chips with an Add button",
+      "benefit": "the session configuration flow is simpler and research context is handled automatically by the institution-level env var",
+      "acceptance_criteria": [
+        "The Research Projects navigation card is removed from SessionConfigScreen",
+        "The Link to Research dropdown selector is removed from SessionConfigScreen",
+        "All local state and hooks related to researchProjects, selectedResearchId, and selectedResearchTitle are removed",
+        "A Sensors section is added showing selected sensor names as chips",
+        "An [Add Sensors] button navigates to SensorSelectScreen",
+        "Changing the selected device clears the sensor chip strip (stale sensors are removed)",
+        "The Start Session button is disabled and shows an inline error if no sensors are selected and the backend returned a non-empty sensor list",
+        "If the backend returned zero sensors for the device, the Start Session button is NOT blocked by sensor validation",
+        "Form layout and existing sections (Volunteer, Clinical Data, Hardware) are unchanged"
+      ],
+      "notes": "",
+      "dependencies": [
+        "US-037"
+      ],
+      "status": "Done",
+      "created_at": "2026-03-01T18:53:48.899176+00:00",
+      "updated_at": "2026-03-01T19:30:09.670871+00:00",
+      "created_by": "po",
+      "history": [
+        {
+          "action": "created",
+          "by": "po",
+          "at": "2026-03-01T18:53:48.899176+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "po",
+          "from": "Draft",
+          "to": "Ready",
+          "at": "2026-03-01T18:54:05.793430+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "po",
+          "from": "Ready",
+          "to": "Validated",
+          "at": "2026-03-01T19:07:50.305473+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "dev",
+          "from": "Validated",
+          "to": "In Progress",
+          "at": "2026-03-01T19:13:00.722349+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "dev",
+          "from": "In Progress",
+          "to": "Done",
+          "at": "2026-03-01T19:14:32.507624+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "qa",
+          "from": "Done",
+          "to": "In Testing",
+          "at": "2026-03-01T19:26:33.686008+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "qa",
+          "from": "In Testing",
+          "to": "Done",
+          "at": "2026-03-01T19:30:09.670871+00:00"
+        }
+      ]
+    },
+    {
+      "id": "US-039",
+      "title": "Update favorites save and apply to include sensor selections",
+      "feature_area": "Session Redesign: Favorites",
+      "priority": "Must",
+      "role": "Researcher",
+      "want": "saving a favorite to include my current sensor selections and applying a favorite to restore them",
+      "benefit": "I can reuse complete session configurations including sensors without re-selecting them each time",
+      "acceptance_criteria": [
+        "favoriteRepository.create() persists sensorIds and sensorNames from the current SessionConfigFormContext state",
+        "applyFavorite() restores selectedSensorIds and selectedSensorNames into SessionConfigFormContext",
+        "Favorites saved before v6 migration (with no sensor data) apply cleanly with empty sensor arrays (no crash)",
+        "Favorites can be saved with an empty sensor list (sensors are optional in the favorite schema)",
+        "Sensor chips appear in SessionConfigScreen after applying a favorite that includes sensors"
+      ],
+      "notes": "",
+      "dependencies": [
+        "US-036 US-038"
+      ],
+      "status": "Done",
+      "created_at": "2026-03-01T18:53:56.820016+00:00",
+      "updated_at": "2026-03-01T19:30:09.781088+00:00",
+      "created_by": "po",
+      "history": [
+        {
+          "action": "created",
+          "by": "po",
+          "at": "2026-03-01T18:53:56.820016+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "po",
+          "from": "Draft",
+          "to": "Ready",
+          "at": "2026-03-01T18:54:06.013144+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "po",
+          "from": "Ready",
+          "to": "Validated",
+          "at": "2026-03-01T19:07:50.415699+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "dev",
+          "from": "Validated",
+          "to": "In Progress",
+          "at": "2026-03-01T19:14:37.966458+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "dev",
+          "from": "In Progress",
+          "to": "Done",
+          "at": "2026-03-01T19:15:05.671711+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "qa",
+          "from": "Done",
+          "to": "In Testing",
+          "at": "2026-03-01T19:26:33.794324+00:00"
+        },
+        {
+          "action": "status_change",
+          "by": "qa",
+          "from": "In Testing",
+          "to": "Done",
+          "at": "2026-03-01T19:30:09.781088+00:00"
         }
       ]
     }

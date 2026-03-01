@@ -54,7 +54,7 @@ export interface ClinicalData {
  *
  * Configuration data used to create a new clinical session.
  * Includes volunteer information, researcher ID, device assignment,
- * and clinical context (body structure, laterality, topography).
+ * and clinical context (body structure, laterality, topography, sensors).
  */
 export interface SessionConfig {
     volunteerId: string;
@@ -69,6 +69,8 @@ export interface SessionConfig {
         laterality: Laterality | null;
         topographyCodes: string[];
         topographyNames: string[];
+        sensorIds?: string[];
+        sensorNames?: string[];
     };
 }
 
@@ -77,8 +79,11 @@ export interface SessionConfig {
  *
  * A saved configuration preset for quick session setup.
  * Captures the repeatable clinical protocol (body structure, topography,
- * optional research linkage) while leaving session-specific variables
- * (volunteer, device) for manual selection.
+ * sensors, optional device) while leaving session-specific variables
+ * (volunteer) for manual selection.
+ *
+ * Note: researchId/researchTitle are kept for backward compatibility but
+ * are no longer populated by the session config flow (deprecated in v6).
  */
 export interface SessionFavorite {
     id: string;
@@ -89,9 +94,14 @@ export interface SessionFavorite {
     topographyNames: string[];
     topographyCategories: string[];
     deviceId?: string;
+    /** @deprecated kept for backward compatibility with v5 schema rows */
     laterality?: Laterality | null;
+    /** @deprecated kept for backward compatibility with v5 schema rows */
     researchId?: string;
+    /** @deprecated kept for backward compatibility with v5 schema rows */
     researchTitle?: string;
+    sensorIds: string[];
+    sensorNames: string[];
     createdAt: string;
     updatedAt: string;
 }

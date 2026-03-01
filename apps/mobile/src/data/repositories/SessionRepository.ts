@@ -34,6 +34,8 @@ interface ClinicalDataRow {
     laterality: string | null;
     topography_codes: string;
     topography_names: string;
+    sensor_ids: string;
+    sensor_names: string;
 }
 
 export class SessionRepository {
@@ -153,15 +155,17 @@ export class SessionRepository {
             // Insert clinical data
             await db.runAsync(
                 `INSERT INTO clinical_data
-                 (id, session_id, body_structure_snomed_code, body_structure_name, laterality, topography_codes, topography_names)
-                 VALUES (?, ?, ?, ?, ?, ?, ?)`,
+                 (id, session_id, body_structure_snomed_code, body_structure_name, laterality, topography_codes, topography_names, sensor_ids, sensor_names)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
                 clinicalDataId,
                 sessionId,
                 config.clinicalData.bodyStructureSnomedCode,
                 config.clinicalData.bodyStructureName,
                 config.clinicalData.laterality,
                 JSON.stringify(config.clinicalData.topographyCodes),
-                JSON.stringify(config.clinicalData.topographyNames)
+                JSON.stringify(config.clinicalData.topographyNames),
+                JSON.stringify(config.clinicalData.sensorIds ?? []),
+                JSON.stringify(config.clinicalData.sensorNames ?? [])
             );
 
             // Commit transaction
@@ -300,7 +304,9 @@ export class SessionRepository {
             bodyStructureName: row.body_structure_name,
             laterality: row.laterality as Laterality | null,
             topographyCodes: JSON.parse(row.topography_codes) as string[],
-            topographyNames: JSON.parse(row.topography_names) as string[]
+            topographyNames: JSON.parse(row.topography_names) as string[],
+            sensorIds: JSON.parse(row.sensor_ids ?? '[]') as string[],
+            sensorNames: JSON.parse(row.sensor_names ?? '[]') as string[],
         };
     }
 }

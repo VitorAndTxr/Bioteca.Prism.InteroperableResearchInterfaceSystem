@@ -226,10 +226,13 @@ export class SyncService {
 
         for (const recording of pending) {
             try {
+                const clinicalData = await this.sessionRepo.getClinicalData(recording.sessionId);
+                const sensorId = clinicalData?.sensorIds?.[0] ?? null;
+
                 await this.retryWithBackoff(
                     async () => {
                         // Step 1: Create recording metadata
-                        const recPayload = mapToCreateRecordingPayload(recording);
+                        const recPayload = mapToCreateRecordingPayload(recording, sensorId);
                         await middleware.invoke<Record<string, unknown>, unknown>({
                             method: 'POST',
                             path: `/api/ClinicalSession/${recording.sessionId}/recordings/New`,
