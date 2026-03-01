@@ -11,7 +11,7 @@ import { Research, ResearchStatus } from '@iris/domain';
 import { TabbedTable } from '../../design-system/components/tabbed-table';
 import type { TabbedTableTab } from '../../design-system/components/tabbed-table';
 import type { DataTableColumn } from '../../design-system/components/data-table/DataTable.types';
-import { EyeIcon, PencilIcon as EditIcon, PlusIcon } from '@heroicons/react/24/outline';
+import { ArrowDownTrayIcon, EyeIcon, PencilIcon as EditIcon, PlusIcon } from '@heroicons/react/24/outline';
 import { researchService } from '../../services/middleware';
 import Pagination from '@/design-system/components/pagination/Pagination';
 import '../../styles/shared/List.css';
@@ -20,12 +20,14 @@ export interface ResearchListProps {
     onResearchAdd?: () => void;
     onResearchEdit?: (research: Research) => void;
     onResearchView?: (research: Research) => void;
+    onResearchExport?: (research: Research) => Promise<void>;
 }
 
 export function ResearchList({
     onResearchAdd,
     onResearchEdit,
     onResearchView,
+    onResearchExport,
 }: ResearchListProps) {
     const [pageSize] = useState(10);
     const [pagination, setPagination] = useState({
@@ -35,6 +37,7 @@ export function ResearchList({
 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [exportingId, setExportingId] = useState<string | null>(null);
 
     // State for research data
     const [researches, setResearches] = useState<Research[]>([]);
@@ -96,6 +99,17 @@ export function ResearchList({
     const truncateText = (text: string, maxLength: number = 50) => {
         if (text.length <= maxLength) return text;
         return text.substring(0, maxLength) + '...';
+    };
+
+    const handleExportClick = async (e: React.MouseEvent, research: Research) => {
+        e.stopPropagation();
+        if (exportingId || !onResearchExport) return;
+        setExportingId(research.id);
+        try {
+            await onResearchExport(research);
+        } finally {
+            setExportingId(null);
+        }
     };
 
     // Table columns configuration
@@ -169,10 +183,20 @@ export function ResearchList({
                     >
                         <EditIcon />
                     </button>
+                    <button
+                        className="action-button"
+                        onClick={(e) => handleExportClick(e, research)}
+                        aria-label="Export research data"
+                        title="Exportar"
+                        disabled={exportingId !== null}
+                        style={{ opacity: exportingId === research.id ? 0.5 : 1 }}
+                    >
+                        <ArrowDownTrayIcon />
+                    </button>
                 </div>
             ),
         },
-    ], [onResearchEdit, onResearchView]);
+    ], [onResearchEdit, onResearchView, onResearchExport, exportingId, handleExportClick]);
 
     // Tab configuration (single tab for style consistency)
     const tabs: TabbedTableTab<Research>[] = useMemo(() => [

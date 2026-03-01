@@ -6,6 +6,13 @@
 
 import { contextBridge, ipcRenderer } from 'electron';
 
+export interface SaveExportResult {
+    cancelled?: boolean;
+    saved?: boolean;
+    filePath?: string;
+    error?: string;
+}
+
 /**
  * Exposed API for renderer process
  */
@@ -23,10 +30,9 @@ const api = {
         remove: (key: string) => ipcRenderer.invoke('secureStorage:remove', key)
     },
 
-    // Add more API methods as needed:
-    // - File system operations
-    // - Database queries
-    // - System operations
+    // Research export: save ZIP file via native OS dialog
+    saveExport: (buffer: ArrayBuffer, filename: string): Promise<SaveExportResult> =>
+        ipcRenderer.invoke('research:export-save', buffer, filename)
 };
 
 // Expose API to renderer

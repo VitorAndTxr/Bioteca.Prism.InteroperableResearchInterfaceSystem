@@ -899,6 +899,50 @@ export class ResearchService extends BaseService {
         });
     }
 
+    // ==================== Export ====================
+
+    async exportResearchData(researchId: string): Promise<{ buffer: ArrayBuffer; filename: string }> {
+        return this.handleMiddlewareError(async () => {
+            this.log(`Exporting research data: ${researchId}`);
+
+            // Retrieve JWT token from secure storage (same key used by UserAuthService)
+            const authState = await this.storage.getItem('userauth:state') as { token?: string } | null;
+            const token = authState?.token;
+
+            if (!token) {
+                throw this.createAuthError(
+                    'invalid_credentials' as AuthErrorCode,
+                    'No authentication token available'
+                );
+            }
+
+            const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+            const response = await fetch(`${backendUrl}/api/Research/${researchId}/export`, {
+                method: 'GET',
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            if (!response.ok) {
+                if (response.status === 404) {
+                    throw this.createAuthError('not_found' as AuthErrorCode, 'Research not found');
+                }
+                throw this.createAuthError(
+                    'server_error' as AuthErrorCode,
+                    `Export failed: ${response.statusText}`
+                );
+            }
+
+            const disposition = response.headers.get('Content-Disposition') ?? '';
+            const filenameMatch = disposition.match(/filename="?(.+?)"?(?:;|$)/);
+            const filename = filenameMatch?.[1] ?? `research_${researchId}.zip`;
+
+            const buffer = await response.arrayBuffer();
+            this.log(`Export received: ${buffer.byteLength} bytes, filename: ${filename}`);
+
+            return { buffer, filename };
+        });
+    }
+
     // ==================== DTO Mappers (Private) ====================
 
     private convertToResearch(dto: ResearchDTO): Research {

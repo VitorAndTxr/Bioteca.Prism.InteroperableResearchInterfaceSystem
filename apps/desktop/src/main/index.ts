@@ -4,7 +4,8 @@
  * Manages the application lifecycle, creates windows, and handles system-level operations.
  */
 
-import { app, BrowserWindow, ipcMain } from 'electron';
+import { app, BrowserWindow, dialog, ipcMain } from 'electron';
+import * as fs from 'fs';
 import keytar from 'keytar';
 import * as path from 'path';
 
@@ -103,8 +104,21 @@ ipcMain.handle('secureStorage:remove', async (_event, key: string) => {
     return true;
 });
 
-// Add more IPC handlers as needed for:
-// - File system operations
-// - Database operations
-// - System notifications
-// - Export functionality
+// Research export: save ZIP via native save dialog
+ipcMain.handle('research:export-save', async (_event, buffer: ArrayBuffer, filename: string) => {
+    const result = await dialog.showSaveDialog(mainWindow!, {
+        defaultPath: filename,
+        filters: [{ name: 'ZIP Archive', extensions: ['zip'] }]
+    });
+
+    if (result.canceled || !result.filePath) {
+        return { cancelled: true };
+    }
+
+    try {
+        await fs.promises.writeFile(result.filePath, Buffer.from(buffer));
+        return { saved: true, filePath: result.filePath };
+    } catch (error) {
+        return { saved: false, error: error instanceof Error ? error.message : String(error) };
+    }
+});

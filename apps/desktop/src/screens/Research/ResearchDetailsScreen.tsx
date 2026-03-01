@@ -11,7 +11,7 @@ import { AppLayout } from '@/design-system/components/app-layout';
 import { Button } from '@/design-system/components/button';
 import { TabbedTable, TabbedTableTab } from '@/design-system/components/tabbed-table';
 import { DataTableColumn } from '@/design-system/components/data-table/DataTable.types';
-import { ArrowLeftIcon, PlusIcon, PencilSquareIcon, NoSymbolIcon, EyeIcon } from '@heroicons/react/24/outline';
+import { ArrowDownTrayIcon, ArrowLeftIcon, PlusIcon, PencilSquareIcon, NoSymbolIcon, EyeIcon } from '@heroicons/react/24/outline';
 import { mainMenuItems } from '@/config/menu';
 import {
     type ResearchDetail,
@@ -24,6 +24,7 @@ import {
     CalibrationStatus,
 } from '@iris/domain';
 import { researchService } from '@/services/middleware';
+import { ToastContainer, type ToastMessage } from '@/design-system/components/toast/Toast';
 import VolunteerSelectionModal from './VolunteerSelectionModal';
 
 export interface ResearchDetailsScreenProps {
@@ -93,6 +94,8 @@ export function ResearchDetailsScreen({ handleNavigation, researchId }: Research
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState<ResearchDetailsTabs>('researchers');
+    const [exporting, setExporting] = useState(false);
+    const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
     const [researchers, setResearchers] = useState<ResearchResearcher[]>([]);
     const [volunteers, setVolunteers] = useState<ResearchVolunteer[]>([]);
@@ -168,6 +171,48 @@ export function ResearchDetailsScreen({ handleNavigation, researchId }: Research
     const invalidateTab = useCallback((tab: ResearchDetailsTabs) => {
         setTabDataLoaded(prev => ({ ...prev, [tab]: false }));
     }, []);
+
+    const addToast = useCallback((message: string, variant: ToastMessage['variant']) => {
+        const id = `toast-${Date.now()}`;
+        setToasts(prev => [...prev, { id, message, variant }]);
+    }, []);
+
+    const dismissToast = useCallback((id: string) => {
+        setToasts(prev => prev.filter(t => t.id !== id));
+    }, []);
+
+    const handleExportClick = useCallback(async () => {
+        if (exporting) return;
+        setExporting(true);
+        try {
+            const { buffer, filename } = await researchService.exportResearchData(researchId);
+
+            if (window.electron?.saveExport) {
+                const result = await window.electron.saveExport(buffer, filename);
+                if (result.cancelled) return;
+                if (result.error) {
+                    addToast(`Falha na exportação: ${result.error}`, 'error');
+                    return;
+                }
+                addToast(`Exportação concluída: ${result.filePath ?? filename}`, 'success');
+            } else {
+                const blob = new Blob([buffer], { type: 'application/zip' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                addToast(`Exportação concluída: ${filename}`, 'success');
+            }
+        } catch (err) {
+            addToast(`Falha na exportação: ${err instanceof Error ? err.message : String(err)}`, 'error');
+        } finally {
+            setExporting(false);
+        }
+    }, [exporting, researchId, addToast]);
 
     // ── Action Handlers ──────────────────────────────────────────────
 
@@ -704,6 +749,7 @@ export function ResearchDetailsScreen({ handleNavigation, researchId }: Research
     const isTabLoading = loading || (tabLoading[activeTab] ?? false);
 
     return (
+        <>
         <AppLayout
             sidebar={{
                 items: mainMenuItems,
@@ -722,6 +768,17 @@ export function ResearchDetailsScreen({ handleNavigation, researchId }: Research
             }}
         >
             <div style={{ padding: '24px' }}>
+                <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '16px' }}>
+                    <Button
+                        onClick={handleExportClick}
+                        disabled={exporting}
+                        icon={<ArrowDownTrayIcon style={{ width: 18, height: 18 }} />}
+                        variant="secondary"
+                    >
+                        {exporting ? 'Exportando...' : 'Exportar'}
+                    </Button>
+                </div>
+
                 {error && (
                     <div style={{ marginBottom: '16px', padding: '16px', backgroundColor: '#fef2f2', color: '#b91c1c', borderRadius: '6px', border: '1px solid #fecaca' }}>
                         {error}
@@ -768,6 +825,8 @@ export function ResearchDetailsScreen({ handleNavigation, researchId }: Research
                 onEnrollmentComplete={handleVolunteerEnrollmentComplete}
             />
         </AppLayout>
+        <ToastContainer toasts={toasts} onDismiss={dismissToast} />
+        </>
     );
 }
 

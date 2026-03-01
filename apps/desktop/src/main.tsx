@@ -6,7 +6,14 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 
-// Type declarations for window.electron
+export interface SaveExportResult {
+    cancelled?: boolean;
+    saved?: boolean;
+    filePath?: string;
+    error?: string;
+}
+
+// Type declarations for window.electron — mirrors ElectronAPI from preload
 declare global {
     interface Window {
         electron?: {
@@ -14,11 +21,12 @@ declare global {
                 getVersion: () => Promise<string>;
                 getPath: (name: string) => Promise<string>;
             };
-            secureStorage?: {
+            secureStorage: {
                 get: (key: string) => Promise<string | null>;
-                set: (key: string, value: string) => Promise<void>;
-                remove: (key: string) => Promise<void>;
+                set: (key: string, value: string) => Promise<boolean>;
+                remove: (key: string) => Promise<boolean>;
             };
+            saveExport: (buffer: ArrayBuffer, filename: string) => Promise<SaveExportResult>;
         };
     }
 }
