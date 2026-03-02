@@ -36,7 +36,10 @@ RUN npm run build:renderer
 # ── Serve stage ──────────────────────────────────────────────
 FROM nginx:alpine AS serve
 
-COPY apps/desktop/nginx.conf /etc/nginx/conf.d/default.conf
+ARG NGINX_BASE_PATH=/
+ENV NGINX_BASE_PATH=${NGINX_BASE_PATH}
+
+COPY apps/desktop/nginx.template.conf /etc/nginx/templates/default.conf.template
 COPY --from=build /app/apps/desktop/dist/renderer /usr/share/nginx/html
 
 EXPOSE 80
