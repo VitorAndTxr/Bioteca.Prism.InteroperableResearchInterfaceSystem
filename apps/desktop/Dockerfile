@@ -36,26 +36,7 @@ RUN npm run build:renderer
 # ── Serve stage ──────────────────────────────────────────────
 FROM nginx:alpine AS serve
 
-ARG NGINX_BASE_PATH=/
-
-# Generate nginx config with the correct base path
-RUN echo "server {" > /etc/nginx/conf.d/default.conf && \
-    echo "    listen 80;" >> /etc/nginx/conf.d/default.conf && \
-    echo "    server_name _;" >> /etc/nginx/conf.d/default.conf && \
-    echo "    root /usr/share/nginx/html;" >> /etc/nginx/conf.d/default.conf && \
-    echo "    index index.html;" >> /etc/nginx/conf.d/default.conf && \
-    echo "" >> /etc/nginx/conf.d/default.conf && \
-    echo "    location ${NGINX_BASE_PATH} {" >> /etc/nginx/conf.d/default.conf && \
-    echo "        alias /usr/share/nginx/html/;" >> /etc/nginx/conf.d/default.conf && \
-    echo '        try_files $uri $uri/ /index.html;' >> /etc/nginx/conf.d/default.conf && \
-    echo "    }" >> /etc/nginx/conf.d/default.conf && \
-    echo "" >> /etc/nginx/conf.d/default.conf && \
-    echo '    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {' >> /etc/nginx/conf.d/default.conf && \
-    echo "        expires 1y;" >> /etc/nginx/conf.d/default.conf && \
-    echo '        add_header Cache-Control "public, immutable";' >> /etc/nginx/conf.d/default.conf && \
-    echo "    }" >> /etc/nginx/conf.d/default.conf && \
-    echo "}" >> /etc/nginx/conf.d/default.conf
-
+COPY apps/desktop/nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=build /app/apps/desktop/dist/renderer /usr/share/nginx/html
 
 EXPOSE 80
