@@ -154,7 +154,7 @@ export function CreateVolunteerForm({ handleNavigation, onSave, onCancel }: Crea
             bloodType: bloodType ? bloodType as BloodType : undefined,
             height: height ? Number(height) : undefined,
             weight: weight ? Number(weight) : undefined,
-            medicalHistory: selectedConditions.length > 0 ? selectedConditions.join(';') : undefined,
+            clinicalConditionCodes: selectedConditions.length > 0 ? selectedConditions : undefined,
             consentStatus: consentStatus as ConsentStatus,
         };
 

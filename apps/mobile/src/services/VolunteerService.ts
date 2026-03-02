@@ -31,8 +31,11 @@ interface VolunteerDTO {
   bloodType: string;
   height: number | null;
   weight: number | null;
-  medicalHistory: string;
   consentStatus: string;
+  clinicalConditionCodes?: string[];
+  clinicalEventCodes?: string[];
+  medicationCodes?: string[];
+  allergyIntoleranceCodes?: string[];
   enrolledAt: string;
   updatedAt: string;
 }
@@ -51,7 +54,10 @@ function convertToVolunteer(dto: VolunteerDTO): Volunteer {
     bloodType: dto.bloodType ? (dto.bloodType as BloodType) : undefined,
     height: dto.height ?? undefined,
     weight: dto.weight ?? undefined,
-    medicalHistory: dto.medicalHistory || undefined,
+    clinicalConditionCodes: dto.clinicalConditionCodes ?? [],
+    clinicalEventCodes: dto.clinicalEventCodes ?? [],
+    medicationCodes: dto.medicationCodes ?? [],
+    allergyIntoleranceCodes: dto.allergyIntoleranceCodes ?? [],
     consentStatus: dto.consentStatus as ConsentStatus,
     enrolledAt: dto.enrolledAt ? new Date(dto.enrolledAt) : undefined,
     updatedAt: dto.updatedAt ? new Date(dto.updatedAt) : undefined,

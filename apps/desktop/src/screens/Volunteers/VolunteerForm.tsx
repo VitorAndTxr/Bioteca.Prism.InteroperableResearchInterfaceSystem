@@ -122,7 +122,7 @@ export function VolunteerForm({ handleNavigation, mode, volunteer }: VolunteerFo
             setBloodType(volunteer.bloodType || '');
             setHeight(volunteer.height?.toString() || '');
             setWeight(volunteer.weight?.toString() || '');
-            setSelectedConditions(volunteer.medicalHistory ? volunteer.medicalHistory.split(';').filter(Boolean) : []);
+            setSelectedConditions(volunteer.clinicalConditionCodes ?? []);
             setConsentStatus(volunteer.consentStatus);
         }
     }, [volunteer]);
@@ -201,7 +201,7 @@ export function VolunteerForm({ handleNavigation, mode, volunteer }: VolunteerFo
             bloodType: bloodType ? bloodType as BloodType : undefined,
             height: height ? Number(height) : undefined,
             weight: weight ? Number(weight) : undefined,
-            medicalHistory: selectedConditions.length > 0 ? selectedConditions.join(';') : undefined,
+            clinicalConditionCodes: selectedConditions.length > 0 ? selectedConditions : undefined,
             consentStatus: consentStatus as ConsentStatus,
         };
 
