@@ -27,9 +27,6 @@ COPY apps/desktop/ apps/desktop/
 ARG VITE_ENV_FILE=apps/desktop/.env.production
 COPY ${VITE_ENV_FILE} apps/desktop/.env.production
 
-ARG VITE_BASE_PATH=./
-ENV VITE_BASE_PATH=${VITE_BASE_PATH}
-
 WORKDIR /app/apps/desktop
 RUN npm run build:renderer
 
