@@ -5,8 +5,8 @@
 FROM node:20-alpine AS build
 WORKDIR /app
 
-# Copy root package files for workspace resolution
-COPY package.json package-lock.json ./
+# Copy root package files and tsconfig for workspace resolution
+COPY package.json package-lock.json tsconfig.json ./
 
 # Copy workspace package.json files
 COPY apps/desktop/package.json apps/desktop/
@@ -23,11 +23,10 @@ COPY packages/middleware/ packages/middleware/
 # Copy desktop app source
 COPY apps/desktop/ apps/desktop/
 
-# Build arg to select node mode (default or nodeb)
-ARG VITE_MODE=production
-
 # Copy the appropriate env file as .env.production for Vite
-# The env file should be pre-configured before building
+ARG VITE_ENV_FILE=apps/desktop/.env.production
+COPY ${VITE_ENV_FILE} apps/desktop/.env.production
+
 WORKDIR /app/apps/desktop
 RUN npm run build:renderer
 
