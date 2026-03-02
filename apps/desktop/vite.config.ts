@@ -10,7 +10,7 @@ const dirname = typeof __dirname !== 'undefined' ? __dirname : path.dirname(file
 export default defineConfig({
   plugins: [react()],
   root: '.',
-  base: './',
+  base: process.env.VITE_BASE_PATH || './',
   build: {
     outDir: 'dist/renderer',
     emptyOutDir: true

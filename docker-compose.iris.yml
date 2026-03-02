@@ -6,6 +6,7 @@ services:
       dockerfile: apps/desktop/Dockerfile
       args:
         VITE_ENV_FILE: apps/desktop/.env.production
+        VITE_BASE_PATH: /iris-a/
     ports:
       - "3000:80"
     restart: unless-stopped
@@ -19,6 +20,7 @@ services:
       dockerfile: apps/desktop/Dockerfile
       args:
         VITE_ENV_FILE: apps/desktop/.env.production.nodeb
+        VITE_BASE_PATH: /iris-b/
     ports:
       - "3001:80"
     restart: unless-stopped
