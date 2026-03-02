@@ -8,11 +8,37 @@ type RendererSecureStorageAPI = {
 
 const DEFAULT_PREFIX = 'iris-desktop';
 
+function createLocalStorageFallback(prefix: string): SecureStorage {
+    const scopedKey = (key: string) => `${prefix}:${key}`;
+
+    return {
+        async getItem<T>(key: string): Promise<T | null> {
+            const raw = localStorage.getItem(scopedKey(key));
+            if (!raw) return null;
+
+            try {
+                return JSON.parse(raw) as T;
+            } catch (error) {
+                console.warn('[LocalStorageFallback] Failed to parse stored value', error);
+                localStorage.removeItem(scopedKey(key));
+                return null;
+            }
+        },
+        async setItem<T>(key: string, value: T): Promise<void> {
+            localStorage.setItem(scopedKey(key), JSON.stringify(value));
+        },
+        async removeItem(key: string): Promise<void> {
+            localStorage.removeItem(scopedKey(key));
+        }
+    };
+}
+
 export function createDesktopSecureStorage(prefix = DEFAULT_PREFIX): SecureStorage {
     const api = window.electron?.secureStorage as RendererSecureStorageAPI | undefined;
 
     if (!api) {
-        throw new Error('Secure storage bridge is not available in the renderer process.');
+        console.warn('[SecureStorage] Electron bridge unavailable, falling back to localStorage');
+        return createLocalStorageFallback(prefix);
     }
 
     const scopedKey = (key: string) => `${prefix}:${key}`;

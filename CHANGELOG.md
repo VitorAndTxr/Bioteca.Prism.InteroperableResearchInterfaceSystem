@@ -4,6 +4,51 @@ All notable changes to the IRIS project are documented in this file.
 
 ---
 
+## [Phase 21] — 2026-03-01
+
+### IRIS Docker Deployment
+
+Phase 21 delivers infrastructure and configuration to deploy the IRIS desktop app as a web application on an Azure VM via Docker and nginx. Two container instances (Node A on port 3000, Node B on port 3001) serve the Vite-built renderer through nginx with SPA fallback routing. No application code was modified — this phase is entirely infrastructure and configuration.
+
+---
+
+### Added
+
+#### Docker Build Pipeline (`apps/desktop/`)
+
+- **`Dockerfile`** — Multi-stage Docker build using `node:20-alpine` (build stage) and `nginx:alpine` (serve stage). Installs monorepo dependencies via `npm ci`, builds the Vite renderer with `npm run build:renderer`, and copies the output to nginx's static directory. Accepts a `VITE_ENV_FILE` build arg to inject per-node environment configuration at build time.
+
+- **`nginx.conf`** — nginx server configuration with SPA fallback (`try_files $uri $uri/ /index.html`), 1-year immutable caching for static assets (JS, CSS, images, fonts), and no-cache policy for `index.html` to ensure fresh deploys are picked up immediately.
+
+#### Compose Orchestration (monorepo root)
+
+- **`docker-compose.iris.yml`** — Defines two services: `iris-web-node-a` (port 3000) and `iris-web-node-b` (port 3001), both using the shared Dockerfile with different env files (`apps/desktop/.env.production` and `apps/desktop/.env.production.nodeb`). Joins the external `irn-network` for backend API connectivity. Uses `restart: unless-stopped` for resilience.
+
+#### Build Context Optimization
+
+- **`.dockerignore`** — Excludes `node_modules`, `.git`, `apps/mobile`, `*.md`, `.storybook`, `dist`, and `dist-electron` from the Docker build context, reducing image build time and size.
+
+#### Production Environment Files (`apps/desktop/`)
+
+- **`.env.production`** — Node A production environment targeting `<STATIC_IP>:5000` with IRIS certificate metadata (subject name, X.509 certificate, thumbprint, serial number, research node ID).
+
+- **`.env.production.nodeb`** — Node B production environment targeting `<STATIC_IP>:5001` with IRIS-B certificate metadata. Uses `<STATIC_IP>` placeholder — replace with actual Azure VM IP before building.
+
+#### Deployment Documentation (project root)
+
+- **`VM-DEPLOYMENT.md`** — Updated with IRIS web deployment section, complete container architecture diagram showing all three compose files (persistence, application, IRIS), NSG port rules for 3000/3001, Azure CLI commands for static IP provisioning, and IRIS-specific VM commands (`docker compose -f docker-compose.iris.yml up -d --build`).
+
+---
+
+### Infrastructure Notes
+
+- **No application code changes**: All deliverables are Dockerfiles, compose files, env files, nginx config, and documentation.
+- **IP placeholder**: Production env files use `<STATIC_IP>` — must be replaced with the actual Azure VM public IP before building images.
+- **HTTP only**: No TLS/HTTPS configured yet; all traffic is unencrypted.
+- **Network**: IRIS containers join the existing `irn-network` (created by `docker-compose.persistence.yml`) for backend API access.
+
+---
+
 ## [Phase 20] — 2026-03-01
 
 ### NewSession Screen Redesign

@@ -1,0 +1,30 @@
+services:
+  iris-web-node-a:
+    container_name: iris-web-node-a
+    build:
+      context: .
+      dockerfile: apps/desktop/Dockerfile
+      args:
+        VITE_ENV_FILE: apps/desktop/.env.production
+    ports:
+      - "3000:80"
+    restart: unless-stopped
+    networks:
+      - irn-network
+
+  iris-web-node-b:
+    container_name: iris-web-node-b
+    build:
+      context: .
+      dockerfile: apps/desktop/Dockerfile
+      args:
+        VITE_ENV_FILE: apps/desktop/.env.production.nodeb
+    ports:
+      - "3001:80"
+    restart: unless-stopped
+    networks:
+      - irn-network
+
+networks:
+  irn-network:
+    external: true
