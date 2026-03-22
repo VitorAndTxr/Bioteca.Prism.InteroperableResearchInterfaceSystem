@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!--
+        base-config trusts both system CAs and the bundled self-signed VM cert.
+        domain-config does not support IP addresses in Android, so the VM cert
+        must be trusted globally. cleartextTrafficPermitted=true allows Metro (local dev).
+    -->
+    <base-config cleartextTrafficPermitted="true">
+        <trust-anchors>
+            <certificates src="system"/>
+            <certificates src="@raw/vm_cert"/>
+        </trust-anchors>
+    </base-config>
+</network-security-config>

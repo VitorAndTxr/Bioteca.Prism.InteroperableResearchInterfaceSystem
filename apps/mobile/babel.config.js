@@ -1,5 +1,5 @@
 module.exports = function (api) {
-  api.cache(true);
+  api.cache.using(() => require('crypto').createHash('md5').update(JSON.stringify(process.env)).digest('hex'));
   return {
     presets: ['babel-preset-expo'],
     plugins: [
