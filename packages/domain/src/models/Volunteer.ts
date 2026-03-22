@@ -46,8 +46,7 @@ export enum BloodType {
  *
  * Matches backend fields: VolunteerId, ResearchNodeId, VolunteerCode,
  * Name, Email, BirthDate, Gender, BloodType, Height, Weight,
- * ConsentStatus, EnrolledAt, UpdatedAt, ClinicalConditionCodes,
- * ClinicalEventCodes, MedicationCodes, AllergyIntoleranceCodes
+ * ConsentStatus, EnrolledAt, UpdatedAt, ClinicalConditionCodes
  */
 export interface Volunteer {
     id: string;
@@ -64,9 +63,6 @@ export interface Volunteer {
     enrolledAt?: Date;
     updatedAt?: Date;
     clinicalConditionCodes?: string[];
-    clinicalEventCodes?: string[];
-    medicationCodes?: string[];
-    allergyIntoleranceCodes?: string[];
 }
 
 /**
@@ -83,9 +79,6 @@ export interface NewVolunteerData {
     weight?: number;
     consentStatus?: ConsentStatus;
     clinicalConditionCodes?: string[];
-    clinicalEventCodes?: string[];
-    medicationCodes?: string[];
-    allergyIntoleranceCodes?: string[];
 }
 
 /**
@@ -101,7 +94,4 @@ export interface UpdateVolunteerData {
     weight?: number;
     consentStatus?: ConsentStatus;
     clinicalConditionCodes?: string[];
-    clinicalEventCodes?: string[];
-    medicationCodes?: string[];
-    allergyIntoleranceCodes?: string[];
 }

@@ -118,56 +118,6 @@ export interface ClinicalCondition extends Record<string, unknown>{
   description: string;
 }
 
-/**
- * Represents a SNOMED CT clinical event code
- */
-export interface SnomedClinicalEvent extends Record<string, unknown> {
-  /** SNOMED code (primary key) */
-  snomedCode: string;
-
-  /** Display name */
-  displayName: string;
-
-  /** Description */
-  description: string;
-}
-
-/**
- * Represents a SNOMED CT medication code
- * Maps to: Bioteca.Prism.Domain.DTOs.Snomed.SnomedMedicationDTO
- */
-export interface SnomedMedication extends Record<string, unknown> {
-  /** SNOMED code (primary key) */
-  snomedCode: string;
-
-  /** Medication name */
-  medicationName: string;
-
-  /** Active pharmaceutical ingredient */
-  activeIngredient: string;
-
-  /** ANVISA (Brazilian Health Regulatory Agency) code */
-  anvisaCode: string;
-}
-
-/**
- * Represents a SNOMED CT allergy/intolerance code
- * Maps to: Bioteca.Prism.Domain.DTOs.Snomed.SnomedAllergyIntoleranceDTO
- */
-export interface SnomedAllergyIntolerance extends Record<string, unknown> {
-  /** SNOMED code (primary key) */
-  snomedCode: string;
-
-  /** Category of the allergy/intolerance (e.g., food, medication, environment) */
-  category: string;
-
-  /** Name of the substance causing the allergy/intolerance */
-  substanceName: string;
-
-  /** Type (allergy or intolerance) */
-  type: string;
-}
-
 // ============================================================================
 // Update Payload Types
 // ============================================================================
@@ -231,41 +181,3 @@ export interface UpdateSnomedClinicalConditionPayload extends Record<string, unk
   description: string;
 }
 
-/**
- * Payload for updating a SNOMED CT clinical event
- */
-export interface UpdateSnomedClinicalEventPayload extends Record<string, unknown> {
-  /** Display name */
-  displayName: string;
-
-  /** Description */
-  description: string;
-}
-
-/**
- * Payload for updating a SNOMED CT medication
- */
-export interface UpdateSnomedMedicationPayload extends Record<string, unknown> {
-  /** Medication name */
-  medicationName: string;
-
-  /** Active pharmaceutical ingredient */
-  activeIngredient: string;
-
-  /** ANVISA code */
-  anvisaCode: string;
-}
-
-/**
- * Payload for updating a SNOMED CT allergy/intolerance
- */
-export interface UpdateSnomedAllergyIntolerancePayload extends Record<string, unknown> {
-  /** Category of the allergy/intolerance */
-  category: string;
-
-  /** Name of the substance */
-  substanceName: string;
-
-  /** Type (allergy or intolerance) */
-  type: string;
-}

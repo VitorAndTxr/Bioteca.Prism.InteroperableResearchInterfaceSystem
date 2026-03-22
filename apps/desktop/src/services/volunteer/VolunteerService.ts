@@ -43,9 +43,6 @@ interface VolunteerDTO {
     enrolledAt?: string;
     updatedAt?: string;
     clinicalConditionCodes?: string[];
-    clinicalEventCodes?: string[];
-    medicationCodes?: string[];
-    allergyIntoleranceCodes?: string[];
 }
 
 /**
@@ -63,9 +60,6 @@ interface AddVolunteerPayload extends Record<string, unknown> {
     Weight?: number;
     ConsentStatus?: string;
     ClinicalConditionCodes?: string[];
-    ClinicalEventCodes?: string[];
-    MedicationCodes?: string[];
-    AllergyIntoleranceCodes?: string[];
 }
 
 /**
@@ -81,9 +75,6 @@ interface UpdateVolunteerPayload extends Record<string, unknown> {
     Weight?: number;
     ConsentStatus?: string;
     ClinicalConditionCodes?: string[];
-    ClinicalEventCodes?: string[];
-    MedicationCodes?: string[];
-    AllergyIntoleranceCodes?: string[];
 }
 
 /**
@@ -237,9 +228,6 @@ export class VolunteerService extends BaseService {
                         weight: volunteerData.weight,
                         consentStatus: volunteerData.consentStatus || ConsentStatus.PENDING,
                         clinicalConditionCodes: volunteerData.clinicalConditionCodes,
-                        clinicalEventCodes: volunteerData.clinicalEventCodes,
-                        medicationCodes: volunteerData.medicationCodes,
-                        allergyIntoleranceCodes: volunteerData.allergyIntoleranceCodes,
                         enrolledAt: new Date(),
                         updatedAt: new Date()
                     });
@@ -265,10 +253,7 @@ export class VolunteerService extends BaseService {
                 Height: volunteerData.height,
                 Weight: volunteerData.weight,
                 ConsentStatus: volunteerData.consentStatus,
-                ClinicalConditionCodes: volunteerData.clinicalConditionCodes,
-                ClinicalEventCodes: volunteerData.clinicalEventCodes,
-                MedicationCodes: volunteerData.medicationCodes,
-                AllergyIntoleranceCodes: volunteerData.allergyIntoleranceCodes
+                ClinicalConditionCodes: volunteerData.clinicalConditionCodes
             };
 
             const response = await this.middleware.invoke<AddVolunteerPayload, VolunteerDTO>({
@@ -321,10 +306,7 @@ export class VolunteerService extends BaseService {
                 Height: data.height,
                 Weight: data.weight,
                 ConsentStatus: data.consentStatus,
-                ClinicalConditionCodes: data.clinicalConditionCodes,
-                ClinicalEventCodes: data.clinicalEventCodes,
-                MedicationCodes: data.medicationCodes,
-                AllergyIntoleranceCodes: data.allergyIntoleranceCodes
+                ClinicalConditionCodes: data.clinicalConditionCodes
             };
 
             const response = await this.middleware.invoke<UpdateVolunteerPayload, VolunteerDTO>({
@@ -390,9 +372,6 @@ export class VolunteerService extends BaseService {
             weight: dto.weight,
             consentStatus: this.mapConsentStatus(dto.consentStatus),
             clinicalConditionCodes: dto.clinicalConditionCodes ?? [],
-            clinicalEventCodes: dto.clinicalEventCodes ?? [],
-            medicationCodes: dto.medicationCodes ?? [],
-            allergyIntoleranceCodes: dto.allergyIntoleranceCodes ?? [],
             enrolledAt: dto.enrolledAt ? new Date(dto.enrolledAt) : undefined,
             updatedAt: dto.updatedAt ? new Date(dto.updatedAt) : undefined
         };

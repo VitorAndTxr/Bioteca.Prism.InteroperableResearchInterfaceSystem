@@ -10,7 +10,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 The PRISM framework consists of four interconnected components:
 
-1. **InteroperableResearchNode** (Backend): Core backend server implementing federated research data exchange with 4-phase cryptographic handshake protocol, PostgreSQL/Redis persistence, and 28-table clinical data model. See `../InteroperableResearchNode/CLAUDE.md`.
+1. **InteroperableResearchNode** (Backend): Core backend server implementing federated research data exchange with 4-phase cryptographic handshake protocol, PostgreSQL/Redis persistence, and 20-table clinical data model. See `../InteroperableResearchNode/CLAUDE.md`.
 
 2. **InteroperableResearchsEMGDevice** (Embedded): ESP32-based hardware device for biosignal acquisition and therapeutic stimulation. See `../InteroperableResearchsEMGDevice/CLAUDE.md`.
 
