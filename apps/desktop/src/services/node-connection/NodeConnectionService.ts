@@ -53,7 +53,12 @@ interface NodeConnectionDTO {
 interface AddNodeConnectionPayload extends Record<string, unknown> {
     NodeName: string;
     NodeUrl: string;
-    NodeAccessLevel: string;
+    NodeAccessLevel: number;
+    Status: number;
+    ContactInfo?: string;
+    Certificate?: string;
+    CertificateFingerprint?: string;
+    InstitutionDetails?: string;
 }
 
 /**
@@ -290,11 +295,22 @@ export class NodeConnectionService extends BaseService {
             // Ensure session
             await this.ensureSession();
 
-            // Convert to middleware format (PascalCase)
+            // Convert to middleware format (PascalCase) with numeric enum values
+            const accessLevelNumeric = this.mapNodeAccessLevelToNumeric(
+                this.mapNodeAccessLevelToString(connectionData.nodeAccessLevel)
+            );
+            const statusNumeric = this.mapAuthorizationStatusToNumeric(
+                connectionData.status ?? 'Pending'
+            );
             const middlewarePayload: AddNodeConnectionPayload = {
                 NodeName: connectionData.nodeName,
                 NodeUrl: connectionData.nodeUrl,
-                NodeAccessLevel: this.mapNodeAccessLevelToString(connectionData.nodeAccessLevel)
+                NodeAccessLevel: accessLevelNumeric,
+                Status: statusNumeric,
+                ContactInfo: connectionData.contactInfo,
+                Certificate: connectionData.certificate,
+                CertificateFingerprint: connectionData.certificateFingerprint,
+                InstitutionDetails: connectionData.institutionDetails,
             };
 
             // Call backend API

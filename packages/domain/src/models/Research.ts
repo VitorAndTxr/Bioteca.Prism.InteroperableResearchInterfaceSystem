@@ -97,6 +97,11 @@ export interface NewNodeConnectionData {
     nodeName: string;
     nodeUrl: string;
     nodeAccessLevel: NodeAccessLevel;
+    status?: string;
+    contactInfo?: string;
+    certificate?: string;
+    certificateFingerprint?: string;
+    institutionDetails?: string;
 }
 
 /**

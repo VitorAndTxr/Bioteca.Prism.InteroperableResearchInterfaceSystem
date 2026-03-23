@@ -160,6 +160,11 @@ export function AddConnectionForm({ handleNavigation, mode = 'add', connection, 
             nodeName: nodeName.trim(),
             nodeUrl: nodeUrl.trim(),
             nodeAccessLevel: nodeAccessLevel as NodeAccessLevel,
+            status: status,
+            contactInfo: contactInfo || undefined,
+            certificate: certificate || undefined,
+            certificateFingerprint: certificateSignature || undefined,
+            institutionDetails: institutionDetails || undefined,
         };
 
         // If custom save handler provided, use it
