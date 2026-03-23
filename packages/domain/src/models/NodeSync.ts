@@ -21,6 +21,8 @@ export interface SyncManifest {
     generatedAt: string;
     lastSyncedAt: string | null;
     snomed: SyncEntitySummary;
+    devices: SyncEntitySummary;
+    sensors: SyncEntitySummary;
     volunteers: SyncEntitySummary;
     research: SyncEntitySummary;
     sessions: SyncEntitySummary;
@@ -28,7 +30,7 @@ export interface SyncManifest {
 }
 
 export interface SyncProgress {
-    phase: 'manifest' | 'snomed' | 'volunteers' | 'research' | 'sessions' | 'recordings';
+    phase: 'manifest' | 'snomed' | 'devices' | 'sensors' | 'volunteers' | 'research' | 'sessions' | 'recordings';
     current: number;
     total: number;
     entityType: string;
@@ -88,6 +90,9 @@ export interface SyncImportPayload {
     remoteNodeId: string;
     snomed: SyncSnomedPayload;
     volunteers: unknown[];
+    researchers: unknown[];
+    devices: unknown[];
+    sensors: unknown[];
     research: unknown[];
     sessions: unknown[];
     recordings: Array<{

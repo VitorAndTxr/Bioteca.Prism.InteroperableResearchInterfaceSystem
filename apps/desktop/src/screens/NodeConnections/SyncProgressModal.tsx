@@ -201,6 +201,8 @@ interface ConfirmationContentProps {
 const ConfirmationContent: React.FC<ConfirmationContentProps> = ({ manifest, onConfirm, onCancel }) => {
     const totalEntities =
         manifest.snomed.count +
+        (manifest.devices?.count ?? 0) +
+        (manifest.sensors?.count ?? 0) +
         manifest.volunteers.count +
         manifest.research.count +
         manifest.sessions.count;
@@ -217,6 +219,8 @@ const ConfirmationContent: React.FC<ConfirmationContentProps> = ({ manifest, onC
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 20 }}>
                 <EntityCount label="SNOMED" count={manifest.snomed.count} />
+                <EntityCount label="Devices" count={manifest.devices?.count ?? 0} />
+                <EntityCount label="Sensors" count={manifest.sensors?.count ?? 0} />
                 <EntityCount label="Volunteers" count={manifest.volunteers.count} />
                 <EntityCount label="Research" count={manifest.research.count} />
                 <EntityCount label="Sessions" count={manifest.sessions.count} />
